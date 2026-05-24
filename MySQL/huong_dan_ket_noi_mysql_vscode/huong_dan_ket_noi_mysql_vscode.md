@@ -1,6 +1,7 @@
 ---
 layout: page
 title: "Kết nối MySQL Server bằng VS Code và sửa lỗi thường gặp"
+permalink: /MySQL/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.md
 ---
 
 # Kết nối MySQL Server bằng VS Code và sửa lỗi thường gặp

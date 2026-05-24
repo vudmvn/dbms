@@ -1,6 +1,7 @@
 ---
 layout: page
 title: "Giới thiệu về DBMS"
+permalink: /DBMS Basic/gioi_thieu_dbms_vi/gioi_thieu_dbms_vi.md
 ---
 
 # Giới thiệu về DBMS

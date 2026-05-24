@@ -24,7 +24,7 @@ You will learn how database systems are structured, why they are needed, and how
 
 ## Database Management System Concept
 
-Các link ở cột **Bài giảng Markdown** sẽ mở trang HTML đã render từ file `.md`.
+Các link ở cột **Bài giảng Markdown** sẽ mở trang Markdown trực tiếp trên GitHub Pages.
 
 | Chủ đề | Bài giảng Markdown | Slide Tiếng Việt | Slide English |
 |---|---|---|---|
