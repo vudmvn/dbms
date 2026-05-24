@@ -1,4 +1,4 @@
-?---
+---
 layout: page
 title: "Giới thiệu về Cơ sở dữ liệu"
 ---
