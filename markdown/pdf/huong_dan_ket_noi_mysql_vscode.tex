@@ -1,0 +1,286 @@
+﻿\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{vietnam}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\setkeys{Gin}{width=\linewidth,height=0.9\textheight,keepaspectratio}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{xcolor}
+\usepackage{array,longtable,booktabs,multirow}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{Page \thepage}
+
+\providecommand{\tightlist}{%
+    \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\passthrough}[1]{#1}
+
+\lstdefinelanguage{SQL}{
+    keywords={SELECT,FROM,WHERE,JOIN,LEFT,RIGHT,INNER,OUTER,ON,GROUP,BY,ORDER,ASC,DESC,COUNT,AVG,MAX,MIN,SUM,AS,AND,OR,NOT,NULL,IS,EXISTS,WITH,RANK,OVER,PARTITION,CASE,WHEN,THEN,ELSE,END,CREATE,TABLE,PRIMARY,KEY,FOREIGN,REFERENCES,INSERT,INTO,VALUES,UPDATE,DELETE,HAVING,DISTINCT},
+    sensitive=false,
+    comment=[l]{--},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]"
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{red!70!black},
+    showstringspaces=false,
+    columns=fullflexible,
+    frame=single,
+    breaklines=true,
+    tabsize=2,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+}
+
+\begin{document}
+
+\section{Kết nối MySQL Server bằng VS Code và sửa lỗi thường
+gặp}\label{kux1ebft-nux1ed1i-mysql-server-bux1eb1ng-vs-code-vuxe0-sux1eeda-lux1ed7i-thux1b0ux1eddng-gux1eb7p}
+
+Nguồn:
+https://www.geeksforgeeks.org/sql/how-to-connect-to-mysql-server-using-vs-code-and-fix-errors/
+
+\subsection{Mục tiêu}\label{mux1ee5c-tiuxeau}
+
+\begin{itemize}
+\tightlist
+\item
+  Kết nối MySQL từ Visual Studio Code
+\item
+  Xử lý lỗi xác thực và kết nối thường gặp
+\end{itemize}
+
+\subsection{Yêu cầu}\label{yuxeau-cux1ea7u}
+
+\begin{itemize}
+\tightlist
+\item
+  Visual Studio Code đã cài đặt
+\item
+  MySQL Server (mysqld) đã được cài và đang chạy
+\item
+  Mở rộng MySQL cho VS Code (ví dụ: MySQL Management Tool)
+\end{itemize}
+
+\subsection{Các bước kết
+nối}\label{cuxe1c-bux1b0ux1edbc-kux1ebft-nux1ed1i}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Mở Visual Studio Code.
+\item
+  Vào Extensions, tìm \passthrough{\lstinline!MySQL!} và cài đặt
+  extension \passthrough{\lstinline!MySQL Management Tool!}.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-01.jpg}
+\caption{Cài extension}
+\end{figure}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Mở Explorer (Ctrl+Shift+E) - mục MySQL sẽ xuất hiện. Nhấn
+  \passthrough{\lstinline!Add Connection!} để tạo kết nối mới.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-02.jpg}
+\caption{Add Connection}
+\end{figure}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Điền thông tin server: \passthrough{\lstinline!Host!} =
+  \passthrough{\lstinline!localhost!}, \passthrough{\lstinline!User!} =
+  \passthrough{\lstinline!root!} (mặc định), nhập
+  \passthrough{\lstinline!Password!} và \passthrough{\lstinline!Port!} =
+  \passthrough{\lstinline!3306!}.
+\item
+  Nếu gặp lỗi xác thực (ví dụ khi dùng MySQL 8 với plugin xác thực mới),
+  ta có thể tạo user mới sử dụng phương thức xác thực cũ.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-03.jpg}
+\caption{Authentication error}
+\end{figure}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Mở thư mục cài đặt MySQL, vào \passthrough{\lstinline!bin!}, rồi mở
+  \passthrough{\lstinline!cmd!} tại đó nếu cần thao tác trực tiếp.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-04.jpg}
+\caption{Open bin folder}
+\end{figure}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Kết nối bằng client nếu cần kiểm tra từ dòng lệnh:
+\end{enumerate}
+
+\begin{lstlisting}
+mysql -u root -p
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-06.jpg}
+\caption{Client connect}
+\end{figure}
+
+\subsection{Xử lý lỗi kết
+nối}\label{xux1eed-luxfd-lux1ed7i-kux1ebft-nux1ed1i}
+
+\begin{itemize}
+\tightlist
+\item
+  Nếu gặp
+  \passthrough{\lstinline!ERROR 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)!},
+  mở Services và khởi động dịch vụ MySQL (ví dụ
+  \passthrough{\lstinline!MYSQL80!}).
+\end{itemize}
+
+\subsection{Tạo user dùng xác thực cũ
+(mysql\_native\_password)}\label{tux1ea1o-user-duxf9ng-xuxe1c-thux1ef1c-cux169-mysql_native_password}
+
+Ví dụ tạo user \passthrough{\lstinline!sqluser!} với plugin
+\passthrough{\lstinline!mysql\_native\_password!}:
+
+\begin{lstlisting}
+CREATE USER 'sqluser'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'sqluser'@'%';
+FLUSH PRIVILEGES;
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-07.jpg}
+\caption{Flush privileges}
+\end{figure}
+
+\subsection{Thay đổi kết nối trong VS
+Code}\label{thay-ux111ux1ed5i-kux1ebft-nux1ed1i-trong-vs-code}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Xoá kết nối cũ.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-08.jpg}
+\caption{Delete connection}
+\end{figure}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Thêm kết nối mới với:
+\end{enumerate}
+
+\begin{itemize}
+\tightlist
+\item
+  Host: \passthrough{\lstinline!localhost!}
+\item
+  User: \passthrough{\lstinline!sqluser!}
+\item
+  Password: \passthrough{\lstinline!password!}
+\item
+  Port: \passthrough{\lstinline!3306!}
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Kết nối thành công, truy cập và tạo database, bảng và thực thi truy
+  vấn từ VS Code.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-09.jpg}
+\caption{Query results}
+\end{figure}
+
+\subsection{Ví dụ tạo database và
+bảng}\label{vuxed-dux1ee5-tux1ea1o-database-vuxe0-bux1ea3ng}
+
+\begin{lstlisting}
+CREATE DATABASE myrestaurant;
+CREATE TABLE IF NOT EXISTS myrestaurant.users(
+  id INT(10) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(200) NOT NULL,
+  phone VARCHAR(200),
+  address VARCHAR(200),
+  password VARCHAR(200) NOT NULL
+);
+INSERT INTO myrestaurant.users(name,phone,address,password)
+VALUES('Gaurav','123456789','Mumbai,India','pass134'),('Sakshi','987654321','Chennai,India','pass456');
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[keepaspectratio]{images/vscode-mysql-images/vscode-11.jpg}
+\caption{Refresh and results}
+\end{figure}
+
+\subsection{Ghi chú}\label{ghi-chuxfa}
+
+\begin{itemize}
+\tightlist
+\item
+  VS Code hỗ trợ quản lý cơ sở dữ liệu tiện lợi khi kết hợp extension
+  phù hợp.
+\end{itemize}
+
+\subsection{Tham khảo}\label{tham-khux1ea3o}
+
+\begin{itemize}
+\tightlist
+\item
+  GeeksforGeeks - How to Connect to Mysql Server Using VS Code and Fix
+  errors?
+\end{itemize}
+
+\end{document}
+

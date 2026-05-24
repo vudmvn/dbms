@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "export markdown to pdf",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"$src='E:\\MinhVD\\Giáo trình - Bài giảng\\Database Management\\markdown\\huong_dan_ket_noi_mysql_vscode.md'; $dst='C:\\temp\\md_export'; New-Item -ItemType Directory -Force -Path $dst | Out-Null; Copy-Item $src -Destination $dst -Force; Copy-Item 'E:\\MinhVD\\Giáo trình - Bài giảng\\Database Management\\markdown\\images' -Destination $dst -Recurse -Force; Set-Location $dst; & \"$env:LOCALAPPDATA\\Pandoc\\pandoc.exe\" -s -o 'huong_dan_ket_noi_mysql_vscode.pdf' 'huong_dan_ket_noi_mysql_vscode.md' --pdf-engine='C:\\Program Files\\MiKTeX\\miktex\\bin\\x64\\xelatex.exe' --resource-path='.'; if($LASTEXITCODE -ne 0){ exit $LASTEXITCODE }; Get-ChildItem $dst | Select-Object Name,Length"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}

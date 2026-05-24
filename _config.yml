@@ -1,0 +1,15 @@
+title: Database Management
+lang: vi
+markdown: kramdown
+theme: minima
+description: Bài giảng và bài thực hành về CSDL, DBMS và MySQL
+exclude:
+  - markdown/pdf
+  - markdown/export_to_pdf.ps1
+  - "**/*.pdf"
+  - "**/*.ppt"
+  - "**/*.pptx"
+  - "**/*.doc"
+  - "**/*.docx"
+  - "**/*.xls"
+  - "**/*.xlsx"
