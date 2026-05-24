@@ -14,3 +14,6 @@
 *.nav
 *.snm
 *.vrb
+*.tex
+# Keep generated HTML/PDF/Markdown
+# (exclude TeX source files from repository)
