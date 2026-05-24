@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Hướng dẫn cài đặt MySQL Workbench trên Windows"
-permalink: /MySQL/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.md
+permalink: /mysql/huong_dan_cai_dat_mysql_workbench_windows.md
 ---
 
 # Hướng dẫn cài đặt MySQL Workbench trên Windows

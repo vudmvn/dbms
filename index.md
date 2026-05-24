@@ -28,12 +28,12 @@ Các link ở cột **Bài giảng Markdown** sẽ mở trang Markdown trực ti
 
 | Chủ đề | Bài giảng Markdown | Slide Tiếng Việt | Slide English |
 |---|---|---|---|
-| Giới thiệu Cơ sở dữ liệu | [Markdown](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi.md) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi_beamer.pdf) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_en_beamer.pdf) |
-| Kiến trúc DBMS | [Markdown](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.md) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.pdf) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_en.pdf) |
+| Giới thiệu Cơ sở dữ liệu | [Markdown](/dbms/gioi_thieu_csdl_vi.md) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi_beamer.pdf) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_en_beamer.pdf) |
+| Kiến trúc DBMS | [Markdown](/dbms/kien_truc_dbms_vi.md) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.pdf) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_en.pdf) |
 
 ## MySQL 
 
-- [Cài đặt MySQL trên Windows](MySQL/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.md)
-- [Cài đặt MySQL Workbench trên Windows](MySQL/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.md)
-- [Kết nối MySQL bằng command options](MySQL/huong_dan_ket_noi_mysql_command_options/huong_dan_ket_noi_mysql_command_options.md)
-- [Kết nối MySQL bằng VS Code](MySQL/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.md)
+- [Cài đặt MySQL trên Windows](/mysql/huong_dan_cai_dat_mysql_windows.md)
+- [Cài đặt MySQL Workbench trên Windows](/mysql/huong_dan_cai_dat_mysql_workbench_windows.md)
+- [Kết nối MySQL bằng command options](/mysql/huong_dan_ket_noi_mysql_command_options.md)
+- [Kết nối MySQL bằng VS Code](/mysql/huong_dan_ket_noi_mysql_vscode.md)

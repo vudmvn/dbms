@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Các loại kiến trúc DBMS"
-permalink: /DBMS Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.md
+permalink: /dbms/kien_truc_dbms_vi.md
 ---
 
 # Các loại kiến trúc DBMS
