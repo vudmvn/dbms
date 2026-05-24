@@ -22,30 +22,18 @@ You will learn how database systems are structured, why they are needed, and how
 - MySQL installation and connection setup
 - Working with MySQL through command options, Workbench, and VS Code
 
-<!-- ## Database Management System Concept
-
-- [Giới thiệu CSDL (Markdown)](DBMS Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi.md)
-- [Kiến trúc DBMS (Markdown)](DBMS Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.md)
-
-## Slides (Beamer / PDF)
-
-- [Giới thiệu về Cơ sở dữ liệu (Tiếng Việt, PDF)](DBMS Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi_beamer.pdf)
-- [Giới thiệu về Cơ sở dữ liệu (English, PDF)](DBMS Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_en_beamer.pdf)
-- [Kiến trúc DBMS (Tiếng Việt, PDF)](DBMS Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.pdf)
-- [Kiến trúc DBMS (English, PDF)](DBMS Basic/kien_truc_dbms_vi/kien_truc_dbms_en.pdf) -->
-
 ## Database Management System Concept
 
 Các link ở cột **Bài giảng Markdown** sẽ mở trang HTML đã render từ file `.md`.
 
 | Chủ đề | Bài giảng Markdown | Slide Tiếng Việt | Slide English |
 |---|---|---|---|
-| Giới thiệu Cơ sở dữ liệu | [Markdown](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi.html) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi_beamer.pdf) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_en_beamer.pdf) |
-| Kiến trúc DBMS | [Markdown](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.html) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.pdf) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_en.pdf) |
+| Giới thiệu Cơ sở dữ liệu | [Markdown](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi.md) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi_beamer.pdf) | [PDF](DBMS%20Basic/gioi_thieu_csdl_vi/gioi_thieu_csdl_en_beamer.pdf) |
+| Kiến trúc DBMS | [Markdown](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.md) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_vi.pdf) | [PDF](DBMS%20Basic/kien_truc_dbms_vi/kien_truc_dbms_en.pdf) |
 
 ## MySQL 
 
-- [Cài đặt MySQL trên Windows](MySQL/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.html)
-- [Cài đặt MySQL Workbench trên Windows](MySQL/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.html)
-- [Kết nối MySQL bằng command options](MySQL/huong_dan_ket_noi_mysql_command_options/huong_dan_ket_noi_mysql_command_options.html)
-- [Kết nối MySQL bằng VS Code](MySQL/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.html)
+- [Cài đặt MySQL trên Windows](MySQL/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.md)
+- [Cài đặt MySQL Workbench trên Windows](MySQL/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.md)
+- [Kết nối MySQL bằng command options](MySQL/huong_dan_ket_noi_mysql_command_options/huong_dan_ket_noi_mysql_command_options.md)
+- [Kết nối MySQL bằng VS Code](MySQL/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.md)
