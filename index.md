@@ -1,7 +1,3 @@
----
-title: Database Management Course
----
-
 # Database Management Course
 
 ## Course Information
@@ -49,7 +45,7 @@ Các link ở cột **Bài giảng Markdown** sẽ mở trang HTML đã render t
 
 ## MySQL 
 
-- [Cài đặt MySQL trên Windows](MySQL/huong_dan_cai_dat_mysql_windows.html)
-- [Cài đặt MySQL Workbench trên Windows](MySQL/huong_dan_cai_dat_mysql_workbench_windows.html)
-- [Kết nối MySQL bằng command options](MySQL/huong_dan_ket_noi_mysql_command_options.html)
-- [Kết nối MySQL bằng VS Code](MySQL/huong_dan_ket_noi_mysql_vscode.html)
+- [Cài đặt MySQL trên Windows](MySQL/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.html)
+- [Cài đặt MySQL Workbench trên Windows](MySQL/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.html)
+- [Kết nối MySQL bằng command options](MySQL/huong_dan_ket_noi_mysql_command_options/huong_dan_ket_noi_mysql_command_options.html)
+- [Kết nối MySQL bằng VS Code](MySQL/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.html)
