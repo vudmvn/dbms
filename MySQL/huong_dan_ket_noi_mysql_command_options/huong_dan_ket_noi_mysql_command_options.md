@@ -1,7 +1,6 @@
 ---
 layout: page
 title: "Kết nối MySQL bằng các tùy chọn dòng lệnh"
-permalink: /mysql/huong_dan_ket_noi_mysql_command_options.md
 ---
 
 # Kết nối MySQL bằng các tùy chọn dòng lệnh

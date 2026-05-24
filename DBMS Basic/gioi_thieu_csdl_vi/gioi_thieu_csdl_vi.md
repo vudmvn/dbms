@@ -1,7 +1,6 @@
 ---
 layout: page
 title: "Giới thiệu về Cơ sở dữ liệu"
-permalink: /dbms/gioi_thieu_csdl_vi.md
 ---
 
 # Giới thiệu về Cơ sở dữ liệu
