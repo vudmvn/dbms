@@ -1,0 +1,5 @@
+theme: minima
+markdown: kramdown
+
+# Keep Jekyll from processing files in folders that start with a dot
+exclude: [".git"]
