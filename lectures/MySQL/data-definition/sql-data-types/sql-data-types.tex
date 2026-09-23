@@ -1,0 +1,494 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{dolphin}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[default]
+
+\usepackage{fontspec}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,shadows}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=dbblue,urlcolor=dbblue}
+
+% Palette mau thuong hieu bai giang
+\definecolor{dbblue}{RGB}{20,74,135}
+\definecolor{dblight}{RGB}{235,243,255}
+\definecolor{dbgreen}{RGB}{28,120,90}
+\definecolor{dborange}{RGB}{210,120,30}
+\definecolor{codebg}{RGB}{246,248,250}
+\definecolor{codekw}{RGB}{0,80,180}
+\definecolor{codestr}{RGB}{180,60,20}
+\definecolor{codecomm}{RGB}{100,110,120}
+
+\setbeamercolor{structure}{fg=dbblue}
+\setbeamercolor{title}{fg=white,bg=dbblue}
+\setbeamercolor{frametitle}{fg=dbblue}
+\setbeamercolor{block title}{fg=white,bg=dbblue}
+\setbeamercolor{block body}{bg=dblight,fg=black}
+\setbeamercolor{block title example}{fg=white,bg=dbgreen}
+\setbeamercolor{block body example}{bg=dblight!60!white,fg=black}
+\setbeamercolor{block title alerted}{fg=white,bg=dborange}
+\setbeamercolor{block body alerted}{bg=dblight!40!white,fg=black}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{dbblue!30},
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  aboveskip=2pt,
+  belowskip=2pt,
+  language=SQL,
+  morekeywords={BOOLEAN,TINYINT,SMALLINT,MEDIUMINT,BIGINT,DECIMAL,NUMERIC,FLOAT,DOUBLE,VARCHAR,CHAR,TEXT,TINYTEXT,MEDIUMTEXT,LONGTEXT,DATE,TIME,DATETIME,TIMESTAMP,YEAR,BINARY,VARBINARY,BLOB,TINYBLOB,MEDIUMBLOB,LONGBLOB,JSON,GEOMETRY,UNSIGNED,ZEROFILL},
+  tabsize=2
+}
+
+\newcommand{\kw}[1]{\textcolor{dbblue}{\textbf{#1}}}
+\newcommand{\smallgap}{\vspace{0.25em}}
+
+\title[Kiểu dữ liệu SQL]{Bài giảng: Kiểu dữ liệu trong SQL \& MySQL}
+\subtitle{Phân loại, Lựa chọn tối ưu, Miền giá trị \& Thực hành thiết kế CSDL}
+\author[Vũ Đức Minh]{Vũ Đức Minh}
+\institute[NEU]{Trường Đại học Kinh tế Quốc dân (NEU), Hà Nội, Việt Nam}
+\date{\today}
+
+\begin{document}
+
+%------------------------------------------------
+% Slide 1: Trang bia
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%------------------------------------------------
+% Slide 2: Muc tieu bai hoc
+\begin{frame}{Mục tiêu bài giảng}
+Sau khi hoàn thành bài học này, người học có thể:
+\begin{itemize}\setlength{\itemsep}{2pt}
+  \item Trình bày được khái niệm \kw{kiểu dữ liệu (Data Type)} và vai trò trong RDBMS.
+  \item Phân biệt chính xác các nhóm: \kw{Numeric, String, Date/Time, Binary, Boolean \& Special}.
+  \item Nắm vững cơ chế lưu trữ của \kw{CHAR vs VARCHAR}, \kw{DECIMAL vs FLOAT}, \kw{DATETIME vs TIMESTAMP}.
+  \item Hiểu lý do bắt buộc dùng kiểu số thập phân chính xác (\kw{DECIMAL}) cho tài chính/tiền tệ.
+  \item Lựa chọn kiểu dữ liệu tối ưu dung lượng đĩa, bộ nhớ đệm RAM và chỉ mục (indexing).
+  \item Vận dụng khai báo kiểu dữ liệu kết hợp ràng buộc trong câu lệnh \kw{CREATE TABLE}.
+  \item Nhận biết và khắc phục các lỗi thiết kế kiểu dữ liệu kinh điển trong thực tế.
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+% Slide 3: Noi dung bai hoc
+\begin{frame}{Nội dung bài học}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 1: Khái niệm \& Phân nhóm}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item 1. Bản chất kiểu dữ liệu trong SQL
+        \item 2. Sơ đồ các nhóm kiểu dữ liệu chính
+        \item 3. Quy trình 5 bước lựa chọn kiểu
+        \item 4. Kiểu số nguyên: Range \& Unsigned
+        \item 5. Số thực: DECIMAL vs FLOAT/DOUBLE
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 2: Ứng dụng \& Tối ưu}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item 6. Kiểu chuỗi: CHAR, VARCHAR, TEXT
+        \item 7. Kiểu ngày giờ: DATETIME vs TIMESTAMP
+        \item 8. Kiểu Binary, Boolean \& JSON
+        \item 9. Thực hành thiết kế \& Sai lầm thường gặp
+        \item 10. Câu hỏi ôn tập \& Bài tập vận dụng
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Bản chất kiểu dữ liệu}
+% Slide 4: Khai niem kieu du lieu
+\begin{frame}{1. Bản chất kiểu dữ liệu trong SQL}
+\begin{block}{Định nghĩa}
+  \textbf{Kiểu dữ liệu (Data Type)} quy định \kw{loại giá trị}, \kw{miền giá trị (domain)}, \kw{dung lượng bộ nhớ} và \kw{các phép toán hợp lệ} trên một cột.
+\end{block}
+
+\smallgap
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \textbf{Vai trò cốt lõi trong RDBMS:}
+    \begin{itemize}\setlength{\itemsep}{1.5pt}
+      \item \kw{Toàn vẹn (Integrity)}: Chặn dữ liệu sai ngay từ tầng lưu trữ.
+      \item \kw{Tối ưu hiệu năng}: Giảm I/O đĩa, tăng dung lượng bản ghi trong Buffer Pool.
+      \item \kw{Tính toán chuẩn xác}: Đảm bảo phép so sánh, sắp xếp và tính toán không sai lệch.
+    \end{itemize}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \textbf{Ba thuộc tính then chốt:}
+    \begin{itemize}\setlength{\itemsep}{1.5pt}
+      \item \kw{Miền giá trị}: Khoảng giá trị hợp lệ (vd: \texttt{TINYINT} $-128 \dots 127$).
+      \item \kw{Độ dài (Length)}: Số ký tự tối đa (\texttt{VARCHAR(100)}).
+      \item \kw{Độ chính xác (Precision/Scale)}: Số chữ số và phần thập phân (\texttt{DECIMAL(10,2)}).
+    \end{itemize}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 5: So do phan nhom
+\begin{frame}{2. Sơ đồ các nhóm kiểu dữ liệu phổ biến}
+\begin{columns}[c]
+  \begin{column}{0.48\textwidth}
+    \centering
+    \IfFileExists{images/sql_data_types.png}{
+      \includegraphics[width=0.98\linewidth,height=0.62\textheight,keepaspectratio]{images/sql_data_types.png}
+    }{
+      \fbox{\parbox[c][0.4\textheight][c]{0.8\linewidth}{\centering Sơ đồ nhóm kiểu dữ liệu SQL}}
+    }
+    \\[1mm]
+    \tiny\textit{Hình 1: Cấu trúc phân nhóm kiểu dữ liệu phổ biến trong SQL}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{block}{6 nhóm dữ liệu chính trong MySQL}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \kw{Numeric}: Số nguyên (\texttt{INT}), số thực chính xác (\texttt{DECIMAL}), số gần đúng (\texttt{FLOAT}).
+        \item \kw{String}: Chuỗi ngắn (\texttt{CHAR}, \texttt{VARCHAR}), văn bản dài (\texttt{TEXT}).
+        \item \kw{Date/Time}: \texttt{DATE}, \texttt{TIME}, \texttt{DATETIME}, \texttt{TIMESTAMP}.
+        \item \kw{Binary}: \texttt{BINARY}, \texttt{VARBINARY}, \texttt{BLOB}.
+        \item \kw{Boolean}: \texttt{BOOLEAN} (bí danh cho \texttt{TINYINT(1)}).
+        \item \kw{Special}: \texttt{JSON}, \texttt{GEOMETRY} (Spatial GIS).
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 6: Quy trinh 5 buoc lua chon
+\begin{frame}{3. Quy trình 5 bước lựa chọn kiểu dữ liệu tối ưu}
+\begin{center}
+\begin{tikzpicture}[node distance=0.8cm, auto,
+  stepnode/.style={rectangle, draw=dbblue!80, fill=dblight, text=black, rounded corners=3pt, font=\scriptsize, align=center, inner sep=3.5pt, text width=0.88\linewidth}]
+  \node[stepnode] (s1) {\textbf{Bước 1: Xác định thực thể \& thông tin cần lưu} (Họ tên, mã đơn hàng, ngày sinh, đơn giá, số dư)};
+  \node[stepnode, below=0.18cm of s1] (s2) {\textbf{Bước 2: Xác định bản chất ngữ nghĩa} (Số đếm được, văn bản tìm kiếm, thời điểm, cờ logic)};
+  \node[stepnode, below=0.18cm of s2] (s3) {\textbf{Bước 3: Chọn nhóm kiểu phù hợp} (Numeric, String, Temporal, Binary, JSON)};
+  \node[stepnode, below=0.18cm of s3] (s4) {\textbf{Bước 4: Xác định giới hạn \& độ chính xác} (\texttt{INT UNSIGNED}, \texttt{VARCHAR(100)}, \texttt{DECIMAL(10,2)})};
+  \node[stepnode, below=0.18cm of s4] (s5) {\textbf{Bước 5: Bổ sung ràng buộc toàn vẹn} (\texttt{NOT NULL}, \texttt{CHECK}, \texttt{DEFAULT}, \texttt{UNIQUE})};
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (s1) -- (s2);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (s2) -- (s3);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (s3) -- (s4);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (s4) -- (s5);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+\section{Kiểu dữ liệu số (Numeric)}
+% Slide 7: So nguyen
+\begin{frame}{4. Kiểu số nguyên (Integer Types) trong MySQL}
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Kiểu dữ liệu} & \textbf{Bộ nhớ} & \textbf{Miền giá trị (Signed)} & \textbf{Miền giá trị (Unsigned)} & \textbf{Ứng dụng tiêu biểu} \\
+\midrule
+\texttt{TINYINT} & 1 byte & $-128 \dots 127$ & $0 \dots 255$ & Trạng thái, cờ boolean, số thứ tự nhỏ \\
+\texttt{SMALLINT} & 2 bytes & $-32{,}768 \dots 32{,}767$ & $0 \dots 65{,}535$ & Năm sản xuất, số phòng, số lượng nhỏ \\
+\texttt{MEDIUMINT} & 3 bytes & $-8{,}388{,}608 \dots 8{,}388{,}607$ & $0 \dots 16{,}777{,}215$ & Mã danh mục, bảng tra cứu vừa \\
+\texttt{INT} & 4 bytes & $\approx -2.14 \times 10^9 \dots 2.14 \times 10^9$ & $0 \dots \approx 4.29 \times 10^9$ & Khóa chính phổ biến, số lượng tồn kho \\
+\texttt{BIGINT} & 8 bytes & $\approx -9.22 \times 10^{18} \dots 9.22 \times 10^{18}$ & $0 \dots \approx 1.84 \times 10^{19}$ & Log giao dịch hệ thống lớn, Big Data \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\smallgap
+\begin{alertblock}{Nguyên tắc tối ưu hóa bộ nhớ}
+  Tránh dùng \texttt{BIGINT} vô tội vạ cho mọi bảng! Một bảng 100 triệu dòng dùng \texttt{BIGINT} thay vì \texttt{INT} sẽ tiêu tốn thêm $\approx 400\text{ MB}$ chỉ cho riêng cột đó, làm chậm tốc độ quét index trên RAM.
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 8: So thap phan DECIMAL vs FLOAT
+\begin{frame}{5. Số thập phân chính xác vs Số thực gần đúng}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{DECIMAL(P, D)} -- Số chính xác}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Lưu trữ \kw{chính xác tuyệt đối} từng chữ số dưới dạng nhị phân đóng gói.
+        \item $P$ (\textit{Precision}): Tổng chữ số (tối đa 65).
+        \item $D$ (\textit{Scale}): Số chữ số thập phân (tối đa 30).
+        \item \textbf{Ví dụ}: \texttt{DECIMAL(10,2)} $\rightarrow$ tối đa $99{,}999{,}999.99$.
+        \item \kw{Bắt buộc cho}: Tiền tệ, lương, số dư tài khoản ngân hàng, hóa đơn.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{FLOAT} \& \texttt{DOUBLE} -- Số gần đúng}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Chuẩn IEEE 754 biểu diễn số thực.
+        \item \texttt{FLOAT}: 4 bytes ($\approx 7$ chữ số tin cậy).
+        \item \texttt{DOUBLE}: 8 bytes ($\approx 15$ chữ số tin cậy).
+        \item Tính toán rất nhanh nhưng có \kw{sai số làm tròn (rounding error)}.
+        \item \kw{Phù hợp cho}: Tọa độ GPS, cảm biến đo nhiệt độ, đo lường khoa học.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+
+\begin{center}
+  \footnotesize \textcolor{dborange}{\textbf{Cảnh báo vàng:}} Không bao giờ dùng \texttt{FLOAT} hay \texttt{DOUBLE} để lưu trữ tiền tệ!
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+\section{Kiểu chuỗi (String)}
+% Slide 9: CHAR vs VARCHAR
+\begin{frame}{6. Kiểu chuỗi: \texttt{CHAR} vs \texttt{VARCHAR}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{CHAR(n)} -- Chuỗi cố định}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Chiều dài luôn cố định là $n$ ký tự ($0 \le n \le 255$).
+        \item Ngắn hơn $n$ sẽ được \kw{đệm dấu cách} vào cuối.
+        \item Truy xuất trực tiếp nhanh hơn vì offset cố định.
+        \item \kw{Ứng dụng}: Mã quốc gia (\texttt{'VN'}, \texttt{'US'}), mã tiền tệ (\texttt{'VND'}), mã bưu điện, hash MD5.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{VARCHAR(n)} -- Chuỗi biến đổi}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Chiều dài linh hoạt theo nội dung thực tế (tối đa $n$ ký tự).
+        \item Tốn thêm \kw{1 hoặc 2 bytes tiền tố} lưu độ dài chuỗi.
+        \item Tiết kiệm dung lượng đĩa khi dữ liệu có độ dài chênh lệch lớn.
+        \item \kw{Ứng dụng}: Họ tên, email, địa chỉ, tiêu đề.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{exampleblock}{So sánh lưu trữ giá trị \texttt{'AB'} (với bảng mã 1-byte)}
+  \begin{itemize}\setlength{\itemsep}{1pt}
+    \item \texttt{CHAR(5)}: Chiếm 5 bytes (2 ký tự \texttt{'AB'} + 3 ký tự khoảng trắng đệm).
+    \item \texttt{VARCHAR(5)}: Chiếm 3 bytes (2 ký tự \texttt{'AB'} + 1 byte lưu độ dài $L=2$).
+  \end{itemize}
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 10: TEXT va utf8mb4
+\begin{frame}{7. Chuỗi văn bản dài (\texttt{TEXT}) \& Bộ mã \texttt{utf8mb4}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Các kiểu văn bản lớn (\texttt{TEXT})}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \texttt{TINYTEXT}: Tối đa 255 bytes.
+        \item \texttt{TEXT}: Tối đa $64\text{ KB}$ (mô tả sản phẩm).
+        \item \texttt{MEDIUMTEXT}: Tối đa $16\text{ MB}$ (nội dung bài báo).
+        \item \texttt{LONGTEXT}: Tối đa $4\text{ GB}$ (tài liệu đồ sộ).
+        \item Lưu trữ ngoài dòng (off-page) trong InnoDB khi nội dung lớn, tránh phân mảnh bảng.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Charset \texttt{utf8mb4} \& Collation}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \kw{utf8mb4} là chuẩn UTF-8 đầy đủ của MySQL (1--4 bytes/ký tự).
+        \item Hỗ trợ toàn diện tiếng Việt có dấu, chữ tượng hình và biểu tượng cảm xúc.
+        \item \texttt{utf8mb4\_0900\_ai\_ci}: Collation chuẩn từ MySQL 8.0, sắp xếp theo Unicode 9.0, không phân biệt hoa thường và không phân biệt dấu khi so sánh.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Kiểu ngày giờ (Date \& Time)}
+% Slide 11: DATETIME vs TIMESTAMP
+\begin{frame}{8. Kiểu ngày giờ: \texttt{DATETIME} vs \texttt{TIMESTAMP}}
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{lcp{4.5cm}p{5.5cm}}
+\toprule
+\textbf{Kiểu} & \textbf{Bộ nhớ} & \textbf{Miền giá trị hợp lệ} & \textbf{Đặc tính Timezone \& Ứng dụng} \\
+\midrule
+\texttt{DATETIME} & 5 bytes & \texttt{1000-01-01} $\dots$ \texttt{9999-12-31} & \textbf{Cố định}: Không phụ thuộc múi giờ session. Phù hợp cho ngày sinh, hạn bảo hành, lịch hẹn. \\
+\texttt{TIMESTAMP} & 4 bytes & \texttt{1970-01-01} $\dots$ \texttt{2038-01-19} UTC & \textbf{Tự động đổi về UTC}: Đổi theo múi giờ client khi đọc. Thích hợp cho audit log, \texttt{created\_at}. \\
+\texttt{DATE} & 3 bytes & \texttt{1000-01-01} $\dots$ \texttt{9999-12-31} & Chỉ lưu năm-tháng-ngày (\texttt{YYYY-MM-DD}). Tiết kiệm cho ngày sinh, ngày hóa đơn. \\
+\texttt{TIME} & 3 bytes & \texttt{-838:59:59} $\dots$ \texttt{838:59:59} & Lưu giờ trong ngày hoặc khoảng thời gian trôi qua. \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\smallgap
+\begin{alertblock}{Cảnh báo giới hạn năm 2038 của TIMESTAMP}
+  Do \texttt{TIMESTAMP} chỉ dùng số nguyên có dấu 32-bit tính từ epoch 1970, nó sẽ tràn vào ngày 19/01/2038. Đối với các mốc thời gian trong tương lai xa, hãy sử dụng \kw{\texttt{DATETIME}}!
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+\section{Kiểu đặc biệt \& Thực hành}
+% Slide 12: Binary, Boolean, JSON
+\begin{frame}{9. Kiểu Binary, Boolean \& JSON hiện đại}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{BLOB} vs \texttt{VARBINARY}}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \texttt{BINARY} / \texttt{VARBINARY}: Chuỗi byte thô cố định hoặc linh hoạt (lưu hash mật khẩu, UUID binary 16 bytes).
+        \item \texttt{BLOB}: Lưu file nhị phân (ảnh, file đính kèm).
+        \item \textit{Thực tế tốt nhất}: Nên lưu file media trên Cloud Storage (S3, CDN) và chỉ lưu URL chuỗi trong database.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{BOOLEAN} \& \texttt{JSON}}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Trong MySQL, \texttt{BOOLEAN} là alias của \texttt{TINYINT(1)} ($0 = \text{FALSE}$, $1 = \text{TRUE}$).
+        \item \texttt{JSON}: Kiểu dữ liệu gốc (MySQL 5.7+). Tự động validate cú pháp JSON, hỗ trợ index trên virtual column và truy vấn nhanh qua toán tử \texttt{->} và \texttt{->>}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 13: Demo code CREATE TABLE
+\begin{frame}[fragile]{10. Thực hành: Khai báo đa dạng kiểu dữ liệu trong bảng}
+\begin{lstlisting}
+CREATE TABLE products (
+    product_id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, -- Khoa chinh so nguyen duong
+    product_code CHAR(8) NOT NULL UNIQUE,                -- Ma san pham co dinh 8 ky tu
+    product_name VARCHAR(120) NOT NULL,                  -- Ten san pham linh hoat
+    category_id  SMALLINT UNSIGNED NOT NULL,             -- Ma danh muc < 65,535
+    cost_price   DECIMAL(10,2) NOT NULL,                 -- Gia von: chinh xac tuyet doi
+    sale_price   DECIMAL(10,2) NOT NULL,                 -- Gia ban: chinh xac tuyet doi
+    weight_kg    FLOAT(5,2),                             -- Can nang: chap nhan sai so nho
+    description  TEXT,                                   -- Mo ta bai viet dai
+    attributes   JSON,                                   -- Thong so ky thuat dong
+    is_active    BOOLEAN NOT NULL DEFAULT TRUE,          -- Con kinh doanh (TINYINT(1))
+    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- Moc thoi gian tao
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+% Slide 14: Sai lam thuong gap
+\begin{frame}{11. Các sai lầm kinh điển khi chọn kiểu dữ liệu}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Sai lầm thiết kế phổ biến}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Lưu số điện thoại bằng INT}: Bị mất số \texttt{0} đầu (\texttt{0912...} thành \texttt{912...}), mất dấu \texttt{+}. Luôn dùng \texttt{VARCHAR(20)}.
+        \item \textbf{Lưu tiền bằng FLOAT}: Dễ gặp sai số làm tròn số học ($0.1 + 0.2 \ne 0.3$). Luôn dùng \texttt{DECIMAL}.
+        \item \textbf{Lưu ngày tháng bằng VARCHAR}: Không so sánh ngày chuẩn, không tính toán khoảng cách ngày. Dùng \texttt{DATE}.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Lạm dụng và lãng phí}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Lạm dụng VARCHAR(255) mọi nơi}: Tốn bộ nhớ RAM nội bộ khi sắp xếp \texttt{ORDER BY} hoặc tạo bảng tạm.
+        \item \textbf{Dùng BIGINT cho cờ nhị phân}: Lãng phí bộ nhớ gấp 8 lần so với \texttt{TINYINT} hoặc \texttt{BOOLEAN}.
+        \item \textbf{Lưu video/file to vào BLOB}: Gây phình to kích thước database, chậm backup và restore hệ thống.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 15: Quiz nhanh cung co
+\begin{frame}{12. Câu hỏi kiểm tra nhanh (Quick Quiz)}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 1: Chọn kiểu cho đơn giá}
+      Cột lưu đơn giá bán hàng nên khai báo kiểu nào?
+      \begin{itemize}
+        \item A. \texttt{FLOAT}
+        \item B. \textbf{\kw{DECIMAL(10,2)}} (Chính xác!)
+        \item C. \texttt{VARCHAR(50)}
+        \item D. \texttt{BIGINT}
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 2: Số điện thoại khách hàng}
+      Vì sao nên dùng \texttt{VARCHAR} cho số điện thoại?
+      \begin{itemize}
+        \item A. Số điện thoại không dùng tính toán.
+        \item B. Giữ nguyên số \texttt{0} đầu và dấu \texttt{+}.
+        \item C. Tránh nguy cơ tràn số nguyên.
+        \item D. \textbf{\kw{Cả A, B và C đều đúng}}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\smallgap
+\begin{exampleblock}{Câu 3: Phân biệt CHAR và VARCHAR}
+  \textbf{Hỏi}: Khi lưu mã quốc gia 2 ký tự (\texttt{'VN'}, \texttt{'JP'}, \texttt{'US'}), nên chọn \texttt{CHAR(2)} hay \texttt{VARCHAR(2)}?\\
+  \textbf{Trả lời}: Chọn \kw{\texttt{CHAR(2)}} vì độ dài cố định, truy xuất trực tiếp, không tốn thêm byte lưu tiền tố chiều dài!
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 16: Bai tap ve nha
+\begin{frame}{13. Bài tập vận dụng thiết kế bảng}
+\begin{block}{Bài tập thực hành tại lớp}
+  Hãy viết câu lệnh \texttt{CREATE TABLE} cho bảng \texttt{student\_profiles} để quản lý hồ sơ sinh viên với các yêu cầu:
+  \begin{enumerate}\setlength{\itemsep}{2pt}
+    \item \textbf{Mã sinh viên}: Số nguyên dương tự tăng, làm khóa chính.
+    \item \textbf{Mã định danh SV}: Chuỗi đúng 10 ký tự (\texttt{CHAR(10)}), không trùng lặp.
+    \item \textbf{Họ và tên}: Tối đa 100 ký tự có dấu tiếng Việt (\texttt{VARCHAR(100)}).
+    \item \textbf{Ngày sinh}: Chỉ cần lưu ngày tháng năm (\texttt{DATE}).
+    \item \textbf{Điểm trung bình (GPA)}: Thang điểm 4 hoặc 10, có 2 chữ số thập phân (\texttt{DECIMAL(4,2)}).
+    \item \textbf{Tình trạng nợ học phí}: Giá trị logic Đúng / Sai (\texttt{BOOLEAN}).
+    \item \textbf{Thời điểm nộp hồ sơ}: Tự động ghi nhận mốc thời gian hệ thống (\texttt{DATETIME}).
+  \end{enumerate}
+\end{block}
+\end{frame}
+
+%------------------------------------------------
+% Slide 17: Tong ket
+\begin{frame}{Tổng kết bài học}
+\begin{columns}[t]
+  \begin{column}{0.5\textwidth}
+    \begin{block}{Ba nguyên tắc vàng ghi nhớ}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \kw{Đúng bản chất}: Số dùng để tính, chuỗi dùng để đọc, thời gian dùng để đo lường.
+        \item \kw{Vừa đủ phạm vi}: Tránh chọn quá nhỏ gây tràn dữ liệu, tránh chọn quá to gây lãng phí RAM.
+        \item \kw{Chính xác tuyệt đối}: Dữ liệu tài chính, tiền tệ bắt buộc dùng \texttt{DECIMAL}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    \begin{exampleblock}{Tài liệu học tập tiếp theo}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item Bài tiếp theo: \textbf{CREATE TABLE \& Ràng buộc toàn vẹn} (Primary Key, Foreign Key, Check, Unique).
+        \item Lab thực hành: Kiểm tra dung lượng trên đĩa của các kiểu dữ liệu qua \texttt{information\_schema}.
+      \end{itemize}
+    \end{exampleblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\end{document}

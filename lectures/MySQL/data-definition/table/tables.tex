@@ -1,0 +1,638 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{dolphin}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[default]
+
+\usepackage{fontspec}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,shadows}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=dbblue,urlcolor=dbblue}
+
+% Palette mau thuong hieu
+\definecolor{dbblue}{RGB}{20,74,135}
+\definecolor{dblight}{RGB}{235,243,255}
+\definecolor{dbgreen}{RGB}{28,120,90}
+\definecolor{dborange}{RGB}{210,120,30}
+\definecolor{codebg}{RGB}{246,248,250}
+\definecolor{codekw}{RGB}{0,80,180}
+\definecolor{codestr}{RGB}{180,60,20}
+\definecolor{codecomm}{RGB}{100,110,120}
+
+\setbeamercolor{structure}{fg=dbblue}
+\setbeamercolor{title}{fg=white,bg=dbblue}
+\setbeamercolor{frametitle}{fg=dbblue}
+\setbeamercolor{block title}{fg=white,bg=dbblue}
+\setbeamercolor{block body}{bg=dblight,fg=black}
+\setbeamercolor{block title example}{fg=white,bg=dbgreen}
+\setbeamercolor{block body example}{bg=dblight!60!white,fg=black}
+\setbeamercolor{block title alerted}{fg=white,bg=dborange}
+\setbeamercolor{block body alerted}{bg=dblight!40!white,fg=black}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{dbblue!30},
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  aboveskip=1.5pt,
+  belowskip=1.5pt,
+  language=SQL,
+  morekeywords={AUTO_INCREMENT,TEMPORARY,TRUNCATE,MODIFY,CHANGE,RENAME,VIRTUAL,STORED,GENERATED,ALWAYS,AS,COLUMNS,INDEX,FIRST,AFTER,ENGINE},
+  tabsize=2
+}
+
+\newcommand{\kw}[1]{\textcolor{dbblue}{\textbf{#1}}}
+\newcommand{\smallgap}{\vspace{0.2em}}
+
+\title[Vòng đời Table trong MySQL]{Bài giảng: Quản lý vòng đời Table trong MySQL}
+\subtitle{CREATE TABLE, AUTO\_INCREMENT, ALTER, RENAME, DROP, TEMPORARY, TRUNCATE \& Generated Columns}
+\author[Vũ Đức Minh]{Vũ Đức Minh}
+\institute[NEU]{Trường Đại học Kinh tế Quốc dân (NEU), Hà Nội, Việt Nam}
+\date{\today}
+
+\begin{document}
+
+%------------------------------------------------
+% Slide 1: Trang bia
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%------------------------------------------------
+% Slide 2: Muc tieu bai hoc
+\begin{frame}{Mục tiêu bài giảng}
+Sau khi hoàn thành bài học này, người học có thể:
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+  \item Nắm vững chuỗi \kw{vòng đời bảng (Table Lifecycle)} từ khởi tạo đến loại bỏ trong CSDL.
+  \item Vận dụng các tùy chọn \kw{CREATE TABLE} nâng cao: \texttt{IF NOT EXISTS}, \texttt{LIKE}, \texttt{AS SELECT}.
+  \item Sử dụng \kw{AUTO\_INCREMENT} chuẩn xác để tạo numeric surrogate key và dùng \texttt{LAST\_INSERT\_ID()}.
+  \item Khảo sát chi tiết siêu dữ liệu với \kw{SHOW CREATE TABLE, SHOW COLUMNS, DESCRIBE, SHOW INDEX}.
+  \item Thay đổi cấu trúc bảng bằng \kw{ALTER TABLE}: thêm, xóa, đổi tên, sửa kiểu cột (\texttt{MODIFY} vs \texttt{CHANGE}).
+  \item Đổi tên bảng an toàn với \kw{RENAME TABLE} (kỹ thuật atomic swap và chuyển đổi schema).
+  \item Phân biệt sự khác nhau bản chất giữa \kw{TRUNCATE TABLE} và \kw{DELETE FROM}.
+  \item Định nghĩa và đánh chỉ mục trên \kw{Generated Columns} (\texttt{VIRTUAL} vs \texttt{STORED}).
+  \item Hiểu rõ rủi ro DDL: \kw{Implicit Commit}, Metadata Locking và Checklist migration an toàn.
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+% Slide 3: Noi dung bai hoc
+\begin{frame}{Nội dung bài học}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 1: Khởi tạo \& Khảo sát}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 1. Vòng đời Table \& Rủi ro DDL ngầm định
+        \item 2. CREATE TABLE: Options, LIKE \& CTAS
+        \item 3. AUTO\_INCREMENT \& LAST\_INSERT\_ID()
+        \item 4. Kiểm tra cấu trúc Metadata
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 2: Tiến hóa, Xóa \& Cột tự sinh}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 5. ALTER TABLE: ADD, DROP, MODIFY, CHANGE
+        \item 6. RENAME TABLE \& DROP TABLE an toàn
+        \item 7. Bảng tạm: CREATE TEMPORARY TABLE
+        \item 8. TRUNCATE TABLE vs DELETE FROM
+        \item 9. Generated Columns: VIRTUAL vs STORED
+        \item 10. Checklist Migration Production \& Tổng kết
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Vòng đời Table \& Rủi ro DDL}
+% Slide 4: Vong doi table
+\begin{frame}{1. Chuỗi vòng đời của Table trong RDBMS}
+\begin{center}
+\begin{tikzpicture}[node distance=0.6cm, auto,
+  lifenode/.style={rectangle, draw=dbblue!80, fill=dblight, text=black, rounded corners=3pt, font=\scriptsize, align=center, inner sep=3.5pt, text width=0.92\linewidth}]
+  \node[lifenode] (n1) {\textbf{Thiết kế (Schema Design)} $\rightarrow$ Xác định thực thể, kiểu dữ liệu, quan hệ \& ràng buộc};
+  \node[lifenode, below=0.15cm of n1] (n2) {\textbf{Khởi tạo (CREATE TABLE)} $\rightarrow$ Tạo cấu trúc bảng vật lý trong InnoDB};
+  \node[lifenode, below=0.15cm of n2] (n3) {\textbf{Vận hành DML} $\rightarrow$ Thêm, sửa, xóa, truy vấn dữ liệu (\texttt{INSERT, UPDATE, DELETE, SELECT})};
+  \node[lifenode, below=0.15cm of n3] (n4) {\textbf{Tiến hóa (ALTER TABLE / RENAME)} $\rightarrow$ Thêm cột, sửa kiểu, đánh chỉ mục theo nghiệp vụ mới};
+  \node[lifenode, below=0.15cm of n4] (n5) {\textbf{Dọn dẹp / Tạm thời (TEMPORARY / TRUNCATE)} $\rightarrow$ Xử lý trung gian hoặc làm rỗng nhanh};
+  \node[lifenode, below=0.15cm of n5] (n6) {\textbf{Loại bỏ (DROP TABLE)} $\rightarrow$ Hủy cấu trúc khi hết vòng đời lưu trữ (retention period)};
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (n1) -- (n2);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (n2) -- (n3);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (n3) -- (n4);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (n4) -- (n5);
+  \draw[-{Latex[length=2mm]}, thick, color=dbblue] (n5) -- (n6);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+% Slide 5: Ban chat DDL vs DML
+\begin{frame}{2. Bản chất DDL: Khác biệt sống còn với DML}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{DML (Data Manipulation)}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Các lệnh: \texttt{INSERT, UPDATE, DELETE}.
+        \item Tác động trực tiếp lên dữ liệu dòng.
+        \item \kw{Hỗ trợ Transaction đầy đủ}: Có thể dùng \texttt{ROLLBACK} để khôi phục trạng thái ban đầu nếu xảy ra lỗi.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{DDL (Data Definition)}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Các lệnh: \texttt{CREATE, ALTER, DROP, RENAME, TRUNCATE}.
+        \item Thay đổi cấu trúc và từ điển dữ liệu (data dictionary).
+        \item \kw{Gây Implicit Commit ngầm định}: Mọi transaction mở trước đó sẽ bị ép commit ngay lập tức!
+        \item \textbf{Không thể Rollback} trong phiên giao dịch thông thường!
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{center}
+  \footnotesize \textcolor{dborange}{\textbf{Nguyên tắc vận hành:}} Trước khi chạy bất kỳ câu lệnh DDL nào trên Production, bắt buộc phải có backup định nghĩa và dữ liệu!
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+\section{CREATE TABLE nâng cao}
+% Slide 6: CREATE TABLE IF NOT EXISTS, LIKE, AS SELECT
+\begin{frame}[fragile]{3. Các dạng khởi tạo bảng: \texttt{LIKE} vs \texttt{AS SELECT}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{CREATE TABLE ... LIKE}}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Sao chép \kw{toàn bộ cấu trúc khung (skeleton)}, bao gồm kiểu cột, khóa chính, index, engine.
+        \item Bảng tạo ra hoàn toàn \kw{rỗng (0 dòng)}.
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+CREATE TABLE products_backup 
+LIKE products;
+\end{lstlisting}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{block}{\texttt{CREATE TABLE ... AS SELECT}}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Tạo bảng mới và \kw{đổ luôn dữ liệu} từ kết quả câu truy vấn.
+        \item \kw{Cảnh báo}: Không sao chép các thuộc tính khóa chính, AUTO\_INCREMENT, foreign keys hoặc secondary index!
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+CREATE TABLE products_copy AS 
+SELECT product_id, product_name, unit_price 
+FROM products 
+WHERE unit_price > 500000;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{exampleblock}{\texttt{CREATE TABLE IF NOT EXISTS}}
+  Chỉ ngăn lỗi nếu bảng đã tồn tại. Nó \textbf{không} so sánh hay cập nhật thêm cột thiếu vào bảng cũ!
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 7: AUTO_INCREMENT
+\begin{frame}[fragile]{4. AUTO\_INCREMENT: Cơ chế Surrogate Key tự sinh}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Quy tắc thiết kế AUTO\_INCREMENT}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Mỗi bảng \kw{chỉ có duy nhất một cột} mang thuộc tính \texttt{AUTO\_INCREMENT}.
+        \item Cột đó bắt buộc phải thuộc kiểu số nguyên và \kw{phải được đánh chỉ mục (thường là Primary Key)}.
+        \item Cột \texttt{AUTO\_INCREMENT} không thể có giá trị \texttt{DEFAULT}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE suppliers (
+    supplier_id   INT UNSIGNED AUTO_INCREMENT,
+    supplier_name VARCHAR(120) NOT NULL,
+    PRIMARY KEY (supplier_id)
+) ENGINE = InnoDB;
+
+-- Chen khong can dua ID:
+INSERT INTO suppliers (supplier_name)
+VALUES ('Alpha Tech'), ('Beta Logistics');
+
+-- Lay ID vua sinh trong session hien tai:
+SELECT LAST_INSERT_ID();
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\begin{alertblock}{Phân biệt LAST\_INSERT\_ID() vs MAX(id)}
+  \texttt{LAST\_INSERT\_ID()} an toàn tuyệt đối trong môi trường đa kết nối (\textit{concurrent clients}) vì giá trị được lưu riêng theo từng session kết nối, không bị ảnh hưởng bởi các transaction khác.
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 8: Kiem tra metadata
+\begin{frame}[fragile]{5. Khảo sát Metadata cấu trúc bảng}
+\begin{block}{4 câu lệnh quản trị viên bắt buộc phải thành thạo}
+  Trước và sau khi thay đổi cấu trúc bảng, luôn kiểm tra lại từ điển dữ liệu để xác nhận.
+\end{block}
+
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+\begin{lstlisting}
+-- 1. Xem cau lenh DDL chi tiet tao bang
+SHOW CREATE TABLE products\G
+
+-- 2. Xem danh sach cac cot va kieu du lieu
+DESCRIBE products;
+-- Hoac tuong duong:
+SHOW COLUMNS FROM products;
+\end{lstlisting}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- 3. Xem chi tiet cac chi muc (Index)
+SHOW INDEX FROM products;
+
+-- 4. Kiem tra trang thai bang tren dia
+SHOW TABLE STATUS LIKE 'products'\G
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{exampleblock}{Thông tin nhận được từ \texttt{SHOW CREATE TABLE}}
+  Cung cấp chính xác định nghĩa collation, charset, engine, tên các constraint ngoại, check rules và giá trị khởi đầu \texttt{AUTO\_INCREMENT} tiếp theo.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+\section{Tiến hóa bảng: ALTER TABLE}
+% Slide 9: ALTER TABLE cot
+\begin{frame}[fragile]{6. ALTER TABLE: Thêm, Xóa cột (\texttt{ADD} \& \texttt{DROP})}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Thêm cột mới (\texttt{ADD COLUMN})}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Mặc định cột mới nằm ở cuối bảng.
+        \item Dùng \texttt{FIRST} để đưa lên đầu.
+        \item Dùng \texttt{AFTER col\_name} để đặt sau một cột chỉ định.
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+-- Them vao cuoi:
+ALTER TABLE products
+ADD COLUMN stock_qty INT NOT NULL DEFAULT 0;
+
+-- Them vao vi tri chi dinh:
+ALTER TABLE products
+ADD COLUMN barcode VARCHAR(30) AFTER product_name;
+\end{lstlisting}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{block}{Xóa cột (\texttt{DROP COLUMN})}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Xóa hoàn toàn cột và dữ liệu trong cột đó.
+        \item Chú ý kiểm tra xem cột có đang tham gia vào index hoặc foreign key nào không trước khi xóa.
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+-- Xoa cot khoi bang:
+ALTER TABLE products
+DROP COLUMN barcode;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 10: ALTER TABLE MODIFY vs CHANGE
+\begin{frame}[fragile]{7. Sửa đổi cột: \texttt{MODIFY} vs \texttt{CHANGE} vs \texttt{RENAME}}
+\begin{table}
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Mệnh đề} & \textbf{Công dụng chính} & \textbf{Có đổi tên cột không?} \\
+\midrule
+\texttt{MODIFY COLUMN} & Sửa kiểu dữ liệu, độ dài, thuộc tính NULL/DEFAULT của cột hiện tại & \textbf{Không} \\
+\texttt{CHANGE COLUMN} & Sửa kiểu dữ liệu \textbf{đồng thời đổi tên cột} & \textbf{Có} \\
+\texttt{RENAME COLUMN} & Chỉ đổi tên cột, giữ nguyên kiểu dữ liệu (từ MySQL 8.0+) & \textbf{Có} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+\begin{lstlisting}
+-- 1. MODIFY: Mo rong do dai tu 100 len 200
+ALTER TABLE products
+MODIFY COLUMN product_name VARCHAR(200) NOT NULL;
+
+-- 2. RENAME COLUMN: Chi doi ten cot (MySQL 8.0+)
+ALTER TABLE products
+RENAME COLUMN unit_price TO price;
+\end{lstlisting}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- 3. CHANGE: Vua doi ten vua sua kieu
+-- Cu phap: CHANGE old_name new_name data_type ...
+ALTER TABLE products
+CHANGE COLUMN price selling_price DECIMAL(12,2) NOT NULL;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 11: ALTER TABLE Index & Constraint
+\begin{frame}[fragile]{8. Quản lý Chỉ mục \& Ràng buộc trong \texttt{ALTER TABLE}}
+\begin{block}{Thêm và gỡ bỏ ràng buộc toàn vẹn}
+  Tối ưu hóa bảng trong quá trình vận hành mà không cần phải xóa bảng tạo lại.
+\end{block}
+
+\begin{lstlisting}
+-- 1. Them rang buoc UNIQUE
+ALTER TABLE products
+ADD CONSTRAINT uq_products_sku UNIQUE (sku);
+
+-- 2. Them rang buoc CHECK (MySQL 8.0.16+)
+ALTER TABLE products
+ADD CONSTRAINT chk_products_selling_price CHECK (selling_price >= 0);
+
+-- 3. Them chi muc phu (Secondary Index) giup tang toc tim kiem
+ALTER TABLE products
+ADD INDEX idx_products_category (category_id);
+
+-- 4. Xoa rang buoc Check hoac Index
+ALTER TABLE products DROP CHECK chk_products_selling_price;
+ALTER TABLE products DROP INDEX idx_products_category;
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+\section{RENAME, DROP \& TEMPORARY TABLE}
+% Slide 12: RENAME TABLE
+\begin{frame}[fragile]{9. Đổi tên bảng an toàn với \texttt{RENAME TABLE}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Đổi tên đơn lẻ \& Chuyển Database}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Đổi tên nhanh chóng ở mức metadata.
+        \item Có thể di chuyển bảng sang database khác trong cùng MySQL instance.
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+-- Doi ten trong cung schema:
+RENAME TABLE old_products TO products;
+
+-- Chuyen bang sang schema khac:
+RENAME TABLE current_db.products 
+TO archive_db.products_2026;
+\end{lstlisting}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{block}{Atomic Swap: Tráo đổi 2 bảng tức thời}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Hoán đổi bảng cũ và bảng mới trong \kw{một thao tác nguyên tố (atomic)}.
+        \item Ứng dụng triển khai Zero-Downtime Migration!
+      \end{itemize}
+    \end{block}
+\begin{lstlisting}
+-- Hoan doi tuc thoi khong lam gian doan he thong:
+RENAME TABLE 
+    products TO products_old,
+    products_new TO products;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 13: DROP TABLE
+\begin{frame}[fragile]{10. Xóa bảng: \texttt{DROP TABLE} an toàn}
+\begin{block}{Nguyên lý xóa bảng vật lý}
+  Lệnh \texttt{DROP TABLE} xóa vĩnh viễn định nghĩa cấu trúc bảng, toàn bộ dữ liệu, chỉ mục, trigger và phân quyền liên quan. Dung lượng không gian đĩa được trả về cho hệ điều hành.
+\end{block}
+
+\begin{lstlisting}
+-- Xoa an toan tranh loi khi bang khong ton tai:
+DROP TABLE IF EXISTS order_lines, products;
+\end{lstlisting}
+
+\begin{alertblock}{Quy tắc thứ tự Dependency quan trọng}
+  Khi hai bảng có quan hệ Khóa ngoại (\texttt{FOREIGN KEY}):
+  \begin{itemize}\setlength{\itemsep}{1.5pt}
+    \item \kw{Thứ tự DROP}: Bắt buộc phải xóa \textbf{Bảng con} (\texttt{order\_lines}) trước \textbf{Bảng cha} (\texttt{products}).
+    \item Nếu cố tình xóa bảng cha trước, MySQL sẽ từ chối và báo lỗi vi phạm ràng buộc tham chiếu (\textit{Cannot drop table referenced by a foreign key constraint}).
+  \end{itemize}
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 14: CREATE TEMPORARY TABLE
+\begin{frame}[fragile]{11. Bảng tạm: \texttt{CREATE TEMPORARY TABLE}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Đặc điểm của Temporary Table}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \kw{Phạm vi Session}: Chỉ hiển thị duy nhất với kết nối (session) tạo ra nó. Các kết nối khác hoàn toàn không thấy.
+        \item \kw{Tự động giải phóng}: Tự động bị xóa khi kết nối đóng hoặc đứt mạng.
+        \item \textbf{Cơ chế Shadowing}: Bảng tạm có thể trùng tên với bảng thật. Khi đó, truy vấn sẽ ưu tiên trỏ vào bảng tạm!
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- Tao bang tam luu ket qua tinh toan
+CREATE TEMPORARY TABLE temp_top_customers (
+    customer_id INT PRIMARY KEY,
+    total_spent DECIMAL(12,2)
+);
+
+-- Do du lieu trung gian
+INSERT INTO temp_top_customers
+SELECT customer_id, SUM(unit_price * quantity)
+FROM order_lines
+GROUP BY customer_id;
+
+-- Xoa chu dong khi dung xong
+DROP TEMPORARY TABLE temp_top_customers;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{TRUNCATE TABLE vs DELETE}
+% Slide 15: TRUNCATE vs DELETE
+\begin{frame}{12. So sánh toàn diện: \texttt{TRUNCATE TABLE} vs \texttt{DELETE FROM}}
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{lp{6.2cm}p{6.2cm}}
+\toprule
+\textbf{Tiêu chí} & \textbf{\texttt{DELETE FROM table\_name}} & \textbf{\texttt{TRUNCATE TABLE table\_name}} \\
+\midrule
+\textbf{Bản chất} & Là lệnh \kw{DML} (Thao tác dữ liệu) & Là lệnh \kw{DDL} (Định nghĩa dữ liệu) \\
+\textbf{Cơ chế} & Quét và xóa từng dòng một (\textit{row-by-row}), ghi log chi tiết cho từng dòng & Hủy trang dữ liệu và tạo lại file bảng rỗng (\textit{drop and recreate}) \\
+\textbf{Tốc độ} & Chậm đối với bảng lớn hàng triệu dòng & \textbf{Cực nhanh}, tốc độ không đổi bất kể kích thước bảng \\
+\textbf{Transaction} & \textbf{Có thể ROLLBACK} an toàn trong transaction & \textbf{Không thể ROLLBACK} (gây Implicit Commit) \\
+\textbf{AUTO\_INCREMENT} & \textbf{Giữ nguyên} giá trị sequence tiếp theo & \textbf{Reset} giá trị tự tăng về lại giá trị ban đầu (thường là 1) \\
+\textbf{Triggers} & Kích hoạt trigger \texttt{BEFORE/AFTER DELETE} & \textbf{Không kích hoạt} bất kỳ trigger nào \\
+\textbf{Khóa ngoại} & Xóa được nếu thỏa mãn quy tắc FK & Bị chặn nếu bảng bị tham chiếu bởi FK còn hiệu lực \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+\section{Generated Columns \& Thực hành}
+% Slide 16: Generated Columns
+\begin{frame}[fragile]{13. Cột tự sinh: \texttt{Generated Columns} (\texttt{VIRTUAL} vs \texttt{STORED})}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{VIRTUAL} (Mặc định)}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Không lưu giá trị trên đĩa; giá trị được tính toán \kw{khi đọc}.
+        \item Không tốn dung lượng lưu trữ.
+        \item Có thể tạo Secondary Index trên cột Virtual!
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{\texttt{STORED}}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Giá trị được tính toán và \kw{lưu cố định xuống đĩa} khi ghi dòng.
+        \item Tốn thêm dung lượng lưu trữ nhưng đọc ra cực nhanh.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{lstlisting}
+CREATE TABLE sales_items (
+    item_id    INT PRIMARY KEY AUTO_INCREMENT,
+    quantity   INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    
+    -- Cot sinh tu dong: Total = quantity * unit_price
+    total_amount DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_price) VIRTUAL
+) ENGINE = InnoDB;
+
+-- Chen du lieu khong can tinh total_amount:
+INSERT INTO sales_items (quantity, unit_price) VALUES (5, 200000.00);
+-- total_amount tu dong tra ve 1,000,000.00 khi SELECT!
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+% Slide 17: Checklist Production Migration
+\begin{frame}{14. Checklist an toàn khi chạy DDL Migration trên Production}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Trước khi thực thi DDL}
+      \begin{enumerate}\setlength{\itemsep}{2pt}
+        \item \textbf{Kiểm tra Database}: Chạy \texttt{SELECT DATABASE();} để chắc chắn đúng môi trường.
+        \item \textbf{Backup DDL}: Lưu lại output của lệnh \texttt{SHOW CREATE TABLE}.
+        \item \textbf{Đo lường thời gian chạy}: Thử nghiệm trên dữ liệu staging cùng kích thước để đánh giá thời gian lock.
+        \item \textbf{Rà soát phụ thuộc}: Kiểm tra Foreign Key, View, Triggers, Stored Procedure và code ứng dụng.
+      \end{enumerate}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Trong và sau khi thực thi}
+      \begin{enumerate}\setcounter{enumi}{4}\setlength{\itemsep}{2pt}
+        \item \textbf{Chọn thời điểm vắng tải}: Chạy vào khung giờ thấp điểm (off-peak hours) để tránh tắc nghẽn connection.
+        \item \textbf{Online DDL}: Tận dụng cơ chế \texttt{ALGORITHM=INPLACE, LOCK=NONE} của InnoDB nếu được hỗ trợ.
+        \item \textbf{Kiểm chứng kết quả}: Dùng \texttt{SHOW COLUMNS} và kiểm tra ứng dụng đọc ghi bình thường.
+        \item \textbf{Kế hoạch phục hồi}: Luôn có script rollback chuẩn bị sẵn.
+      \end{enumerate}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 18: Quiz & Bai tap
+\begin{frame}{15. Câu hỏi ôn tập \& Củng cố}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 1: Rollback DDL}
+      Lệnh nào sau đây CÓ THỂ được khôi phục bằng lệnh \texttt{ROLLBACK}?
+      \begin{itemize}
+        \item A. \texttt{TRUNCATE TABLE}
+        \item B. \texttt{ALTER TABLE}
+        \item C. \textbf{\kw{DELETE FROM}} (Chính xác!)
+        \item D. \texttt{DROP TABLE}
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 2: Đổi tên cột trong MySQL 8.0}
+      Lệnh nào dùng để chỉ đổi tên cột mà không cần gõ lại kiểu dữ liệu?
+      \begin{itemize}
+        \item A. \texttt{MODIFY COLUMN}
+        \item B. \textbf{\kw{RENAME COLUMN}} (Chính xác!)
+        \item C. \texttt{CHANGE COLUMN}
+        \item D. \texttt{UPDATE COLUMN}
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\smallgap
+\begin{exampleblock}{Câu 3: Reset AUTO\_INCREMENT}
+  \textbf{Hỏi}: Khi cần làm rỗng một bảng log kiểm thử và đặt lại mã ID tự tăng về 1, nên dùng lệnh nào?\\
+  \textbf{Đáp}: Dùng \kw{\texttt{TRUNCATE TABLE}} vì nó vừa làm rỗng bảng cực nhanh, vừa tự động reset chuỗi \texttt{AUTO\_INCREMENT} về giá trị khởi đầu.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 19: Tong ket
+\begin{frame}{Tổng kết bài học}
+\begin{columns}[t]
+  \begin{column}{0.5\textwidth}
+    \begin{block}{Nguyên tắc then chốt}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \kw{Bản chất DDL}: Luôn nhớ DDL gây commit tự động và khóa metadata.
+        \item \kw{Tiến hóa an toàn}: Sử dụng \texttt{ALTER TABLE} cẩn trọng, kiểm tra ràng buộc trước khi sửa đổi.
+        \item \kw{Tối ưu với Generated Columns}: Tránh trùng lặp logic tính toán ở tầng ứng dụng bằng cách chuẩn hóa công thức ngay trong bảng.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    \begin{exampleblock}{Tài liệu học tập tiếp theo}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item Chuyên đề tiếp theo: \textbf{Truy vấn dữ liệu nâng cao với SELECT} (JOIN, GROUP BY, Subquery, Window Functions).
+        \item Thực hành lab: Hoàn thành toàn bộ kịch bản lifecycle trong schema \texttt{table\_lifecycle\_lab}.
+      \end{itemize}
+    \end{exampleblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\end{document}

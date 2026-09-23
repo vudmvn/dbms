@@ -1,0 +1,411 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{dolphin}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[default]
+
+\usepackage{fontspec}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,shadows}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=dbblue,urlcolor=dbblue}
+
+% Palette mau thuong hieu
+\definecolor{dbblue}{RGB}{20,74,135}
+\definecolor{dblight}{RGB}{235,243,255}
+\definecolor{dbgreen}{RGB}{28,120,90}
+\definecolor{dborange}{RGB}{210,120,30}
+\definecolor{codebg}{RGB}{246,248,250}
+\definecolor{codekw}{RGB}{0,80,180}
+\definecolor{codestr}{RGB}{180,60,20}
+\definecolor{codecomm}{RGB}{100,110,120}
+
+\setbeamercolor{structure}{fg=dbblue}
+\setbeamercolor{title}{fg=white,bg=dbblue}
+\setbeamercolor{frametitle}{fg=dbblue}
+\setbeamercolor{block title}{fg=white,bg=dbblue}
+\setbeamercolor{block body}{bg=dblight,fg=black}
+\setbeamercolor{block title example}{fg=white,bg=dbgreen}
+\setbeamercolor{block body example}{bg=dblight!60!white,fg=black}
+\setbeamercolor{block title alerted}{fg=white,bg=dborange}
+\setbeamercolor{block body alerted}{bg=dblight!40!white,fg=black}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{dbblue!30},
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  aboveskip=1.5pt,
+  belowskip=1.5pt,
+  language=SQL,
+  morekeywords={CONSTRAINT,PRIMARY,KEY,FOREIGN,REFERENCES,NOT,NULL,UNIQUE,CHECK,DEFAULT,ENGINE,AUTO_INCREMENT,AS,SELECT},
+  tabsize=2
+}
+
+\newcommand{\kw}[1]{\textcolor{dbblue}{\textbf{#1}}}
+\newcommand{\smallgap}{\vspace{0.2em}}
+
+\title[SQL CREATE TABLE]{Bài giảng: Câu lệnh CREATE TABLE trong SQL}
+\subtitle{Định nghĩa cấu trúc bảng, Kiểu dữ liệu, Ràng buộc cơ bản \& Tạo bảng từ truy vấn}
+\author[Vũ Đức Minh]{Vũ Đức Minh}
+\institute[NEU]{Trường Đại học Kinh tế Quốc dân (NEU), Hà Nội, Việt Nam}
+\date{\today}
+
+\begin{document}
+
+%------------------------------------------------
+% Slide 1: Trang bia
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%------------------------------------------------
+% Slide 2: Muc tieu bai hoc
+\begin{frame}{Mục tiêu bài giảng}
+Sau khi hoàn thành bài học này, người học có thể:
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+  \item Trình bày được mục đích và tầm quan trọng của câu lệnh \kw{CREATE TABLE} trong SQL.
+  \item Nắm vững cú pháp cơ bản và các thành phần định nghĩa bảng (Tên bảng, Tên cột, Data Type, Options).
+  \item Vận dụng khai báo các ràng buộc cơ bản: \kw{PRIMARY KEY, NOT NULL, UNIQUE, CHECK, DEFAULT, FOREIGN KEY}.
+  \item Viết lệnh tạo bảng hoàn chỉnh và chèn dữ liệu mẫu (\texttt{INSERT INTO}) để kiểm chứng.
+  \item Sử dụng thành thạo kỹ thuật tạo bảng từ kết quả truy vấn: \kw{CREATE TABLE \dots\ AS SELECT (CTAS)}.
+  \item Nhận diện và phòng tránh các lỗi thiết kế schema thường gặp trong thực tế.
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+% Slide 3: Noi dung bai hoc
+\begin{frame}{Nội dung bài học}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 1: Cú pháp \& Ràng buộc}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 1. Tổng quan bảng trong RDBMS
+        \item 2. Cú pháp cơ bản của CREATE TABLE
+        \item 3. Bốn thành phần cốt lõi của bảng
+        \item 4. Các ràng buộc dữ liệu cơ bản
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 2: Thực hành \& Ứng dụng}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 5. Thực hành tạo bảng Customer \& Orders
+        \item 6. Tạo bảng từ truy vấn (CTAS)
+        \item 7. Các sai lầm thiết kế thường gặp
+        \item 8. Câu hỏi trắc nghiệm \& Bài tập
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Tổng quan \& Cú pháp}
+% Slide 4: Tong quan bang
+\begin{frame}{1. Tổng quan về Bảng trong RDBMS}
+\begin{columns}[c]
+  \begin{column}{0.48\textwidth}
+    \centering
+    \IfFileExists{images/sql_create_table.png}{
+      \includegraphics[width=0.98\linewidth,height=0.62\textheight,keepaspectratio]{images/sql_create_table.png}
+    }{
+      \fbox{\parbox[c][0.4\textheight][c]{0.8\linewidth}{\centering Hình ảnh minh họa SQL CREATE TABLE}}
+    }
+    \\[1mm]
+    \tiny\textit{Hình 1: Cấu trúc cơ bản của một bảng trong Cơ sở dữ liệu quan hệ}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{block}{Vai trò của Bảng (Table)}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item Là đơn vị lưu trữ dữ liệu nền tảng trong hệ CSDL quan hệ.
+        \item Mỗi bảng đại diện cho một tập thực thể (\textit{Entity Set}): Khách hàng, Sản phẩm, Đơn hàng.
+        \item Gồm các \kw{Cột (Columns)} quy định thuộc tính và các \kw{Hàng (Rows)} chứa dữ liệu cụ thể.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 5: Cu phap co ban
+\begin{frame}[fragile]{2. Cú pháp cơ bản của CREATE TABLE}
+\begin{lstlisting}
+CREATE TABLE table_name (
+    column1 data_type [column_constraint],
+    column2 data_type [column_constraint],
+    ...,
+    [table_constraints]
+) [table_options];
+\end{lstlisting}
+
+\smallgap
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{4 thành phần thiết kế bắt buộc}
+      \begin{enumerate}\setlength{\itemsep}{1.5pt}
+        \item \kw{Tên bảng}: Phản ánh đúng thực thể.
+        \item \kw{Tên cột}: Ngắn gọn, không dấu cách.
+        \item \kw{Kiểu dữ liệu}: Khớp với miền giá trị.
+        \item \kw{Ràng buộc}: Bảo vệ tính toàn vẹn.
+      \end{enumerate}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+    \begin{exampleblock}{Quy ước đặt tên khuyến nghị}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Dùng chữ thường nối gạch dưới (\texttt{snake\_case}): \texttt{customer\_orders}.
+        \item Tên cột nhất quán: \texttt{customer\_id, full\_name, created\_at}.
+      \end{itemize}
+    \end{exampleblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Các ràng buộc cơ bản}
+% Slide 6: Cac rang buoc co ban
+\begin{frame}{3. Các ràng buộc toàn vẹn cơ bản trong CREATE TABLE}
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{lp{4.2cm}p{7.5cm}}
+\toprule
+\textbf{Ràng buộc} & \textbf{Vai trò cốt lõi} & \textbf{Ví dụ minh họa cú pháp} \\
+\midrule
+\texttt{PRIMARY KEY} & Định danh duy nhất từng dòng, cấm trùng và cấm NULL & \texttt{customer\_id INT PRIMARY KEY} \\
+\texttt{NOT NULL} & Bắt buộc cột phải có giá trị, không được để trống & \texttt{full\_name VARCHAR(100) NOT NULL} \\
+\texttt{UNIQUE} & Ngăn chặn các giá trị bị trùng lặp giữa các dòng & \texttt{email VARCHAR(150) UNIQUE} \\
+\texttt{CHECK} & Ép dữ liệu phải thỏa mãn một điều kiện biểu thức logic & \texttt{age INT CHECK (age >= 18)} \\
+\texttt{DEFAULT} & Tự động gán giá trị mặc định khi lệnh INSERT bỏ trống & \texttt{status VARCHAR(20) DEFAULT 'Active'} \\
+\texttt{FOREIGN KEY} & Đảm bảo tính toàn vẹn tham chiếu giữa bảng con và bảng cha & \texttt{FOREIGN KEY (dept\_id) REFERENCES departments(dept\_id)} \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+\section{Thực hành thiết kế bảng}
+% Slide 7: Thuc hanh tao bang Customer
+\begin{frame}[fragile]{4. Thực hành: Tạo bảng \texttt{Customer}}
+\begin{block}{Thiết kế bảng Customer với các ràng buộc nghiệp vụ}
+  Mỗi khách hàng có mã số định danh duy nhất (khóa chính), tên bắt buộc nhập, email không trùng, tuổi từ 18 trở lên và trạng thái mặc định là 'Active'.
+\end{block}
+
+\begin{lstlisting}
+CREATE TABLE Customer (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(100) NOT NULL,
+    Email VARCHAR(150) UNIQUE,
+    Age INT CHECK (Age >= 18),
+    Status VARCHAR(20) DEFAULT 'Active'
+);
+
+-- Chen du lieu hop le:
+INSERT INTO Customer (CustomerID, CustomerName, Email, Age)
+VALUES (1, 'Nguyen Van A', 'a.nguyen@example.com', 22);
+
+-- Thu chen tuoi khong hop le (Age = 16) -> Bao loi CHECK constraint:
+INSERT INTO Customer (CustomerID, CustomerName, Email, Age)
+VALUES (2, 'Tran Van B', 'b.tran@example.com', 16);
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+% Slide 8: Thuc hanh tao bang Orders voi Foreign Key
+\begin{frame}[fragile]{5. Thực hành: Tạo bảng \texttt{Orders} có Khóa ngoại}
+\begin{block}{Thiết kế bảng Orders liên kết với bảng Customer}
+  Mỗi đơn hàng có mã đơn hàng, ngày đặt, tổng tiền và mã khách hàng tham chiếu đến bảng \texttt{Customer}.
+\end{block}
+
+\begin{lstlisting}
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    OrderDate DATE NOT NULL,
+    CustomerID INT,
+    TotalAmount DECIMAL(10,2) CHECK (TotalAmount >= 0),
+    
+    -- Khai bao Foreign Key tham chieu toi Customer
+    CONSTRAINT fk_orders_customer
+        FOREIGN KEY (CustomerID)
+        REFERENCES Customer(CustomerID)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+-- Chen don hang cho khach hang co ma 1 (Da ton tai):
+INSERT INTO Orders (OrderID, OrderDate, CustomerID, TotalAmount)
+VALUES (101, '2026-06-07', 1, 450000.00);
+
+-- Chen don hang cho khach hang 999 (Chua ton tai) -> Bao loi Foreign Key!
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+\section{CREATE TABLE AS SELECT (CTAS)}
+% Slide 9: CTAS
+\begin{frame}[fragile]{6. Tạo bảng từ kết quả truy vấn: \texttt{CTAS}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Cú pháp \& Nguyên lý}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \kw{CREATE TABLE \dots\ AS SELECT}: Vừa tạo bảng mới vừa chép luôn dữ liệu từ câu \texttt{SELECT}.
+        \item Cột tự động suy diễn kiểu dữ liệu theo biểu thức truy vấn.
+        \item \kw{Ứng dụng}: Tạo bảng sao lưu nhanh, bảng tạm báo cáo thống kê, snapshot cuối tháng.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- Sao luu danh sach khach hang VIP:
+CREATE TABLE VipCustomers AS
+SELECT CustomerID, CustomerName, Email
+FROM Customer
+WHERE Status = 'Active';
+
+-- Tao bang tong hop doanh thu theo khach:
+CREATE TABLE CustomerOrderSummary AS
+SELECT 
+    CustomerID,
+    COUNT(OrderID) AS TotalOrders,
+    SUM(TotalAmount) AS TotalSpent
+FROM Orders
+GROUP BY CustomerID;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\smallgap
+\begin{alertblock}{Cảnh báo quan trọng với CTAS}
+  Bảng mới được tạo bởi \texttt{CTAS} \textbf{không tự động kế thừa} Khóa chính (\texttt{PRIMARY KEY}), Khóa ngoại (\texttt{FOREIGN KEY}) hay các chỉ mục (\texttt{INDEX}) của bảng gốc!
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+\section{Lỗi thường gặp \& Bài tập}
+% Slide 10: Cac loi thuong gap
+\begin{frame}{7. Các lỗi thiết kế bảng thường gặp và cách khắc phục}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Lỗi thiết kế cấu trúc}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Thiếu Khóa chính}: Bảng không có PK sẽ khó cập nhật, xóa nhầm bản ghi trùng và không tạo được quan hệ tham chiếu.
+        \item \textbf{Chọn sai kiểu dữ liệu}: Lưu tiền tệ bằng \texttt{FLOAT} gây sai số làm tròn; lưu số điện thoại bằng \texttt{INT} làm mất số \texttt{0} đầu.
+        \item \textbf{Lạm dụng kiểu dữ liệu quá lớn}: Dùng \texttt{VARCHAR(255)} cho mọi cột làm tốn bộ nhớ đệm RAM.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Lỗi quan hệ \& Thực thi}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Sai thứ tự tạo bảng}: Cố gắng tạo bảng con có Khóa ngoại trước khi bảng cha tồn tại. Phải tạo bảng cha trước!
+        \item \textbf{Quên đặt tên Constraint}: Khó khăn khi cần chỉnh sửa hoặc xóa ràng buộc về sau bằng \texttt{ALTER TABLE}.
+        \item \textbf{Nhầm lẫn giữa NULL và chuỗi rỗng}: Cột \texttt{NOT NULL} vẫn nhận chuỗi \texttt{''}.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 11: Quiz on tap
+\begin{frame}{8. Câu hỏi trắc nghiệm củng cố kiến thức}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 1: Mục đích của CREATE TABLE}
+      Câu lệnh \texttt{CREATE TABLE} trong SQL dùng để làm gì?
+      \begin{itemize}
+        \item A. Xóa bảng dữ liệu
+        \item B. \textbf{\kw{Tạo bảng mới và định nghĩa cấu trúc}}
+        \item C. Thay đổi mật khẩu người dùng
+        \item D. Khởi động lại MySQL Server
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 2: Ràng buộc duy nhất}
+      Ràng buộc nào đảm bảo giá trị một cột không bị trùng lặp giữa các dòng?
+      \begin{itemize}
+        \item A. \texttt{DEFAULT}
+        \item B. \texttt{NOT NULL}
+        \item C. \textbf{\kw{UNIQUE}} (Chính xác!)
+        \item D. \texttt{CHECK}
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\smallgap
+\begin{exampleblock}{Câu 3: Đặc điểm của CTAS}
+  \textbf{Hỏi}: Khi dùng \texttt{CREATE TABLE new\_table AS SELECT * FROM old\_table;}, bảng \texttt{new\_table} có tự động nhận Khóa chính từ \texttt{old\_table} không?\\
+  \textbf{Đáp}: \kw{Không!} CTAS chỉ sao chép tên cột, kiểu dữ liệu suy diễn và tập dữ liệu kết quả, không sao chép Primary Key hay Foreign Key.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 12: Bai tap thuc hanh
+\begin{frame}{9. Bài tập vận dụng tại lớp}
+\begin{block}{Đề bài thực hành}
+  Thiết kế cơ sở dữ liệu quản lý bán sách mini gồm hai bảng:
+  \begin{enumerate}\setlength{\itemsep}{2pt}
+    \item \textbf{Bảng \texttt{Authors} (Tác giả)}:
+      \begin{itemize}\setlength{\itemsep}{1pt}
+        \item \texttt{AuthorID}: Khóa chính, số nguyên.
+        \item \texttt{AuthorName}: Chuỗi tối đa 100 ký tự, bắt buộc nhập (\texttt{NOT NULL}).
+        \item \texttt{Email}: Chuỗi tối đa 150 ký tự, không trùng lặp (\texttt{UNIQUE}).
+      \end{itemize}
+    \item \textbf{Bảng \texttt{Books} (Sách)}:
+      \begin{itemize}\setlength{\itemsep}{1pt}
+        \item \texttt{BookID}: Khóa chính, số nguyên.
+        \item \texttt{Title}: Tiêu đề sách, bắt buộc nhập.
+        \item \texttt{AuthorID}: Khóa ngoại tham chiếu đến \texttt{Authors(AuthorID)}.
+        \item \texttt{Price}: Đơn giá sách dạng số thập phân chính xác, phải lớn hơn 0 (\texttt{CHECK}).
+        \item \texttt{StockQuantity}: Số lượng tồn kho, mặc định bằng 0 (\texttt{DEFAULT 0}).
+      \end{itemize}
+  \end{enumerate}
+\end{block}
+\end{frame}
+
+%------------------------------------------------
+% Slide 13: Tong ket
+\begin{frame}{Tổng kết bài học}
+\begin{columns}[t]
+  \begin{column}{0.5\textwidth}
+    \begin{block}{Ghi nhớ cốt lõi}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \kw{CREATE TABLE} là bước nền tảng quyết định độ bền vững và hiệu năng của toàn bộ CSDL.
+        \item Thiết kế bảng luôn phải cân nhắc kỹ \kw{4 yếu tố}: Tên chuẩn hóa, Kiểu dữ liệu tối ưu, Ràng buộc chặt chẽ và Chỉ mục phù hợp.
+        \item Luôn tạo \kw{Bảng cha trước Bảng con} khi có quan hệ khóa ngoại.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    \begin{exampleblock}{Tài liệu tham khảo \& Thực hành}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item Đọc thêm bài tổng hợp: \textbf{create-table-statement.md} để nắm sâu hơn về Composite Key và Foreign Key Checks.
+        \item Thực hành gõ trực tiếp trên MySQL Workbench hoặc VS Code MySQL Extension.
+      \end{itemize}
+    \end{exampleblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\end{document}

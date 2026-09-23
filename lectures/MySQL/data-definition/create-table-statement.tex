@@ -1,0 +1,641 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{dolphin}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[default]
+
+\usepackage{fontspec}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,shadows}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=dbblue,urlcolor=dbblue}
+
+% Palette mau thuong hieu
+\definecolor{dbblue}{RGB}{20,74,135}
+\definecolor{dblight}{RGB}{235,243,255}
+\definecolor{dbgreen}{RGB}{28,120,90}
+\definecolor{dborange}{RGB}{210,120,30}
+\definecolor{codebg}{RGB}{246,248,250}
+\definecolor{codekw}{RGB}{0,80,180}
+\definecolor{codestr}{RGB}{180,60,20}
+\definecolor{codecomm}{RGB}{100,110,120}
+
+\setbeamercolor{structure}{fg=dbblue}
+\setbeamercolor{title}{fg=white,bg=dbblue}
+\setbeamercolor{frametitle}{fg=dbblue}
+\setbeamercolor{block title}{fg=white,bg=dbblue}
+\setbeamercolor{block body}{bg=dblight,fg=black}
+\setbeamercolor{block title example}{fg=white,bg=dbgreen}
+\setbeamercolor{block body example}{bg=dblight!60!white,fg=black}
+\setbeamercolor{block title alerted}{fg=white,bg=dborange}
+\setbeamercolor{block body alerted}{bg=dblight!40!white,fg=black}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{dbblue!30},
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  aboveskip=1.5pt,
+  belowskip=1.5pt,
+  language=SQL,
+  morekeywords={CONSTRAINT,PRIMARY,KEY,FOREIGN,REFERENCES,NOT,NULL,UNIQUE,CHECK,DEFAULT,CASCADE,RESTRICT,SET,ACTION,NO,BETWEEN,ENGINE,AUTO_INCREMENT,DROP,ALTER,TABLE,ADD},
+  tabsize=2
+}
+
+\newcommand{\kw}[1]{\textcolor{dbblue}{\textbf{#1}}}
+\newcommand{\smallgap}{\vspace{0.2em}}
+
+\title[Ràng buộc trong CREATE TABLE]{Bài giảng: Ràng buộc trong CREATE TABLE với MySQL}
+\subtitle{PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK, DEFAULT \& Toàn vẹn dữ liệu}
+\author[Vũ Đức Minh]{Vũ Đức Minh}
+\institute[NEU]{Trường Đại học Kinh tế Quốc dân (NEU), Hà Nội, Việt Nam}
+\date{\today}
+
+\begin{document}
+
+%------------------------------------------------
+% Slide 1: Trang bia
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%------------------------------------------------
+% Slide 2: Muc tieu bai giang
+\begin{frame}{Mục tiêu bài giảng}
+Sau khi hoàn thành bài học này, người học có thể:
+\begin{itemize}\setlength{\itemsep}{1.5pt}
+  \item Giải thích được bản chất và vai trò của \kw{Constraint} trong bảo đảm toàn vẹn dữ liệu.
+  \item Khai báo thành thạo khóa chính đơn và khóa chính ghép bằng \kw{PRIMARY KEY}.
+  \item Thiết lập mối quan hệ tham chiếu bảng bằng \kw{FOREIGN KEY \dots\ REFERENCES \dots}.
+  \item Cấu hình chuẩn xác hành vi tham chiếu: \kw{CASCADE, RESTRICT, SET NULL, NO ACTION}.
+  \item Hiểu rõ cơ chế vận hành và rủi ro khi tạm tắt \kw{FOREIGN\_KEY\_CHECKS}.
+  \item Áp dụng các ràng buộc nghiệp vụ: \kw{NOT NULL}, \kw{UNIQUE}, \kw{CHECK} và \kw{DEFAULT}.
+  \item Đặt tên ràng buộc theo \kw{quy ước chuẩn chuyên nghiệp} để dễ bảo trì schema.
+  \item Kiểm tra định nghĩa cấu trúc bảng và constraint bằng \kw{SHOW CREATE TABLE}.
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+% Slide 3: Noi dung bai hoc
+\begin{frame}{Nội dung bài học}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 1: Toàn vẹn \& Khóa chính/ngoại}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 1. Toàn vẹn dữ liệu \& Khái niệm Constraint
+        \item 2. Quy ước đặt tên ràng buộc chuẩn
+        \item 3. PRIMARY KEY: Khóa đơn \& Khóa ghép
+        \item 4. FOREIGN KEY: Quan hệ cha - con
+        \item 5. Hành vi tham chiếu (ON DELETE/UPDATE)
+        \item 6. Kỹ thuật tắt mở FOREIGN\_KEY\_CHECKS
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Phần 2: Ràng buộc nghiệp vụ \& Vận dụng}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item 7. NOT NULL: Bắt buộc nhập liệu
+        \item 8. UNIQUE: Chống trùng lặp dữ liệu
+        \item 9. CHECK: Ràng buộc miền giá trị logic
+        \item 10. DEFAULT: Giá trị mặc định tự sinh
+        \item 11. Schema mẫu tổng hợp đa ràng buộc
+        \item 12. Bẫy lỗi thường gặp, Quiz \& Bài tập
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{Khái niệm \& Quy ước đặt tên}
+% Slide 4: Constraint la gi?
+\begin{frame}{1. Constraint là gì? Ba mức độ toàn vẹn dữ liệu}
+\begin{block}{Định nghĩa}
+  \textbf{Constraint (Ràng buộc)} là các quy tắc được định nghĩa trên bảng hoặc cột mà Hệ quản trị CSDL (\textit{DBMS}) tự động kiểm tra nhằm bảo đảm dữ liệu luôn \kw{chính xác, hợp lệ và nhất quán}.
+\end{block}
+
+\smallgap
+\begin{columns}[t]
+  \begin{column}{0.32\textwidth}
+    \begin{block}{Toàn vẹn thực thể}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Mỗi dòng có định danh duy nhất.
+        \item Do \kw{PRIMARY KEY} đảm bảo.
+        \item Cấm trùng lặp và cấm NULL.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \begin{block}{Toàn vẹn tham chiếu}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Liên kết các bảng luôn hợp lệ.
+        \item Do \kw{FOREIGN KEY} đảm bảo.
+        \item Chặn con trỏ tới cha không tồn tại.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.32\textwidth}
+    \begin{block}{Toàn vẹn miền giá trị}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Dữ liệu đúng quy tắc nghiệp vụ.
+        \item Do \kw{NOT NULL}, \kw{CHECK}, \kw{UNIQUE}, \kw{DEFAULT} đảm bảo.
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 5: Quy uoc dat ten
+\begin{frame}{2. Quy ước đặt tên Constraint chuẩn chuyên nghiệp}
+\begin{alertblock}{Tại sao nên đặt tên tường minh?}
+  Nếu không chỉ định tên, MySQL tự sinh tên ngẫu nhiên (ví dụ \texttt{students\_chk\_1}). Khi chạy lệnh \texttt{ALTER TABLE DROP CONSTRAINT}, việc truy vết và quản lý trong script migration sẽ rất phức tạp!
+\end{alertblock}
+
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{llll}
+\toprule
+\textbf{Loại Constraint} & \textbf{Tiền tố} & \textbf{Cấu trúc mẫu} & \textbf{Ví dụ minh họa} \\
+\midrule
+\textbf{Primary Key} & \texttt{pk\_} & \texttt{pk\_<ten\_bang>} & \texttt{pk\_students}, \texttt{pk\_order\_lines} \\
+\textbf{Foreign Key} & \texttt{fk\_} & \texttt{fk\_<bang\_con>\_<bang\_cha>} & \texttt{fk\_employees\_departments} \\
+\textbf{Unique Key} & \texttt{uq\_} & \texttt{uq\_<bang>\_<cot>} & \texttt{uq\_users\_email}, \texttt{uq\_students\_code} \\
+\textbf{Check Rule} & \texttt{chk\_} & \texttt{chk\_<bang>\_<nghiep\_vu>} & \texttt{chk\_products\_price}, \texttt{chk\_users\_age} \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\smallgap
+\begin{exampleblock}{Cú pháp khai báo tường minh}
+  \texttt{CONSTRAINT constraint\_name <loai\_rang\_buoc> (<danh\_sach\_cot>)}
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+\section{PRIMARY KEY: Khóa chính}
+% Slide 6: PRIMARY KEY don
+\begin{frame}[fragile]{3. PRIMARY KEY đơn cột (Single-column Primary Key)}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Đặc điểm của PRIMARY KEY}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Giá trị phải \kw{duy nhất tuyệt đối} trong bảng.
+        \item \kw{Không được chứa giá trị NULL}.
+        \item Mỗi bảng \kw{chỉ có duy nhất một} Primary Key.
+        \item Tự động tạo \kw{Clustered Index} (trong InnoDB), giúp tối ưu tốc độ tìm kiếm theo khóa.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- Khai bao inline tren cot
+CREATE TABLE departments (
+    dept_id   INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL
+);
+
+-- Khai bao table constraint (Khuyen nghi)
+CREATE TABLE departments (
+    dept_id   INT,
+    dept_name VARCHAR(100) NOT NULL,
+    phone     VARCHAR(20),
+    CONSTRAINT pk_departments 
+        PRIMARY KEY (dept_id)
+) ENGINE = InnoDB;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 7: Composite PRIMARY KEY
+\begin{frame}[fragile]{4. Khóa chính ghép (Composite Primary Key)}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Bản chất của Composite Key}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Gồm từ \kw{hai cột trở lên} kết hợp thành.
+        \item Từng cột riêng lẻ có thể lặp lại giá trị.
+        \item \kw{Tổ hợp tất cả các cột} trong khóa phải duy nhất.
+        \item \textbf{Ứng dụng}: Bảng nối quan hệ nhiều - nhiều ($N-N$), ví dụ sinh viên đăng ký môn học theo kỳ.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE enrollments (
+    student_id  INT,
+    course_id   INT,
+    semester    VARCHAR(20),
+    enrolled_at DATE,
+    CONSTRAINT pk_enrollments 
+        PRIMARY KEY (student_id, course_id, semester)
+) ENGINE = InnoDB;
+
+-- Cac dong hop le:
+-- (1, 101, '2026A')
+-- (1, 102, '2026A') -> student_id lap lai
+-- (1, 101, '2026B') -> semester khac nhau
+
+-- Loi Duplicate entry vi trung to hop 3 cot:
+-- (1, 101, '2026A')
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{FOREIGN KEY: Khóa ngoại}
+% Slide 8: FOREIGN KEY la gi?
+\begin{frame}[fragile]{5. FOREIGN KEY: Quan hệ tham chiếu Cha - Con}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Nguyên lý Khóa ngoại}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Cột ở \kw{Bảng con} tham chiếu đến \kw{PRIMARY KEY} hoặc \kw{UNIQUE KEY} ở \kw{Bảng cha}.
+        \item Chặn đứng việc tạo dữ liệu con “mồ côi” (trỏ đến bản ghi cha không tồn tại).
+        \item Kiểu dữ liệu giữa cột con và cột cha phải tương thích hoàn toàn.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- Bang cha: departments
+CREATE TABLE departments (
+    dept_id   INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL
+) ENGINE = InnoDB;
+
+-- Bang con: employees
+CREATE TABLE employees (
+    emp_id    INT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    dept_id   INT,
+    CONSTRAINT fk_employees_departments
+        FOREIGN KEY (dept_id)
+        REFERENCES departments(dept_id)
+) ENGINE = InnoDB;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 9: ON DELETE va ON UPDATE
+\begin{frame}{6. Hành vi tham chiếu: \texttt{ON DELETE} \& \texttt{ON UPDATE}}
+\begin{center}
+\resizebox{0.96\textwidth}{!}{
+\begin{tabular}{lp{6cm}p{6cm}}
+\toprule
+\textbf{Tùy chọn} & \textbf{Khi dòng ở bảng cha bị XÓA (ON DELETE)} & \textbf{Khi khóa ở bảng cha bị SỬA (ON UPDATE)} \\
+\midrule
+\texttt{RESTRICT} & \textbf{Chặn lệnh xóa} nếu có ít nhất 1 dòng con đang tham chiếu (mặc định an toàn) & \textbf{Chặn lệnh sửa} khóa cha nếu có dòng con đang liên kết \\
+\texttt{CASCADE} & \textbf{Tự động xóa luôn} tất cả các dòng con liên quan & \textbf{Tự động cập nhật khóa mới} xuống tất cả các dòng con \\
+\texttt{SET NULL} & \textbf{Đặt cột FK ở con thành NULL} (yêu cầu cột con cho phép nhận NULL) & \textbf{Đặt cột FK ở con thành NULL} \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+
+\smallgap
+\begin{alertblock}{Cảnh báo an toàn dữ liệu}
+  Không lạm dụng \texttt{CASCADE} tùy tiện! Chỉ dùng \texttt{ON DELETE CASCADE} khi quan hệ là phụ thuộc sống còn (như xóa \texttt{Orders} thì xóa các dòng trong \texttt{OrderLines}). Với dữ liệu tài chính/nhân sự, luôn dùng \texttt{RESTRICT} hoặc \texttt{SET NULL}.
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 10: ALTER TABLE quan ly FK
+\begin{frame}[fragile]{7. Quản lý Khóa ngoại bằng \texttt{ALTER TABLE}}
+\begin{block}{Thêm và xóa khóa ngoại trên bảng đang chạy}
+  Trong quy trình phát triển thực tế, bảng thường được tạo trước, sau đó khóa ngoại mới được thêm vào thông qua các script migration.
+\end{block}
+
+\begin{lstlisting}
+-- 1. Them Foreign Key moi vao bang da ton tai
+ALTER TABLE employees
+ADD CONSTRAINT fk_employees_departments
+FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+
+-- 2. Xem dinh nghia va ten constraint thuc te
+SHOW CREATE TABLE employees;
+
+-- 3. Xoa Foreign Key khi can thay doi logic nghiep vu
+ALTER TABLE employees
+DROP FOREIGN KEY fk_employees_departments;
+\end{lstlisting}
+
+\begin{exampleblock}{Lưu ý}
+  Lệnh \texttt{DROP FOREIGN KEY} xóa ràng buộc logic nhưng InnoDB có thể vẫn giữ lại index phụ trên cột. Nếu muốn bỏ hẳn index, dùng thêm \texttt{DROP INDEX}.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 11: FOREIGN_KEY_CHECKS
+\begin{frame}[fragile]{8. Kỹ thuật tắt kiểm tra khóa ngoại: \texttt{FOREIGN\_KEY\_CHECKS}}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Mục đích sử dụng}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Nạp khối lượng lớn dữ liệu (\textit{bulk import}) khi bảng cha và con phụ thuộc vòng tròn.
+        \item Tái tạo nhanh cấu trúc schema trong môi trường lab hoặc staging.
+        \item Truncate bảng cha mà không cần gỡ bỏ quan hệ từng bảng con.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+-- Kiem tra trang thai
+SELECT @@FOREIGN_KEY_CHECKS;
+
+-- Tat kiem tra khoa ngoai (Session)
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Thao tac du lieu dac biet
+TRUNCATE TABLE departments;
+
+-- Bat buoc phai bat lai ngay sau do!
+SET FOREIGN_KEY_CHECKS = 1;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\begin{alertblock}{Rủi ro nghiêm trọng}
+  Khi \texttt{FOREIGN\_KEY\_CHECKS = 0}, MySQL cho phép lưu dữ liệu vi phạm tham chiếu. Khi bật lại ($= 1$), MySQL \textbf{không tự rà soát sửa dữ liệu cũ}! Tuyệt đối không dùng trên production để che giấu lỗi thiết kế.
+\end{alertblock}
+\end{frame}
+
+%------------------------------------------------
+\section{NOT NULL \& UNIQUE}
+% Slide 12: NOT NULL
+\begin{frame}[fragile]{9. Ràng buộc \texttt{NOT NULL}: Bắt buộc nhập liệu}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Nguyên lý NOT NULL}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Buộc cột phải luôn có giá trị hợp lệ khi \texttt{INSERT} hoặc \texttt{UPDATE}.
+        \item Tránh phát sinh giá trị \texttt{UNKNOWN} trong logic ba ngôi (\textit{three-valued logic}).
+        \item Hỗ trợ tối ưu hóa lưu trữ và đánh chỉ mục.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE users_not_null (
+    user_id    INT PRIMARY KEY,
+    full_name  VARCHAR(100) NOT NULL,
+    email      VARCHAR(150) NOT NULL,
+    created_at DATETIME NOT NULL
+) ENGINE = InnoDB;
+
+-- Chen hop le:
+INSERT INTO users_not_null VALUES 
+(1, 'Nguyen An', 'an@neu.vn', NOW());
+
+-- Bao loi 1048 (Column cannot be null):
+INSERT INTO users_not_null VALUES 
+(2, NULL, 'binh@neu.vn', NOW());
+\end{lstlisting}
+  \end{column}
+\end{columns}
+
+\begin{exampleblock}{Phân biệt NULL và Chuỗi rỗng \texttt{''}}
+  \texttt{NULL} là \kw{chưa có giá trị}. Chuỗi rỗng \texttt{''} là \kw{chuỗi có chiều dài 0}. Cột \texttt{NOT NULL} vẫn nhận chuỗi rỗng! Muốn cấm chuỗi rỗng, cần kết hợp thêm \texttt{CHECK (LENGTH(TRIM(cột)) > 0)}.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 13: UNIQUE
+\begin{frame}[fragile]{10. Ràng buộc \texttt{UNIQUE}: Đảm bảo tính duy nhất}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{So sánh UNIQUE vs PRIMARY KEY}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item \textbf{Số lượng}: Mỗi bảng chỉ có 1 PK, nhưng có thể có \kw{nhiều ràng buộc UNIQUE}.
+        \item \textbf{Giá trị NULL}: Trong MySQL, cột UNIQUE cho phép chứa \kw{nhiều giá trị NULL} (trừ khi có thêm NOT NULL).
+        \item Để đảm bảo vừa bắt buộc có giá trị, vừa duy nhất: dùng \kw{\texttt{NOT NULL UNIQUE}}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE room_bookings (
+    booking_id   INT PRIMARY KEY,
+    room_id      INT NOT NULL,
+    booking_date DATE NOT NULL,
+    time_slot    VARCHAR(20) NOT NULL,
+    
+    -- UNIQUE to hop 3 cot
+    CONSTRAINT uq_room_bookings_slot
+        UNIQUE (room_id, booking_date, time_slot)
+) ENGINE = InnoDB;
+
+-- Cung 1 phong trong 1 ngay tai 1 ca chi duoc dat duy nhat 1 lan!
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+\section{CHECK \& DEFAULT}
+% Slide 14: CHECK
+\begin{frame}[fragile]{11. Ràng buộc \texttt{CHECK}: Miền giá trị logic nghiệp vụ}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Đặc điểm của CHECK}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Buộc dữ liệu phải thỏa mãn một biểu thức Boolean (trả về \texttt{TRUE} hoặc \texttt{UNKNOWN}).
+        \item Hỗ trợ thực thi từ \kw{MySQL 8.0.16} trở lên.
+        \item Có thể kiểm tra logic trên 1 cột hoặc \kw{so sánh tương quan giữa nhiều cột} trong dòng.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE promotions (
+    promo_id     INT PRIMARY KEY,
+    promo_name   VARCHAR(100) NOT NULL,
+    start_date   DATE NOT NULL,
+    end_date     DATE NOT NULL,
+    discount_pct DECIMAL(5,2) NOT NULL,
+    
+    -- So sanh giua 2 cot
+    CONSTRAINT chk_promo_dates
+        CHECK (end_date >= start_date),
+        
+    -- Mien gia tri phan tram
+    CONSTRAINT chk_promo_discount
+        CHECK (discount_pct BETWEEN 0 AND 100)
+) ENGINE = InnoDB;
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 15: DEFAULT
+\begin{frame}[fragile]{12. Ràng buộc \texttt{DEFAULT}: Cung cấp giá trị tự động}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Cơ chế hoạt động của DEFAULT}
+      \begin{itemize}\setlength{\itemsep}{1.5pt}
+        \item Tự động điền giá trị quy định nếu lệnh \texttt{INSERT} không cung cấp cột đó.
+        \item Có thể dùng hằng số (\texttt{'Pending'}, \texttt{0}) hoặc hàm thời gian (\texttt{CURRENT\_TIMESTAMP}).
+        \item Nếu người dùng truyền giá trị tường minh, giá trị đó sẽ ghi đè giá trị default.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.50\textwidth}
+\begin{lstlisting}
+CREATE TABLE tasks (
+    task_id    INT PRIMARY KEY,
+    task_name  VARCHAR(150) NOT NULL,
+    status     VARCHAR(20) NOT NULL DEFAULT 'Pending',
+    priority   INT NOT NULL DEFAULT 3,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- Chi chen task_id va task_name
+INSERT INTO tasks (task_id, task_name)
+VALUES (1, 'Soan de thi cuoi ky');
+
+-- status tu dong = 'Pending'
+-- priority tu dong = 3
+-- created_at tu dong = thoi gian hien tai!
+\end{lstlisting}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 16: Tong hop toan ven
+\begin{frame}[fragile]{13. Thực hành: Bản thiết kế đa ràng buộc hoàn chỉnh}
+\begin{lstlisting}
+CREATE TABLE course_registrations (
+    student_id    INT NOT NULL,
+    course_id     INT NOT NULL,
+    semester      VARCHAR(20) NOT NULL DEFAULT '2026A',
+    final_score   DECIMAL(4,2),
+    registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- 1. Composite Primary Key
+    CONSTRAINT pk_course_registrations 
+        PRIMARY KEY (student_id, course_id, semester),
+        
+    -- 2. Foreign Key tham chieu den bang sinh vien va mon hoc
+    CONSTRAINT fk_cr_student FOREIGN KEY (student_id) REFERENCES students(student_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_cr_course FOREIGN KEY (course_id) REFERENCES courses(course_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+        
+    -- 3. Check Constraint kiem soat diem so hop le
+    CONSTRAINT chk_cr_score CHECK (final_score BETWEEN 0.00 AND 10.00)
+) ENGINE = InnoDB;
+\end{lstlisting}
+\end{frame}
+
+%------------------------------------------------
+% Slide 17: Sai lam thuong gap
+\begin{frame}{14. Các bẫy lỗi thường gặp với Constraints}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Lỗi quan hệ \& Thứ tự thực thi}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Tạo bảng con trước bảng cha}: Lỗi không tìm thấy cha khi tạo FK. Phải tạo cha trước, con sau.
+        \item \textbf{Dùng SET NULL trên cột NOT NULL}: Xung đột logic nghiêm trọng, MySQL sẽ chặn ngay khi định nghĩa.
+        \item \textbf{Lạm dụng ON DELETE CASCADE}: Vô tình xóa toàn bộ dữ liệu lịch sử hóa đơn khi người dùng bị xóa.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{alertblock}{Lỗi kiểm tra \& Cấu hình}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \textbf{Quên bật lại FOREIGN\_KEY\_CHECKS}: Để hệ thống chạy ở trạng thái tắt kiểm tra làm dữ liệu rác tràn vào CSDL.
+        \item \textbf{Nghĩ UNIQUE cấm NULL}: Cột UNIQUE không có NOT NULL sẽ cho phép vô số dòng mang giá trị NULL.
+        \item \textbf{Chạy CHECK trên MySQL cũ}: Trước bản 8.0.16, MySQL chỉ nhận diện cú pháp nhưng không kiểm tra thật.
+      \end{itemize}
+    \end{alertblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+%------------------------------------------------
+% Slide 18: Quiz nhanh
+\begin{frame}{15. Câu hỏi ôn tập \& Củng cố}
+\begin{columns}[t]
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 1: Số lượng khóa chính}
+      Một bảng trong CSDL quan hệ có thể có tối đa bao nhiêu khóa chính (Primary Key)?
+      \begin{itemize}
+        \item A. Tùy ý bao nhiêu cũng được
+        \item B. \textbf{\kw{Duy nhất 1 Primary Key}} (Chính xác!)
+        \item C. Tối đa 2 (1 đơn, 1 ghép)
+        \item D. Không bắt buộc giới hạn
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.48\textwidth}
+    \begin{block}{Câu 2: Hành vi CASCADE}
+      Khi bảng cha có dòng bị xóa, tùy chọn nào tự động xóa các dòng con tương ứng?
+      \begin{itemize}
+        \item A. \texttt{RESTRICT}
+        \item B. \texttt{SET NULL}
+        \item C. \textbf{\kw{CASCADE}} (Chính xác!)
+        \item D. \texttt{NO ACTION}
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+\smallgap
+\begin{exampleblock}{Câu 3: Đặt tên Constraint}
+  \textbf{Hỏi}: Vì sao nên tuân thủ quy ước đặt tên như \texttt{pk\_orders}, \texttt{fk\_orders\_customers}?\\
+  \textbf{Đáp}: Giúp dễ dàng nhận diện loại ràng buộc, đọc log lỗi nhanh chóng và quản lý lệnh \texttt{DROP CONSTRAINT} chính xác trong các script cập nhật phiên bản.
+\end{exampleblock}
+\end{frame}
+
+%------------------------------------------------
+% Slide 19: Tong ket
+\begin{frame}{Tổng kết bài học}
+\begin{columns}[t]
+  \begin{column}{0.5\textwidth}
+    \begin{block}{3 Nguyên tắc cốt lõi}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item \kw{Chặn lỗi tại tầng Database}: Không bao giờ phụ thuộc 100\% vào validation ở tầng ứng dụng.
+        \item \kw{Minh bạch quan hệ}: Khai báo đầy đủ Foreign Key để bảo toàn liên kết thực thể.
+        \item \kw{Đầy đủ ràng buộc}: Luôn kết hợp linh hoạt \texttt{NOT NULL}, \texttt{UNIQUE}, \texttt{CHECK} và \texttt{DEFAULT}.
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.46\textwidth}
+    \begin{exampleblock}{Bài học tiếp theo}
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item Bài tiếp theo: \textbf{Quản lý vòng đời Table trong MySQL} (\texttt{ALTER TABLE}, \texttt{RENAME}, \texttt{DROP}, \texttt{TRUNCATE} \& Generated Columns).
+        \item Thực hành: Hoàn thành kịch bản lab schema \texttt{constraints\_lab}.
+      \end{itemize}
+    \end{exampleblock}
+  \end{column}
+\end{columns}
+\end{frame}
+
+\end{document}
