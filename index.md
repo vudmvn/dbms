@@ -135,7 +135,7 @@ Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, cá
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
 | Relational Schema trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | <span class="missing">—</span> | <span class="missing">—</span> | Relation, attribute, tuple và schema |
-| Mapping từ ER Model sang Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | <span class="missing">—</span> | <span class="missing">—</span> | Chuyển ERD sang bảng quan hệ |
+| Mapping từ ER Model sang Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [HTML](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | Chuyển ERD sang bảng quan hệ |
 | Các loại khóa trong mô hình quan hệ | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [HTML](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super, candidate, primary, foreign và các loại khóa khác |
 | Functional Dependency trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | <span class="missing">—</span> | <span class="missing">—</span> | Phụ thuộc hàm, determinant và dependent attribute |
 | Các loại Functional Dependency trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | <span class="missing">—</span> | <span class="missing">—</span> | Trivial, non-trivial, multivalued, transitive, fully và partial dependency |
@@ -195,8 +195,8 @@ Phần DDL trình bày kiểu dữ liệu, tạo bảng, ràng buộc và vòng 
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
 | Kiểu dữ liệu SQL | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time và chọn kiểu dữ liệu |
-| CREATE TABLE và ràng buộc trong MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK và DEFAULT |
-| Quản lý vòng đời Table trong MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary table, TRUNCATE và generated columns |
+| CREATE TABLE và ràng buộc trong MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | [HTML](lectures/MySQL/data-definition/create-table-statement.html) | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK và DEFAULT |
+| Quản lý vòng đời Table trong MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | [HTML](lectures/MySQL/data-definition/table/tables.html) | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary table, TRUNCATE và generated columns |
 
 ### Truy vấn dữ liệu với SELECT
 
@@ -320,7 +320,7 @@ Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, cá
 | Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
 | Relational Schema in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | <span class="missing">—</span> | <span class="missing">—</span> | Relation, attribute, tuple, and schema |
-| Mapping from ER Model to Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | <span class="missing">—</span> | <span class="missing">—</span> | Mapping ERD to relational tables |
+| Mapping from ER Model to Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [HTML](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | Mapping ERD to relational tables |
 | Types of Keys in the Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [HTML](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super, candidate, primary, foreign, and other key types |
 | Functional Dependency in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | <span class="missing">—</span> | <span class="missing">—</span> | Functional dependency, determinant, and dependent attribute |
 | Types of Functional Dependencies in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | <span class="missing">—</span> | <span class="missing">—</span> | Trivial, non-trivial, multivalued, transitive, fully, and partial dependency |
@@ -380,8 +380,8 @@ Phần DDL trình bày kiểu dữ liệu, tạo bảng, ràng buộc và vòng 
 | Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
 | SQL Data Types | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time, and choosing data types |
-| CREATE TABLE and Constraints in MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK, and DEFAULT |
-| Managing the Table Lifecycle in MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary tables, TRUNCATE, and generated columns |
+| CREATE TABLE and Constraints in MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | [HTML](lectures/MySQL/data-definition/create-table-statement.html) | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK, and DEFAULT |
+| Managing the Table Lifecycle in MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | [HTML](lectures/MySQL/data-definition/table/tables.html) | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary tables, TRUNCATE, and generated columns |
 
 ### Querying Data with SELECT
 

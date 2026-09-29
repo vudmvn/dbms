@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài giảng SQL Data Constraints</title>
+<meta name="description" content="Bài giảng HTML về SQL Data Constraints: NOT NULL, PRIMARY KEY, FOREIGN KEY, COMPOSITE KEY, UNIQUE, ALTERNATE KEY, CHECK, DEFAULT; MySQL-focused, có bài tập từng phần.">
+<style>
+:root{
+ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f4ff;--text:#182033;--muted:#5f6b7a;
+ --primary:#2856d7;--accent:#7a3ff2;--green:#157a55;--orange:#c35a10;--red:#b42318;
+ --cyan:#0d7490;--border:#dbe2ef;--code:#101827;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border)}
+.topin{max-width:1240px;margin:auto;padding:.65rem 1.2rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:.45rem .7rem}
+.hero{background:linear-gradient(135deg,#103779,#4930a4);color:#fff;padding:4rem 1.2rem 3.3rem}
+.heroin{max-width:1120px;margin:auto}.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:800;opacity:.86}
+h1{font-size:clamp(2.15rem,5vw,4.2rem);line-height:1.06;margin:.45rem 0 1rem}.hero p{max-width:920px;color:#e8edff;font-size:1.08rem}
+.chips{display:flex;gap:.55rem;flex-wrap:wrap}.chip{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:.3rem .62rem;background:rgba(255,255,255,.08)}
+.layout{max-width:1240px;margin:auto;padding:2rem 1.2rem 5rem;display:grid;grid-template-columns:295px minmax(0,1fr);gap:2rem}
+.toc{position:sticky;top:75px;max-height:calc(100vh - 95px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:1rem}
+.toc a{display:block;color:var(--muted);padding:.25rem .38rem;border-radius:6px;font-size:.86rem}.toc a:hover{background:var(--surface2);color:var(--primary);text-decoration:none}
+section{scroll-margin-top:80px;background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:clamp(1.2rem,3vw,2rem);margin-bottom:1.35rem}
+h2{font-size:1.7rem;margin:.1rem 0 1rem}h3{font-size:1.15rem;margin:1.2rem 0 .45rem}.lead{color:var(--muted);font-size:1.05rem}
+.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}
+.card{border:1px solid var(--border);border-radius:12px;padding:1rem}.card h3{margin-top:0}
+.note,.tip,.warn,.practice{background:var(--surface2);padding:.85rem 1rem;border-radius:9px;border-left:5px solid var(--primary);margin:1rem 0}
+.tip{border-color:var(--green)}.warn{border-color:var(--orange)}.practice{border-color:var(--cyan)}.practice h3{margin-top:.1rem}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.94rem}th,td{border:1px solid var(--border);padding:.62rem .7rem;vertical-align:top}th{background:var(--surface2);text-align:left}
+pre{background:var(--code);color:#e8eefc;padding:1rem;border-radius:11px;overflow:auto;line-height:1.52}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+details{border:1px solid var(--border);border-radius:9px;padding:.6rem .75rem;margin:.7rem 0;background:var(--surface)}summary{cursor:pointer;font-weight:800;color:var(--primary)}
+.formula{background:var(--surface2);padding:.7rem .85rem;border-radius:8px;font-family:Georgia,serif;margin:.75rem 0}
+.label{display:inline-block;font-size:.8rem;font-weight:800;border:1px solid var(--border);border-radius:999px;padding:.16rem .45rem;background:var(--surface2)}
+svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:13px;background:#fff;margin:.7rem 0}
+.box{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.alt{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.warm{fill:#fff4e9;stroke:#c35a10;stroke-width:3}.green{fill:#ecfdf3;stroke:#157a55;stroke-width:3}.txt{font:700 18px system-ui;fill:#182033}.sm{font:14px system-ui;fill:#475569}.line{stroke:#475569;stroke-width:3;fill:none}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media print{.top,aside{display:none}.hero{background:#fff;color:#111;padding:1rem 0}.hero p{color:#333}.layout{display:block;max-width:none;padding:0}section{border:0;padding:0;break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="topin"><b>DBMS Lecture · SQL Data Constraints</b><div><a class="btn" href="#summary">Bảng tổng hợp</a> <a class="btn" href="#lab">Lab</a></div></div></div>
+
+<header class="hero"><div class="heroin">
+<div class="kicker">SQL · Data Integrity · MySQL-focused</div>
+<h1>Data Constraints in SQL</h1>
+<p>Constraints định nghĩa các quy tắc mà dữ liệu phải tuân theo để bảo đảm tính chính xác, nhất quán và ngăn dữ liệu không hợp lệ đi vào database.</p>
+<div class="chips"><span class="chip">NOT NULL</span><span class="chip">PRIMARY KEY</span><span class="chip">FOREIGN KEY</span><span class="chip">COMPOSITE KEY</span><span class="chip">UNIQUE</span><span class="chip">ALTERNATE KEY</span><span class="chip">CHECK</span><span class="chip">DEFAULT</span></div>
+</div></header>
+
+<div class="layout">
+<aside><nav class="toc">
+<b>Mục lục</b>
+<a href="#overview">1. Tổng quan</a>
+<a href="#levels">2. Column vs Table Constraints</a>
+<a href="#notnull">3. NOT NULL</a>
+<a href="#pk">4. PRIMARY KEY</a>
+<a href="#fk">5. FOREIGN KEY</a>
+<a href="#composite">6. COMPOSITE KEY</a>
+<a href="#unique">7. UNIQUE</a>
+<a href="#alternate">8. ALTERNATE KEY</a>
+<a href="#check">9. CHECK</a>
+<a href="#default">10. DEFAULT</a>
+<a href="#combine">11. Kết hợp Constraints</a>
+<a href="#alter">12. ADD/DROP Constraints</a>
+<a href="#summary">13. Bảng tổng hợp</a>
+<a href="#violations">14. Vi phạm Constraints</a>
+<a href="#design">15. Thiết kế đúng</a>
+<a href="#lab">16. Lab tổng hợp</a>
+<a href="#exercises">17. Bài tập</a>
+<a href="#sources">18. Tài liệu</a>
+</nav></aside>
+
+<main>
+
+<section id="overview">
+<h2>1. Tổng quan về Data Constraints</h2>
+<p class="lead"><b>Constraint</b> là quy tắc được DBMS thực thi trên dữ liệu. Khi một <code>INSERT</code> hoặc <code>UPDATE</code> làm vi phạm constraint, DBMS từ chối thao tác thay vì lưu trạng thái không hợp lệ.</p>
+
+<div class="grid4">
+<div class="card"><h3>Domain integrity</h3><p>Giá trị phải đúng phạm vi/định dạng mong muốn.</p></div>
+<div class="card"><h3>Entity integrity</h3><p>Mỗi row phải được nhận diện rõ.</p></div>
+<div class="card"><h3>Referential integrity</h3><p>Tham chiếu giữa tables phải hợp lệ.</p></div>
+<div class="card"><h3>Business rules</h3><p>Ví dụ Price ≥ 0, Credits ∈ [1,6].</p></div>
+</div>
+
+<svg class="diagram" viewBox="0 0 980 300">
+<rect x="50" y="95" width="200" height="90" rx="12" class="box"/><text x="150" y="130" text-anchor="middle" class="txt">INPUT DATA</text><text x="150" y="158" text-anchor="middle" class="sm">INSERT / UPDATE</text>
+<line x1="250" y1="140" x2="350" y2="140" class="line"/>
+<rect x="350" y="70" width="280" height="140" rx="12" class="alt"/><text x="490" y="112" text-anchor="middle" class="txt">CONSTRAINT CHECK</text><text x="490" y="145" text-anchor="middle" class="sm">NOT NULL · PK · FK</text><text x="490" y="172" text-anchor="middle" class="sm">UNIQUE · CHECK · DEFAULT</text>
+<line x1="630" y1="140" x2="730" y2="140" class="line"/>
+<rect x="730" y="95" width="200" height="90" rx="12" class="green"/><text x="830" y="130" text-anchor="middle" class="txt">VALID DATA</text><text x="830" y="158" text-anchor="middle" class="sm">stored in database</text>
+</svg>
+
+<div class="note"><b>Quan trọng:</b> constraint nên được đặt trong database ngay cả khi ứng dụng đã kiểm tra dữ liệu. Application validation cải thiện trải nghiệm người dùng; database constraint là lớp bảo vệ cuối cùng cho integrity.</div>
+</section>
+
+<section id="levels">
+<h2>2. Column-level và Table-level Constraints</h2>
+
+<h3>Column-level</h3>
+<pre><code>CREATE TABLE student (
+    student_id INT PRIMARY KEY,
+    full_name  VARCHAR(100) NOT NULL,
+    email      VARCHAR(200) UNIQUE,
+    gpa        DECIMAL(3,2) CHECK (gpa BETWEEN 0 AND 4)
+);</code></pre>
+
+<h3>Table-level</h3>
+<pre><code>CREATE TABLE enrollment (
+    student_id INT,
+    course_id  INT,
+    semester   VARCHAR(20),
+    CONSTRAINT pk_enrollment
+      PRIMARY KEY (student_id, course_id, semester)
+);</code></pre>
+
+<div class="tip">Table-level syntax đặc biệt cần thiết cho <b>composite constraints</b> gồm nhiều columns.</div>
+</section>
+
+<section id="notnull">
+<h2>3. NOT NULL Constraint</h2>
+<p><code>NOT NULL</code> yêu cầu column luôn có giá trị; không chấp nhận <code>NULL</code>. GeeksforGeeks mô tả NOT NULL là constraint dùng cho những attributes bắt buộc phải có dữ liệu.</p>
+
+<pre><code>CREATE TABLE student (
+    student_id INT NOT NULL,
+    full_name  VARCHAR(100) NOT NULL,
+    nickname   VARCHAR(50)          -- có thể NULL
+);</code></pre>
+
+<h3>NULL không phải 0 hoặc chuỗi rỗng</h3>
+<table><thead><tr><th>Value</th><th>Ý nghĩa</th></tr></thead><tbody>
+<tr><td><code>NULL</code></td><td>Không biết / không có / không áp dụng</td></tr>
+<tr><td><code>0</code></td><td>Một giá trị số xác định</td></tr>
+<tr><td><code>''</code></td><td>Chuỗi có độ dài 0</td></tr>
+</tbody></table>
+
+<div class="practice"><h3>Thực hành NOT NULL</h3>
+<p>Tạo EMPLOYEE sao cho EmployeeID, FullName và HireDate bắt buộc; MiddleName được phép NULL.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE employee (
+  employee_id INT NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  middle_name VARCHAR(100),
+  hire_date DATE NOT NULL
+);</code></pre></details></div>
+</section>
+
+<section id="pk">
+<h2>4. PRIMARY KEY Constraint</h2>
+<p>PRIMARY KEY nhận diện duy nhất mỗi row. Nó kết hợp hai yêu cầu cốt lõi: <b>unique</b> và <b>NOT NULL</b>. Một table chỉ có một PRIMARY KEY constraint, nhưng key đó có thể gồm nhiều columns.</p>
+
+<pre><code>CREATE TABLE student (
+    student_id INT PRIMARY KEY,
+    full_name  VARCHAR(100) NOT NULL
+);</code></pre>
+
+<h3>Named constraint</h3>
+<pre><code>CREATE TABLE student (
+    student_id INT,
+    full_name VARCHAR(100),
+    CONSTRAINT pk_student PRIMARY KEY (student_id)
+);</code></pre>
+
+<div class="warn"><b>“Một table chỉ có một primary key” không có nghĩa primary key chỉ có một column.</b> Composite primary key vẫn là một PRIMARY KEY constraint.</div>
+
+<div class="practice"><h3>Thực hành PRIMARY KEY</h3>
+<p>Tạo DEPARTMENT(DepartmentID, DepartmentName), trong đó DepartmentID là PK.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE department (
+  department_id INT PRIMARY KEY,
+  department_name VARCHAR(100) NOT NULL
+);</code></pre></details></div>
+</section>
+
+<section id="fk">
+<h2>5. FOREIGN KEY Constraint</h2>
+<p>FOREIGN KEY bảo vệ <b>referential integrity</b>: giá trị FK phải tham chiếu tới một row hợp lệ ở table được tham chiếu, hoặc có thể NULL nếu column cho phép NULL.</p>
+
+<pre><code>CREATE TABLE department (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE employee (
+    employee_id INT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    department_id INT NOT NULL,
+    CONSTRAINT fk_employee_department
+      FOREIGN KEY (department_id)
+      REFERENCES department(department_id)
+);</code></pre>
+
+<h3>Quan hệ 1:N</h3>
+<div class="formula">DEPARTMENT 1 ───── N EMPLOYEE</div>
+<p>Nhiều employees có thể có cùng DepartmentID, vì vậy <b>foreign key không mặc định unique</b>.</p>
+
+<h3>Referential actions</h3>
+<pre><code>FOREIGN KEY (department_id)
+REFERENCES department(department_id)
+ON UPDATE CASCADE
+ON DELETE RESTRICT</code></pre>
+
+<table><thead><tr><th>Action</th><th>Ý nghĩa khái quát</th></tr></thead><tbody>
+<tr><td>RESTRICT / NO ACTION</td><td>Ngăn thao tác làm mất reference hợp lệ.</td></tr>
+<tr><td>CASCADE</td><td>Lan truyền update/delete sang child rows.</td></tr>
+<tr><td>SET NULL</td><td>Đặt FK thành NULL nếu column cho phép.</td></tr>
+</tbody></table>
+
+<div class="warn"><b>CASCADE không phải lúc nào cũng tốt.</b> Phải chọn theo business semantics, không dùng chỉ để “xóa cho tiện”.</div>
+
+<div class="practice"><h3>Thực hành FOREIGN KEY</h3>
+<p>Tạo COURSE và SECTION sao cho mỗi SECTION bắt buộc thuộc đúng một COURSE.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE course (
+  course_id INT PRIMARY KEY,
+  course_name VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE section (
+  section_id INT PRIMARY KEY,
+  course_id INT NOT NULL,
+  CONSTRAINT fk_section_course
+    FOREIGN KEY (course_id)
+    REFERENCES course(course_id)
+);</code></pre></details></div>
+</section>
+
+<section id="composite">
+<h2>6. COMPOSITE KEY</h2>
+<p><b>Composite key</b> là key gồm ít nhất hai columns. Đây là một <b>khái niệm về cấu trúc của key</b>, không phải một từ khóa constraint độc lập trong SQL.</p>
+
+<div class="formula">ENROLLMENT(StudentID, CourseID, Semester, Grade)</div>
+
+<pre><code>CREATE TABLE enrollment (
+    student_id INT,
+    course_id  INT,
+    semester   VARCHAR(20),
+    grade      DECIMAL(4,2),
+
+    CONSTRAINT pk_enrollment
+      PRIMARY KEY (student_id, course_id, semester)
+);</code></pre>
+
+<p>Từng column riêng lẻ có thể lặp; <b>tổ hợp</b> của chúng phải unique.</p>
+
+<div class="grid3">
+<div class="card"><h3>StudentID</h3><p>Lặp vì SV học nhiều course.</p></div>
+<div class="card"><h3>CourseID</h3><p>Lặp vì course có nhiều SV.</p></div>
+<div class="card"><h3>Tổ hợp</h3><p>StudentID + CourseID + Semester nhận diện enrollment.</p></div>
+</div>
+
+<div class="practice"><h3>Thực hành COMPOSITE KEY</h3>
+<p>ROOM có RoomNumber chỉ unique trong HOTEL. Tạo HOTEL_ROOM với composite PK.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE hotel_room (
+  hotel_id INT,
+  room_number INT,
+  room_type VARCHAR(30),
+  price DECIMAL(12,2),
+  PRIMARY KEY (hotel_id, room_number)
+);</code></pre></details></div>
+</section>
+
+<section id="unique">
+<h2>7. UNIQUE Constraint</h2>
+<p>UNIQUE ngăn duplicate trên một column hoặc tập columns. Một table có thể có nhiều UNIQUE constraints.</p>
+
+<pre><code>CREATE TABLE user_account (
+    user_id  BIGINT PRIMARY KEY,
+    username VARCHAR(50)  UNIQUE NOT NULL,
+    email    VARCHAR(200) UNIQUE NOT NULL
+);</code></pre>
+
+<h3>Composite UNIQUE</h3>
+<pre><code>CREATE TABLE room_booking (
+    booking_id INT PRIMARY KEY,
+    room_id INT NOT NULL,
+    booking_date DATE NOT NULL,
+    CONSTRAINT uq_room_date
+      UNIQUE (room_id, booking_date)
+);</code></pre>
+
+<h3>PRIMARY KEY vs UNIQUE</h3>
+<table><thead><tr><th>Tiêu chí</th><th>PRIMARY KEY</th><th>UNIQUE</th></tr></thead><tbody>
+<tr><td>Vai trò</td><td>Identifier chính</td><td>Bảo vệ business uniqueness</td></tr>
+<tr><td>Số constraint</td><td>Một PK/table</td><td>Có thể nhiều</td></tr>
+<tr><td>NULL</td><td>Không cho phép</td><td>Hành vi NULL phụ thuộc DBMS</td></tr>
+<tr><td>Có thể composite?</td><td>Có</td><td>Có</td></tr>
+</tbody></table>
+
+<div class="warn"><b>Không nên học thuộc “UNIQUE luôn cho phép nhiều NULL” như luật SQL chung.</b> Hành vi NULL trong unique constraint/index có khác biệt giữa các DBMS. Trong MySQL, unique index có thể chứa nhiều NULL values.</div>
+
+<div class="practice"><h3>Thực hành UNIQUE</h3>
+<p>PRODUCT dùng ProductID làm PK, nhưng SKU và Barcode cũng phải duy nhất. Viết CREATE TABLE.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE product (
+  product_id INT PRIMARY KEY,
+  sku VARCHAR(50) UNIQUE NOT NULL,
+  barcode VARCHAR(50) UNIQUE NOT NULL,
+  product_name VARCHAR(150) NOT NULL
+);</code></pre></details></div>
+</section>
+
+<section id="alternate">
+<h2>8. ALTERNATE KEY</h2>
+<p><b>Alternate key</b> là một <b>candidate key không được chọn làm primary key</b>. Đây là khái niệm thiết kế quan hệ, không phải từ khóa SQL riêng.</p>
+
+<div class="formula">
+Candidate Keys = {StudentID}, {CitizenID}, {Email}<br>
+Primary Key = {StudentID}<br>
+Alternate Keys = {CitizenID}, {Email}
+</div>
+
+<h3>Hiện thực trong SQL</h3>
+<pre><code>CREATE TABLE student (
+    student_id INT PRIMARY KEY,
+    citizen_id VARCHAR(20) UNIQUE NOT NULL,
+    email      VARCHAR(200) UNIQUE NOT NULL,
+    full_name  VARCHAR(100) NOT NULL
+);</code></pre>
+
+<div class="tip"><b>UNIQUE + NOT NULL</b> thường là cách rõ ràng để giữ semantics của alternate candidate key trong SQL.</div>
+
+<div class="practice"><h3>Thực hành ALTERNATE KEY</h3>
+<p>VEHICLE có VehicleID, VIN và RegistrationNo đều unique. Chọn VehicleID làm PK. Hai alternate keys còn lại được biểu diễn thế nào?</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE vehicle (
+  vehicle_id INT PRIMARY KEY,
+  vin VARCHAR(50) UNIQUE NOT NULL,
+  registration_no VARCHAR(30) UNIQUE NOT NULL
+);</code></pre></details></div>
+</section>
+
+<section id="check">
+<h2>9. CHECK Constraint</h2>
+<p>CHECK bắt buộc dữ liệu phải thỏa một predicate. Nếu điều kiện được đánh giá là FALSE, INSERT/UPDATE bị từ chối.</p>
+
+<pre><code>CREATE TABLE product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(150) NOT NULL,
+    price DECIMAL(12,2) CHECK (price >= 0),
+    stock INT CHECK (stock >= 0)
+);</code></pre>
+
+<h3>CHECK nhiều columns</h3>
+<pre><code>CREATE TABLE promotion (
+    promotion_id INT PRIMARY KEY,
+    start_date DATE NOT NULL,
+    end_date   DATE NOT NULL,
+    CONSTRAINT chk_promotion_dates
+      CHECK (end_date >= start_date)
+);</code></pre>
+
+<h3>CHECK và NULL</h3>
+<p>Nếu column được phép NULL, một biểu thức CHECK có thể không ngăn NULL vì SQL sử dụng three-valued logic. Nếu muốn vừa có điều kiện vừa bắt buộc giá trị, kết hợp <code>NOT NULL</code>.</p>
+
+<pre><code>age INT NOT NULL CHECK (age >= 18)</code></pre>
+
+<div class="practice"><h3>Thực hành CHECK</h3>
+<p>Tạo COURSE sao cho Credits từ 1–6 và TuitionFee không âm.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE course (
+  course_id INT PRIMARY KEY,
+  credits INT NOT NULL CHECK (credits BETWEEN 1 AND 6),
+  tuition_fee DECIMAL(12,2) NOT NULL CHECK (tuition_fee >= 0)
+);</code></pre></details></div>
+</section>
+
+<section id="default">
+<h2>10. DEFAULT Constraint</h2>
+<p>DEFAULT cung cấp giá trị mặc định khi <code>INSERT</code> không chỉ định giá trị cho column đó.</p>
+
+<pre><code>CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    status VARCHAR(20) NOT NULL DEFAULT 'NEW',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+
+<h3>DEFAULT không thay cho NOT NULL</h3>
+<p>DEFAULT xử lý trường hợp <b>không cung cấp column</b>. Nếu column cho phép NULL và người dùng chủ động insert NULL, semantics có thể khác tùy DBMS/mode.</p>
+
+<div class="formula">DEFAULT = “nếu không cung cấp thì dùng gì?”<br>NOT NULL = “có được phép thiếu giá trị không?”</div>
+
+<div class="practice"><h3>Thực hành DEFAULT</h3>
+<p>Tạo TASK với Status mặc định 'TODO', Priority mặc định 3, CreatedAt mặc định thời điểm hiện tại.</p>
+<details><summary>Đáp án</summary><pre><code>CREATE TABLE task (
+  task_id INT PRIMARY KEY,
+  task_name VARCHAR(150) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'TODO',
+  priority INT NOT NULL DEFAULT 3,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</code></pre></details></div>
+</section>
+
+<section id="combine">
+<h2>11. Kết hợp nhiều Constraints</h2>
+<p>Trong thiết kế thực tế, một column thường đồng thời chịu nhiều constraints.</p>
+
+<pre><code>CREATE TABLE employee (
+    employee_id INT PRIMARY KEY,
+
+    employee_code VARCHAR(20)
+        UNIQUE
+        NOT NULL,
+
+    full_name VARCHAR(100)
+        NOT NULL,
+
+    salary DECIMAL(12,2)
+        NOT NULL
+        CHECK (salary >= 0),
+
+    status VARCHAR(20)
+        NOT NULL
+        DEFAULT 'ACTIVE',
+
+    department_id INT
+        NOT NULL,
+
+    CONSTRAINT fk_employee_department
+      FOREIGN KEY (department_id)
+      REFERENCES department(department_id)
+);</code></pre>
+
+<div class="note"><b>Constraint design nên xuất phát từ business rules.</b> Không thêm constraint vì “thường người ta làm vậy”; mỗi constraint cần trả lời một quy tắc dữ liệu cụ thể.</div>
+</section>
+
+<section id="alter">
+<h2>12. Thêm và xóa Constraints sau khi tạo Table</h2>
+
+<h3>ADD UNIQUE</h3>
+<pre><code>ALTER TABLE student
+ADD CONSTRAINT uq_student_email
+UNIQUE (email);</code></pre>
+
+<h3>ADD CHECK</h3>
+<pre><code>ALTER TABLE student
+ADD CONSTRAINT chk_student_gpa
+CHECK (gpa BETWEEN 0 AND 4);</code></pre>
+
+<h3>ADD FOREIGN KEY</h3>
+<pre><code>ALTER TABLE student
+ADD CONSTRAINT fk_student_department
+FOREIGN KEY (department_id)
+REFERENCES department(department_id);</code></pre>
+
+<h3>MySQL: drop constraints</h3>
+<pre><code>ALTER TABLE student DROP PRIMARY KEY;
+
+ALTER TABLE student
+DROP FOREIGN KEY fk_student_department;
+
+ALTER TABLE student
+DROP CHECK chk_student_gpa;
+
+ALTER TABLE student
+DROP INDEX uq_student_email;</code></pre>
+
+<div class="warn">Cú pháp DROP constraint là vùng khác biệt đáng kể giữa MySQL, PostgreSQL và SQL Server. Bài này dùng MySQL làm dialect chính.</div>
+</section>
+
+<section id="summary">
+<h2>13. Bảng tổng hợp</h2>
+<table>
+<thead><tr><th>Constraint / Key</th><th>Mục tiêu</th><th>Unique?</th><th>NULL?</th><th>SQL keyword độc lập?</th></tr></thead>
+<tbody>
+<tr><td>NOT NULL</td><td>Bắt buộc có giá trị</td><td>Không</td><td>Không</td><td>Có</td></tr>
+<tr><td>PRIMARY KEY</td><td>Identifier chính</td><td>Có</td><td>Không</td><td>Có</td></tr>
+<tr><td>FOREIGN KEY</td><td>Referential integrity</td><td>Không bắt buộc</td><td>Có thể</td><td>Có</td></tr>
+<tr><td>COMPOSITE KEY</td><td>Key gồm nhiều columns</td><td>Tùy loại key</td><td>Tùy constraint</td><td><b>Không</b></td></tr>
+<tr><td>UNIQUE</td><td>Ngăn duplicate</td><td>Có</td><td>DBMS-specific</td><td>Có</td></tr>
+<tr><td>ALTERNATE KEY</td><td>Candidate key không chọn làm PK</td><td>Có</td><td>Theo candidate-key semantics</td><td><b>Không</b></td></tr>
+<tr><td>CHECK</td><td>Business/domain condition</td><td>Không</td><td>Cần hiểu 3-valued logic</td><td>Có</td></tr>
+<tr><td>DEFAULT</td><td>Giá trị mặc định</td><td>Không</td><td>Không tự cấm NULL</td><td>Có</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="violations">
+<h2>14. Điều gì xảy ra khi dữ liệu vi phạm Constraint?</h2>
+
+<h3>Duplicate PRIMARY KEY</h3>
+<pre><code>INSERT INTO student(student_id, full_name)
+VALUES (1, 'An');
+
+INSERT INTO student(student_id, full_name)
+VALUES (1, 'Binh');
+-- ERROR: duplicate primary key</code></pre>
+
+<h3>Foreign key không tồn tại</h3>
+<pre><code>INSERT INTO employee(employee_id, full_name, department_id)
+VALUES (10, 'An', 999);
+-- ERROR nếu DepartmentID=999 không tồn tại</code></pre>
+
+<h3>CHECK thất bại</h3>
+<pre><code>INSERT INTO product(product_id, product_name, price)
+VALUES (1, 'Laptop', -100);
+-- ERROR: CHECK constraint violated</code></pre>
+
+<h3>NOT NULL thất bại</h3>
+<pre><code>INSERT INTO employee(employee_id, full_name)
+VALUES (11, NULL);
+-- ERROR nếu full_name NOT NULL</code></pre>
+
+<div class="tip"><b>Cách dạy hiệu quả:</b> sau mỗi constraint, yêu cầu sinh viên viết một INSERT hợp lệ và một INSERT cố tình vi phạm, rồi đọc error message.</div>
+</section>
+
+<section id="design">
+<h2>15. Thiết kế Constraints từ Business Rules</h2>
+<table>
+<thead><tr><th>Business Rule</th><th>Constraint phù hợp</th></tr></thead>
+<tbody>
+<tr><td>Mỗi sinh viên phải có tên</td><td>FullName NOT NULL</td></tr>
+<tr><td>Mã sinh viên không được trùng</td><td>PRIMARY KEY hoặc UNIQUE NOT NULL</td></tr>
+<tr><td>Email đăng nhập không được trùng</td><td>UNIQUE NOT NULL</td></tr>
+<tr><td>Mỗi employee thuộc một department tồn tại</td><td>FK + NOT NULL</td></tr>
+<tr><td>Price không âm</td><td>CHECK (Price >= 0)</td></tr>
+<tr><td>Status mặc định NEW</td><td>DEFAULT 'NEW'</td></tr>
+<tr><td>Mỗi room number unique trong hotel</td><td>Composite PRIMARY KEY(HotelID, RoomNumber)</td></tr>
+<tr><td>VIN là candidate key nhưng VehicleID được chọn làm PK</td><td>VIN UNIQUE NOT NULL → alternate key</td></tr>
+</tbody>
+</table>
+
+<div class="practice"><h3>Thực hành thiết kế</h3>
+<p>Chuyển các business rules sau thành constraints:</p>
+<ol>
+<li>Username bắt buộc và không trùng.</li>
+<li>Age phải từ 18 đến 65.</li>
+<li>Mỗi order bắt buộc thuộc một customer tồn tại.</li>
+<li>Order status mặc định là PENDING.</li>
+</ol>
+<details><summary>Gợi ý</summary><pre><code>username VARCHAR(50) NOT NULL UNIQUE,
+age INT NOT NULL CHECK (age BETWEEN 18 AND 65),
+customer_id INT NOT NULL,
+status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+FOREIGN KEY (customer_id) REFERENCES customer(customer_id)</code></pre></details></div>
+</section>
+
+<section id="lab">
+<h2>16. Lab tổng hợp: University Registration</h2>
+<p>Xây dựng ba tables DEPARTMENT, STUDENT và ENROLLMENT, sử dụng tất cả constraint chính.</p>
+
+<pre><code>CREATE TABLE department (
+    department_id INT PRIMARY KEY,
+    department_code VARCHAR(20) NOT NULL UNIQUE,
+    department_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE student (
+    student_id INT PRIMARY KEY,
+    student_code VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(200) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    gpa DECIMAL(3,2),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    department_id INT NOT NULL,
+
+    CONSTRAINT chk_student_gpa
+      CHECK (gpa IS NULL OR gpa BETWEEN 0 AND 4),
+
+    CONSTRAINT fk_student_department
+      FOREIGN KEY (department_id)
+      REFERENCES department(department_id)
+);
+
+CREATE TABLE enrollment (
+    student_id INT,
+    course_id INT,
+    semester VARCHAR(20),
+    grade DECIMAL(4,2),
+
+    CONSTRAINT pk_enrollment
+      PRIMARY KEY (student_id, course_id, semester),
+
+    CONSTRAINT fk_enrollment_student
+      FOREIGN KEY (student_id)
+      REFERENCES student(student_id),
+
+    CONSTRAINT chk_enrollment_grade
+      CHECK (grade IS NULL OR grade BETWEEN 0 AND 10)
+);</code></pre>
+
+<h3>Nhiệm vụ thực hành</h3>
+<ol>
+<li>INSERT một department hợp lệ.</li>
+<li>INSERT một student hợp lệ.</li>
+<li>Thử student trùng Email.</li>
+<li>Thử student có GPA=5.</li>
+<li>Thử student tham chiếu DepartmentID không tồn tại.</li>
+<li>Thử hai enrollment trùng composite PK.</li>
+<li>Quan sát lỗi của DBMS và giải thích constraint nào đã ngăn thao tác.</li>
+</ol>
+</section>
+
+<section id="exercises">
+<h2>17. Bài tập củng cố</h2>
+
+<h3>Bài 1 — E-commerce</h3>
+<p>Thiết kế CUSTOMER, PRODUCT, ORDERS với các quy tắc: email customer unique; price ≥ 0; stock ≥ 0; order phải thuộc customer; order status mặc định NEW.</p>
+
+<h3>Bài 2 — Hotel</h3>
+<p>HOTEL_ROOM có RoomNumber chỉ unique trong HotelID. Price > 0. Status mặc định AVAILABLE. Viết CREATE TABLE đầy đủ.</p>
+
+<h3>Bài 3 — Employee</h3>
+<p>EmployeeCode và WorkEmail đều candidate keys; chọn EmployeeID làm PK. Viết constraints để hai key còn lại trở thành alternate keys.</p>
+
+<h3>Bài 4 — CHECK nhiều cột</h3>
+<p>PROJECT(StartDate, EndDate, Budget). EndDate không được trước StartDate và Budget ≥ 0.</p>
+
+<h3>Bài 5 — Debug</h3>
+<p>Tại sao schema sau chưa thực sự bảo đảm Email là candidate key?</p>
+<pre><code>CREATE TABLE user_account (
+  user_id INT PRIMARY KEY,
+  email VARCHAR(200) UNIQUE
+);</code></pre>
+<details><summary>Gợi ý</summary><p>Nếu semantics yêu cầu Email luôn tồn tại và unique, cần thêm <code>NOT NULL</code>. UNIQUE một mình không biểu đạt đầy đủ yêu cầu “candidate key bắt buộc có giá trị”.</p></details>
+
+<h3>Bài 6 — Phân biệt khái niệm</h3>
+<p>Giải thích vì sao COMPOSITE KEY và ALTERNATE KEY không nên được mô tả như hai constraint keywords ngang hàng với PRIMARY KEY, FOREIGN KEY hay CHECK.</p>
+</section>
+
+<section id="sources">
+<h2>18. Tài liệu tham khảo</h2>
+<ul>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-tutorial/" target="_blank" rel="noopener">GeeksforGeeks — SQL Tutorial</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-not-null-constraint/" target="_blank" rel="noopener">SQL NOT NULL Constraint</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/primary-key-constraint-in-sql/" target="_blank" rel="noopener">SQL PRIMARY KEY Constraint</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/foreign-key-constraint-in-sql/" target="_blank" rel="noopener">SQL FOREIGN KEY Constraint</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/composite-key-in-sql/" target="_blank" rel="noopener">Composite Key in SQL</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-unique-constraint/" target="_blank" rel="noopener">SQL UNIQUE Constraint</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-alternate-key/" target="_blank" rel="noopener">SQL Alternate Key</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-check-constraint/" target="_blank" rel="noopener">SQL CHECK Constraint</a></li>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-default-constraint/" target="_blank" rel="noopener">SQL DEFAULT Constraint</a></li>
+</ul>
+<div class="tip"><b>Gợi ý giảng:</b> nên dạy theo thứ tự NOT NULL → UNIQUE → PRIMARY KEY → FOREIGN KEY → CHECK → DEFAULT; sau đó dùng Composite/Alternate Key để kết nối lại với bài “Keys in Relational Model”.</div>
+</section>
+
+</main></div>
+
+<footer><hr><p><b>SQL Data Constraints</b> · Static-safe HTML · MySQL-focused · không dùng JavaScript nên ổn định khi preview.</p></footer>
+
+</body>
+</html>

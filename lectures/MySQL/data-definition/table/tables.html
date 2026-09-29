@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL DDL & Table Management — Static Safe</title>
+<style>
+:root{--bg:#f7f8fc;--s:#fff;--s2:#f0f4ff;--t:#182033;--m:#5f6b7a;--p:#2856d7;--a:#7a3ff2;--g:#157a55;--o:#c35a10;--r:#b42318;--b:#dbe2ef;--code:#101827}
+
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.68 system-ui,Segoe UI,Arial,sans-serif}
+a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:1000;background:var(--s);border-bottom:1px solid var(--b)}.topin{max-width:1240px;margin:auto;padding:.65rem 1.2rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+button,.btn{font:inherit;border:1px solid var(--b);background:var(--s);color:var(--t);border-radius:9px;padding:.45rem .7rem;cursor:pointer}
+.hero{background:linear-gradient(135deg,#103779,#4930a4);color:white;padding:4rem 1.2rem 3.3rem}.heroin{max-width:1120px;margin:auto}.k{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;font-weight:800;opacity:.85}
+h1{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.05;margin:.45rem 0 1rem}.hero p{max-width:930px;color:#e7edff;font-size:1.08rem}.chips{display:flex;gap:.55rem;flex-wrap:wrap}.chip{border:1px solid #ffffff55;border-radius:999px;padding:.3rem .6rem}
+.layout{max-width:1240px;margin:auto;padding:2rem 1.2rem 5rem;display:grid;grid-template-columns:290px minmax(0,1fr);gap:2rem}.toc{position:sticky;top:75px;max-height:calc(100vh - 95px);overflow:auto;background:var(--s);border:1px solid var(--b);border-radius:15px;padding:1rem}.toc a{display:block;color:var(--m);padding:.24rem .35rem;border-radius:6px;font-size:.86rem}.toc a.active,.toc a:hover{background:var(--s2);color:var(--p);text-decoration:none}
+section{scroll-margin-top:80px;background:var(--s);border:1px solid var(--b);border-radius:17px;padding:clamp(1.2rem,3vw,2rem);margin-bottom:1.35rem}h2{font-size:1.68rem;margin:.1rem 0 1rem}h3{font-size:1.14rem;margin:1.15rem 0 .45rem}.lead{color:var(--m);font-size:1.05rem}
+.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}.card{border:1px solid var(--b);border-radius:12px;padding:1rem}.card h3{margin-top:0}
+.note,.tip,.warn,.practice{background:var(--s2);padding:.85rem 1rem;border-radius:9px;border-left:5px solid var(--p);margin:1rem 0}.tip{border-color:var(--g)}.warn{border-color:var(--o)}.practice{border-color:#0d7490}.practice h3{margin-top:.1rem}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.94rem}th,td{border:1px solid var(--b);padding:.6rem .68rem;vertical-align:top}th{background:var(--s2);text-align:left}
+pre{background:var(--code);color:#e8eefc;padding:1rem;border-radius:11px;overflow:auto;line-height:1.5}code{font-family:ui-monospace,Consolas,monospace}
+details{border:1px solid var(--b);border-radius:9px;padding:.6rem .75rem;margin:.7rem 0;background:var(--s)}summary{cursor:pointer;font-weight:800;color:var(--p)}
+.steps{counter-reset:n;list-style:none;padding:0}.steps li{counter-increment:n;position:relative;padding-left:3rem;margin:.7rem 0}.steps li:before{content:counter(n);position:absolute;left:0;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:var(--p);color:white;font-weight:800}
+.quiz{border:1px solid var(--b);border-radius:11px;padding:1rem;margin:.75rem 0}.quiz label{display:block;padding:.28rem}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--m)}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media print{.top,aside{display:none}.hero{background:#fff;color:#111;padding:1rem 0}.hero p{color:#333}.layout{display:block;max-width:none;padding:0}section{border:0;padding:0;break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="topin"><b>DBMS Lecture · SQL DDL</b><div><span class="btn">HTML static-safe</span></div></div></div>
+<header class="hero"><div class="heroin"><div class="k">SQL · Data Definition Language · MySQL-focused</div><h1>CREATE · ALTER · RENAME · TRUNCATE · DROP</h1><p>Bài giảng về các lệnh tạo, sửa, đổi tên và xóa cấu trúc bảng. Cú pháp thực hành chính dùng MySQL, đồng thời nêu rõ những chỗ dễ khác PostgreSQL/SQL Server.</p><div class="chips"><span class="chip">CREATE TABLE</span><span class="chip">ALTER TABLE</span><span class="chip">ADD / DROP / MODIFY</span><span class="chip">RENAME</span><span class="chip">TRUNCATE</span><span class="chip">DROP</span></div><div class="note" style="max-width:1120px;margin:1rem auto 0"><b>Bản v2 đã loại bỏ JavaScript tương tác</b> để tránh lỗi trong trình preview. Các đáp án được mở bằng phần tử HTML chuẩn <code>&lt;details&gt;</code>.</div></div></header>
+
+<div class="layout">
+<aside><nav class="toc">
+<b>Mục lục</b>
+<a href="#obj">1. Mục tiêu</a><a href="#ddl">2. DDL là gì?</a><a href="#createdb">3. CREATE DATABASE</a><a href="#create">4. CREATE TABLE</a><a href="#constraints">5. Constraints</a><a href="#inspect">6. Xem cấu trúc</a><a href="#alter">7. ALTER TABLE</a><a href="#add">8. ADD COLUMN</a><a href="#dropcol">9. DROP COLUMN</a><a href="#renamecol">10. RENAME COLUMN</a><a href="#modify">11. MODIFY / CHANGE</a><a href="#default">12. DEFAULT / NOT NULL</a><a href="#addcon">13. ADD CONSTRAINT</a><a href="#dropcon">14. DROP CONSTRAINT</a><a href="#renametable">15. RENAME TABLE</a><a href="#truncate">16. TRUNCATE</a><a href="#droptable">17. DROP TABLE</a><a href="#compare">18. DELETE vs TRUNCATE vs DROP</a><a href="#dialects">19. Khác biệt DBMS</a><a href="#transaction">20. DDL & Transaction</a><a href="#lab">21. Lab tổng hợp</a><a href="#cheat">22. Cheat sheet</a><a href="#mistakes">23. Lỗi thường gặp</a><a href="#quiz">24. Quiz</a>
+</nav></aside>
+<main>
+
+<section id="obj"><h2>1. Mục tiêu học tập</h2><p class="lead">Sinh viên có thể tạo một schema nhỏ và thay đổi nó an toàn: thêm/xóa cột, đổi tên, đổi kiểu dữ liệu, quản lý constraints, làm rỗng hoặc xóa bảng.</p><div class="grid2"><div class="card"><h3>Tạo</h3><p>CREATE DATABASE, CREATE TABLE.</p></div><div class="card"><h3>Thay đổi</h3><p>ALTER TABLE và các clauses.</p></div><div class="card"><h3>Xóa / đổi tên</h3><p>RENAME, TRUNCATE, DROP.</p></div><div class="card"><h3>An toàn</h3><p>Kiểm tra dữ liệu và dependency trước DDL.</p></div></div></section>
+
+<section id="ddl"><h2>2. DDL là gì?</h2><p><b>DDL – Data Definition Language</b> dùng để định nghĩa hoặc thay đổi database objects: database, table, column, constraint, index, view…</p><div class="grid4"><div class="card"><h3>CREATE</h3><p>Tạo object.</p></div><div class="card"><h3>ALTER</h3><p>Sửa structure.</p></div><div class="card"><h3>TRUNCATE</h3><p>Xóa mọi rows, giữ table.</p></div><div class="card"><h3>DROP</h3><p>Xóa object.</p></div></div><div class="note"><b>DELETE là DML, không phải DDL:</b> nó tác động rows nhưng không thay định nghĩa table.</div></section>
+
+<section id="createdb"><h2>3. CREATE DATABASE</h2>
+<pre><code>CREATE DATABASE university_lab;
+USE university_lab;</code></pre>
+<p>Biến thể dùng trong script setup:</p>
+<pre><code>CREATE DATABASE IF NOT EXISTS university_lab;</code></pre>
+<div class="practice"><h3>Thực hành 1</h3><p>Tạo database <code>shop_lab</code> nếu chưa tồn tại và chọn database đó.</p><details><summary>Đáp án</summary><pre><code>CREATE DATABASE IF NOT EXISTS shop_lab;
+USE shop_lab;</code></pre></details></div></section>
+
+<section id="create"><h2>4. CREATE TABLE</h2>
+<p><code>CREATE TABLE</code> định nghĩa một table mới với columns, data types và constraints.</p>
+<pre><code>CREATE TABLE student (
+    student_id INT,
+    full_name  VARCHAR(100),
+    email      VARCHAR(200),
+    dob        DATE,
+    gpa        DECIMAL(3,2)
+);</code></pre>
+<table><thead><tr><th>Nhóm</th><th>Ví dụ type</th><th>Ứng dụng</th></tr></thead><tbody><tr><td>Integer</td><td>INT, BIGINT</td><td>ID, quantity</td></tr><tr><td>Exact numeric</td><td>DECIMAL(p,s)</td><td>Price, GPA</td></tr><tr><td>String</td><td>CHAR, VARCHAR, TEXT</td><td>Name, code</td></tr><tr><td>Date/time</td><td>DATE, DATETIME, TIMESTAMP</td><td>DOB, created_at</td></tr></tbody></table>
+<div class="practice"><h3>Thực hành 2</h3><p>Tạo PRODUCT(ProductID, ProductName, Price, Stock, CreatedAt).</p><details><summary>Gợi ý</summary><pre><code>CREATE TABLE product (
+  product_id INT,
+  product_name VARCHAR(150),
+  price DECIMAL(12,2),
+  stock INT,
+  created_at DATETIME
+);</code></pre></details></div></section>
+
+<section id="constraints"><h2>5. Constraints trong CREATE TABLE</h2>
+<pre><code>CREATE TABLE department (
+    department_id INT PRIMARY KEY,
+    department_code VARCHAR(20) UNIQUE NOT NULL,
+    department_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE student (
+    student_id INT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(200) UNIQUE NOT NULL,
+    gpa DECIMAL(3,2) CHECK (gpa BETWEEN 0 AND 4),
+    department_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_student_department
+      FOREIGN KEY (department_id)
+      REFERENCES department(department_id)
+);</code></pre>
+<table><thead><tr><th>Constraint</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>PRIMARY KEY</td><td>Identifier chính</td></tr><tr><td>FOREIGN KEY</td><td>Referential integrity</td></tr><tr><td>UNIQUE</td><td>Không duplicate</td></tr><tr><td>NOT NULL</td><td>Bắt buộc có giá trị</td></tr><tr><td>CHECK</td><td>Phải thỏa điều kiện</td></tr><tr><td>DEFAULT</td><td>Giá trị mặc định</td></tr></tbody></table>
+<div class="practice"><h3>Thực hành 3</h3><p>Tạo COURSE với CourseID PK, CourseCode UNIQUE NOT NULL, CourseName NOT NULL, Credits từ 1 đến 6.</p><details><summary>Đáp án</summary><pre><code>CREATE TABLE course (
+  course_id INT PRIMARY KEY,
+  course_code VARCHAR(20) UNIQUE NOT NULL,
+  course_name VARCHAR(150) NOT NULL,
+  credits INT CHECK (credits BETWEEN 1 AND 6)
+);</code></pre></details></div></section>
+
+<section id="inspect"><h2>6. Xem cấu trúc bảng</h2><pre><code>DESCRIBE student;
+DESC student;
+SHOW CREATE TABLE student;</code></pre><div class="tip"><b>Thói quen lab:</b> chạy <code>SHOW CREATE TABLE</code> sau mỗi ALTER để kiểm tra kết quả thực tế.</div></section>
+
+<section id="alter"><h2>7. ALTER TABLE</h2><p><code>ALTER TABLE</code> sửa cấu trúc table hiện có: thêm/xóa columns, thay type, rename, thêm/xóa indexes và constraints.</p><div class="grid3"><div class="card"><h3>ADD</h3><p>Column / constraint.</p></div><div class="card"><h3>DROP</h3><p>Column / constraint.</p></div><div class="card"><h3>MODIFY</h3><p>Đổi definition.</p></div><div class="card"><h3>CHANGE</h3><p>Đổi tên + definition.</p></div><div class="card"><h3>RENAME COLUMN</h3><p>Đổi tên column.</p></div><div class="card"><h3>RENAME</h3><p>Đổi tên table.</p></div></div></section>
+
+<section id="add"><h2>8. ADD COLUMN</h2>
+<pre><code>ALTER TABLE student
+ADD COLUMN phone VARCHAR(20);
+
+ALTER TABLE student
+ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';</code></pre>
+<p>MySQL còn hỗ trợ vị trí:</p><pre><code>ALTER TABLE student ADD COLUMN gender VARCHAR(20) AFTER full_name;
+ALTER TABLE student ADD COLUMN row_no INT FIRST;</code></pre>
+<div class="practice"><h3>Thực hành 4</h3><p>Thêm Phone, Status mặc định ACTIVE và UpdatedAt cho PRODUCT.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE product ADD COLUMN phone VARCHAR(20);
+ALTER TABLE product ADD COLUMN status VARCHAR(20) DEFAULT 'ACTIVE';
+ALTER TABLE product ADD COLUMN updated_at DATETIME;</code></pre></details></div></section>
+
+<section id="dropcol"><h2>9. DROP COLUMN</h2><pre><code>ALTER TABLE student
+DROP COLUMN phone;</code></pre><div class="warn"><b>DROP COLUMN làm mất dữ liệu của cột.</b> Trước production migration, kiểm tra views, code, reports, ETL và dependencies.</div><div class="practice"><h3>Thực hành 5</h3><p>Xóa column legacy_code.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE student DROP COLUMN legacy_code;</code></pre></details></div></section>
+
+<section id="renamecol"><h2>10. RENAME COLUMN</h2><pre><code>ALTER TABLE student
+RENAME COLUMN full_name TO student_name;</code></pre>
+<p>Trong MySQL hiện đại, <code>RENAME COLUMN</code> đổi tên mà không cần lặp lại datatype.</p><div class="warn">Ứng dụng, views hoặc stored code dùng tên cũ có thể cần sửa riêng.</div><div class="practice"><h3>Thực hành 6</h3><p>Đổi student_name về full_name.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE student
+RENAME COLUMN student_name TO full_name;</code></pre></details></div></section>
+
+<section id="modify"><h2>11. MODIFY và CHANGE COLUMN trong MySQL</h2>
+<h3>MODIFY — đổi definition, giữ tên</h3><pre><code>ALTER TABLE student
+MODIFY COLUMN full_name VARCHAR(200) NOT NULL;</code></pre>
+<h3>CHANGE — đổi tên và/hoặc definition</h3><pre><code>ALTER TABLE student
+CHANGE COLUMN full_name student_name VARCHAR(200) NOT NULL;</code></pre>
+<div class="warn"><b>Phải khai báo lại các thuộc tính muốn giữ</b> như NOT NULL, DEFAULT khi dùng MODIFY/CHANGE.</div>
+<div class="practice"><h3>Thực hành 7</h3><p>Đổi price thành DECIMAL(14,2) NOT NULL.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE product
+MODIFY COLUMN price DECIMAL(14,2) NOT NULL;</code></pre></details></div></section>
+
+<section id="default"><h2>12. DEFAULT và NOT NULL</h2>
+<pre><code>ALTER TABLE student
+ALTER COLUMN status SET DEFAULT 'ACTIVE';
+
+ALTER TABLE student
+ALTER COLUMN status DROP DEFAULT;</code></pre>
+<p>Trong MySQL, đổi kiểu/nullability thường dùng MODIFY:</p><pre><code>ALTER TABLE student
+MODIFY COLUMN email VARCHAR(200) NOT NULL;</code></pre>
+<div class="warn">Nếu dữ liệu hiện có chứa NULL, thêm NOT NULL có thể thất bại.</div>
+<div class="practice"><h3>Thực hành 8</h3><p>Đặt Product.stock NOT NULL DEFAULT 0.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE product
+MODIFY COLUMN stock INT NOT NULL DEFAULT 0;</code></pre></details></div></section>
+
+<section id="addcon"><h2>13. ADD CONSTRAINT</h2>
+<pre><code>ALTER TABLE student
+ADD CONSTRAINT uq_student_email UNIQUE (email);
+
+ALTER TABLE student
+ADD CONSTRAINT chk_student_gpa
+CHECK (gpa BETWEEN 0 AND 4);
+
+ALTER TABLE student
+ADD CONSTRAINT fk_student_department
+FOREIGN KEY (department_id)
+REFERENCES department(department_id);</code></pre>
+<div class="practice"><h3>Thực hành 9</h3><p>Thêm FK Product.SupplierID → Supplier.SupplierID, tên fk_product_supplier.</p><details><summary>Đáp án</summary><pre><code>ALTER TABLE product
+ADD CONSTRAINT fk_product_supplier
+FOREIGN KEY (supplier_id)
+REFERENCES supplier(supplier_id);</code></pre></details></div></section>
+
+<section id="dropcon"><h2>14. DROP CONSTRAINT trong MySQL</h2>
+<pre><code>-- Primary key
+ALTER TABLE student DROP PRIMARY KEY;
+
+-- Foreign key
+ALTER TABLE student
+DROP FOREIGN KEY fk_student_department;
+
+-- Check
+ALTER TABLE student
+DROP CHECK chk_student_gpa;
+
+-- Unique index/constraint
+ALTER TABLE student
+DROP INDEX uq_student_email;</code></pre>
+<div class="note">Cú pháp drop constraint khác nhau giữa DBMS; MySQL đặc biệt dùng <code>DROP FOREIGN KEY</code> cho FK và thường <code>DROP INDEX</code> cho UNIQUE index.</div></section>
+
+<section id="renametable"><h2>15. RENAME TABLE</h2>
+<pre><code>ALTER TABLE student RENAME TO students;
+
+RENAME TABLE students TO student;</code></pre>
+<p>MySQL còn cho rename nhiều bảng trong cùng statement:</p><pre><code>RENAME TABLE
+  student TO student_old,
+  student_new TO student;</code></pre>
+<div class="practice"><h3>Thực hành 10</h3><p>Đổi product thành products.</p><details><summary>Đáp án</summary><pre><code>RENAME TABLE product TO products;</code></pre></details></div></section>
+
+<section id="truncate"><h2>16. TRUNCATE TABLE</h2>
+<pre><code>TRUNCATE TABLE student;</code></pre>
+<p>TRUNCATE xóa toàn bộ rows nhưng giữ table structure. Trong MySQL/InnoDB, đây là DDL có implicit commit; không nên giả định có thể rollback như DELETE. Nó cũng có thể bị từ chối nếu table đang được table khác tham chiếu bằng foreign key.</p>
+<div class="grid2"><div class="card"><h3>Mất</h3><p>Tất cả rows.</p></div><div class="card"><h3>Giữ</h3><p>Table structure để dùng tiếp.</p></div></div>
+<div class="practice"><h3>Thực hành 11</h3><p>Làm rỗng staging_import nhưng giữ schema.</p><details><summary>Đáp án</summary><pre><code>TRUNCATE TABLE staging_import;</code></pre></details></div></section>
+
+<section id="droptable"><h2>17. DROP TABLE</h2>
+<pre><code>DROP TABLE student;
+
+DROP TABLE IF EXISTS student;</code></pre>
+<p>DROP TABLE xóa table definition và dữ liệu.</p><div class="warn"><b>Destructive:</b> nếu cần table lại, phải tạo lại từ schema/backup/migration.</div></section>
+
+<section id="compare"><h2>18. DELETE vs TRUNCATE vs DROP</h2>
+<table><thead><tr><th>Tiêu chí</th><th>DELETE</th><th>TRUNCATE</th><th>DROP</th></tr></thead><tbody>
+<tr><td>Nhóm</td><td>DML</td><td>DDL</td><td>DDL</td></tr>
+<tr><td>WHERE?</td><td>Có</td><td>Không</td><td>Không</td></tr>
+<tr><td>Xóa một số rows?</td><td>Có</td><td>Không</td><td>Không</td></tr>
+<tr><td>Xóa mọi rows?</td><td>Có thể</td><td>Có</td><td>Có cùng table</td></tr>
+<tr><td>Giữ structure?</td><td>Có</td><td>Có</td><td>Không</td></tr>
+<tr><td>Table còn tồn tại?</td><td>Có</td><td>Có</td><td>Không</td></tr>
+<tr><td>MySQL transaction</td><td>Có thể rollback với transactional engine</td><td>Implicit commit</td><td>Implicit commit</td></tr>
+</tbody></table>
+<div class="practice"><h3>Thực hành 12 — chọn lệnh</h3><ol><li>Xóa orders có status='CANCELLED'.</li><li>Xóa toàn bộ dữ liệu staging, giữ table.</li><li>Xóa hẳn table old_log.</li></ol><details><summary>Đáp án</summary><ol><li>DELETE ... WHERE.</li><li>TRUNCATE.</li><li>DROP TABLE.</li></ol></details></div></section>
+
+<section id="dialects"><h2>19. Khác biệt giữa các DBMS</h2>
+<table><thead><tr><th>Task</th><th>MySQL</th><th>PostgreSQL</th><th>SQL Server</th></tr></thead><tbody>
+<tr><td>Rename column</td><td>RENAME COLUMN</td><td>RENAME COLUMN</td><td>Thường sp_rename</td></tr>
+<tr><td>Change type</td><td>MODIFY / CHANGE</td><td>ALTER COLUMN ... TYPE</td><td>ALTER COLUMN</td></tr>
+<tr><td>Rename table</td><td>RENAME TABLE / ALTER</td><td>ALTER TABLE ... RENAME TO</td><td>Thường sp_rename</td></tr>
+<tr><td>Drop FK</td><td>DROP FOREIGN KEY</td><td>DROP CONSTRAINT</td><td>DROP CONSTRAINT</td></tr>
+</tbody></table>
+<div class="note">Bài này dùng <b>MySQL làm dialect thực hành chính</b>. Khi đổi DBMS, tra manual thay vì sửa cú pháp theo trí nhớ.</div></section>
+
+<section id="transaction"><h2>20. DDL và Transaction trong MySQL</h2>
+<p>Nhiều lệnh DDL như CREATE, ALTER, DROP, RENAME, TRUNCATE gây implicit commit trong MySQL.</p>
+<pre><code>START TRANSACTION;
+
+UPDATE student
+SET status='INACTIVE'
+WHERE student_id=10;
+
+ALTER TABLE student
+ADD COLUMN note VARCHAR(200);
+
+ROLLBACK;  -- đừng giả định toàn bộ sẽ trở lại như trước ALTER</code></pre>
+<div class="warn">Schema migration cần backup, test và kế hoạch triển khai riêng; không xem DDL giống một UPDATE thông thường.</div></section>
+
+<section id="lab"><h2>21. Lab tổng hợp</h2>
+<ol class="steps">
+<li>Tạo database <code>ddl_lab</code>.</li>
+<li>Tạo STUDENT(StudentID PK, FullName NOT NULL, Email, DOB).</li>
+<li>Thêm GPA DECIMAL(3,2).</li>
+<li>Thêm UNIQUE cho Email và CHECK GPA 0..4.</li>
+<li>Đổi DOB → DateOfBirth.</li>
+<li>Tăng FullName lên VARCHAR(200) NOT NULL.</li>
+<li>Thêm Status NOT NULL DEFAULT 'ACTIVE'.</li>
+<li>INSERT 2 rows hợp lệ.</li>
+<li>Thử INSERT email trùng và GPA=5.0, quan sát lỗi.</li>
+<li>Dùng SHOW CREATE TABLE để kiểm tra schema cuối.</li>
+</ol>
+<details><summary>Xem script mẫu</summary><pre><code>CREATE DATABASE IF NOT EXISTS ddl_lab;
+USE ddl_lab;
+
+CREATE TABLE student (
+  student_id INT PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(200),
+  dob DATE
+);
+
+ALTER TABLE student ADD COLUMN gpa DECIMAL(3,2);
+
+ALTER TABLE student
+  ADD CONSTRAINT uq_student_email UNIQUE(email),
+  ADD CONSTRAINT chk_student_gpa CHECK(gpa BETWEEN 0 AND 4);
+
+ALTER TABLE student RENAME COLUMN dob TO date_of_birth;
+ALTER TABLE student MODIFY COLUMN full_name VARCHAR(200) NOT NULL;
+ALTER TABLE student ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+
+INSERT INTO student(student_id,full_name,email,gpa)
+VALUES (1,'Nguyen An','an@example.com',3.4),
+       (2,'Tran Binh','binh@example.com',3.1);
+
+SHOW CREATE TABLE student;</code></pre></details></section>
+
+<section id="cheat"><h2>22. Cheat Sheet</h2>
+<pre><code>CREATE DATABASE IF NOT EXISTS db;
+USE db;
+
+CREATE TABLE t (
+  id INT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE t ADD COLUMN email VARCHAR(200);
+ALTER TABLE t DROP COLUMN email;
+ALTER TABLE t RENAME COLUMN name TO full_name;
+ALTER TABLE t MODIFY COLUMN full_name VARCHAR(200) NOT NULL;
+ALTER TABLE t CHANGE COLUMN full_name name VARCHAR(200) NOT NULL;
+
+ALTER TABLE t ALTER COLUMN status SET DEFAULT 'ACTIVE';
+ALTER TABLE t ALTER COLUMN status DROP DEFAULT;
+
+ALTER TABLE t ADD CONSTRAINT uq_name UNIQUE(name);
+ALTER TABLE t ADD CONSTRAINT chk_id CHECK(id > 0);
+
+ALTER TABLE t DROP PRIMARY KEY;
+ALTER TABLE t DROP FOREIGN KEY fk_name;
+ALTER TABLE t DROP CHECK chk_name;
+ALTER TABLE t DROP INDEX uq_name;
+
+ALTER TABLE t RENAME TO t_new;
+RENAME TABLE t_new TO t;
+
+TRUNCATE TABLE t;
+DROP TABLE IF EXISTS t;</code></pre></section>
+
+<section id="mistakes"><h2>23. Lỗi thường gặp</h2>
+<div class="grid2">
+<div class="card"><h3>DROP nhầm TRUNCATE</h3><p>DROP làm table biến mất.</p></div><div class="card"><h3>TRUNCATE có WHERE</h3><p>Không có.</p></div>
+<div class="card"><h3>MODIFY quên NOT NULL</h3><p>Có thể đổi definition ngoài ý muốn.</p></div><div class="card"><h3>Đổi type không kiểm tra data</h3><p>Conversion có thể fail.</p></div>
+<div class="card"><h3>Rename không sửa app</h3><p>Query dùng tên cũ sẽ hỏng.</p></div><div class="card"><h3>DDL rollback như DML</h3><p>Không đúng trong MySQL.</p></div>
+<div class="card"><h3>Nhầm dialect</h3><p>MySQL MODIFY ≠ PostgreSQL ALTER TYPE.</p></div><div class="card"><h3>Không đặt tên constraint</h3><p>Khó maintain/drop.</p></div>
+</div></section>
+
+<section id="quiz"><h2>24. Quiz</h2>
+<div class="quiz"><b>1.</b> Tạo table dùng:<div style="padding:.25rem .4rem">• ALTER TABLE</div><div style="padding:.25rem .4rem">• CREATE TABLE</div><details><summary>Xem đáp án</summary><div class="answer">B</div></details></div>
+<div class="quiz"><b>2.</b> Thêm column:<div style="padding:.25rem .4rem">• UPDATE COLUMN</div><div style="padding:.25rem .4rem">• INSERT COLUMN</div><div style="padding:.25rem .4rem">• ALTER TABLE ... ADD COLUMN</div><details><summary>Xem đáp án</summary><div class="answer">C</div></details></div>
+<div class="quiz"><b>3.</b> MySQL đổi definition giữ tên:<div style="padding:.25rem .4rem">• MODIFY COLUMN</div><div style="padding:.25rem .4rem">• TRUNCATE COLUMN</div><details><summary>Xem đáp án</summary><div class="answer">A</div></details></div>
+<div class="quiz"><b>4.</b> TRUNCATE:<div style="padding:.25rem .4rem">• Xóa schema</div><div style="padding:.25rem .4rem">• Xóa rows, giữ table</div><details><summary>Xem đáp án</summary><div class="answer">B</div></details></div>
+<div class="quiz"><b>5.</b> DROP TABLE:<div style="padding:.25rem .4rem">• Chỉ xóa một row</div><div style="padding:.25rem .4rem">• Giữ table</div><div style="padding:.25rem .4rem">• Xóa table và data</div><details><summary>Xem đáp án</summary><div class="answer">C</div></details></div>
+<div class="quiz"><b>6.</b> Xóa rows có điều kiện:<div style="padding:.25rem .4rem">• DELETE ... WHERE</div><div style="padding:.25rem .4rem">• TRUNCATE ... WHERE</div><details><summary>Xem đáp án</summary><div class="answer">A</div></details></div>
+<div class="quiz"><b>7.</b> MySQL rename column:<div style="padding:.25rem .4rem">• UPDATE COLUMN</div><div style="padding:.25rem .4rem">• ALTER TABLE ... RENAME COLUMN</div><details><summary>Xem đáp án</summary><div class="answer">B</div></details></div>
+<div class="quiz"><b>8.</b> Trước khi đổi type:<div style="padding:.25rem .4rem">• Không cần kiểm tra data</div><div style="padding:.25rem .4rem">• Luôn convert được</div><div style="padding:.25rem .4rem">• Kiểm tra dữ liệu hiện có</div><details><summary>Xem đáp án</summary><div class="answer">C</div></details></div>
+<div class="quiz"><b>9.</b> MySQL DROP FOREIGN KEY cần:<div style="padding:.25rem .4rem">• Tên FK constraint</div><div style="padding:.25rem .4rem">• Không cần tên</div><details><summary>Xem đáp án</summary><div class="answer">A</div></details></div>
+<div class="quiz"><b>10.</b> MySQL ALTER TABLE thường:<div style="padding:.25rem .4rem">• Rollback như UPDATE</div><div style="padding:.25rem .4rem">• Có thể implicit commit</div><details><summary>Xem đáp án</summary><div class="answer">B</div></details></div>
+
+</section>
+
+</main></div>
+<footer><hr><p><b>SQL DDL & Table Management</b> · MySQL-focused lecture · CREATE, ALTER, RENAME, TRUNCATE, DROP.</p></footer>
+
+</body></html>
