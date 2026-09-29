@@ -194,7 +194,7 @@ Phần DDL trình bày kiểu dữ liệu, tạo bảng, ràng buộc và vòng 
 
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
-| Kiểu dữ liệu SQL | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time và chọn kiểu dữ liệu |
+| Kiểu dữ liệu SQL | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | [HTML](lectures/MySQL/data-definition/sql-data-types/sql-data-types.html) | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time và chọn kiểu dữ liệu |
 | CREATE TABLE và ràng buộc trong MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | [HTML](lectures/MySQL/data-definition/create-table-statement.html) | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK và DEFAULT |
 | Quản lý vòng đời Table trong MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | [HTML](lectures/MySQL/data-definition/table/tables.html) | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary table, TRUNCATE và generated columns |
 
@@ -379,7 +379,7 @@ Phần DDL trình bày kiểu dữ liệu, tạo bảng, ràng buộc và vòng 
 
 | Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
-| SQL Data Types | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | <span class="missing">—</span> | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time, and choosing data types |
+| SQL Data Types | [Markdown](lectures/MySQL/data-definition/sql-data-types/sql-data-types.md) | [HTML](lectures/MySQL/data-definition/sql-data-types/sql-data-types.html) | [PDF](lectures/MySQL/data-definition/sql-data-types/sql-data-types.pdf) | Numeric, string, date/time, and choosing data types |
 | CREATE TABLE and Constraints in MySQL | [Markdown](lectures/MySQL/data-definition/create-table-statement.md) | [HTML](lectures/MySQL/data-definition/create-table-statement.html) | [PDF](lectures/MySQL/data-definition/create-table-statement.pdf) | PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, CHECK, and DEFAULT |
 | Managing the Table Lifecycle in MySQL | [Markdown](lectures/MySQL/data-definition/table/tables.md) | [HTML](lectures/MySQL/data-definition/table/tables.html) | [PDF](lectures/MySQL/data-definition/table/tables.pdf) | CREATE, ALTER, RENAME, DROP, temporary tables, TRUNCATE, and generated columns |
 

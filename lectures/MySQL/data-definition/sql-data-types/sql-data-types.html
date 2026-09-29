@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài giảng SQL Data Types</title>
+<meta name="description" content="Bài giảng HTML về SQL Data Types, MySQL-focused: integer, decimal, float/double, char/varchar/text, binary/blob, date/time, boolean, enum/set, JSON, spatial; kèm bài tập thực hành.">
+<style>
+:root{
+ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f4ff;--text:#182033;--muted:#5f6b7a;
+ --primary:#2856d7;--accent:#7a3ff2;--green:#157a55;--orange:#c35a10;--red:#b42318;
+ --cyan:#0d7490;--border:#dbe2ef;--code:#101827;
+}
+body.dark{
+ --bg:#0e1420;--surface:#151e2e;--surface2:#1a2740;--text:#eef3ff;--muted:#aab8ce;
+ --primary:#82a5ff;--accent:#b69bff;--green:#63d5aa;--orange:#ffb46f;--red:#ff8f86;
+ --cyan:#72d6ef;--border:#2c3a54;--code:#0a101b;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,var(--primary),var(--accent));z-index:9999}
+.quiz-item{border:1px solid var(--border);border-radius:10px;padding:1rem;margin:.8rem 0}
+.quiz-item label{display:block;padding:.25rem 0}
+.quiz-answer{display:none;margin-top:.5rem;padding:.6rem;border-radius:7px;background:var(--surface2)}
+.quiz-answer.show{display:block}
+
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border)}
+.topin{max-width:1240px;margin:auto;padding:.65rem 1.2rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:.45rem .7rem}
+.hero{background:linear-gradient(135deg,#103779,#4930a4);color:#fff;padding:4rem 1.2rem 3.3rem}
+.heroin{max-width:1120px;margin:auto}.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:800;opacity:.86}
+h1{font-size:clamp(2.15rem,5vw,4.2rem);line-height:1.06;margin:.45rem 0 1rem}.hero p{max-width:930px;color:#e8edff;font-size:1.08rem}
+.chips{display:flex;gap:.55rem;flex-wrap:wrap}.chip{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:.3rem .62rem;background:rgba(255,255,255,.08)}
+.layout{max-width:1240px;margin:auto;padding:2rem 1.2rem 5rem;display:grid;grid-template-columns:295px minmax(0,1fr);gap:2rem}
+.toc{position:sticky;top:75px;max-height:calc(100vh - 95px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:1rem}
+.toc a{display:block;color:var(--muted);padding:.25rem .38rem;border-radius:6px;font-size:.86rem}.toc a:hover{background:var(--surface2);color:var(--primary);text-decoration:none}
+section{scroll-margin-top:80px;background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:clamp(1.2rem,3vw,2rem);margin-bottom:1.35rem}
+h2{font-size:1.7rem;margin:.1rem 0 1rem}h3{font-size:1.15rem;margin:1.2rem 0 .45rem}h4{margin:1rem 0 .35rem}.lead{color:var(--muted);font-size:1.05rem}
+.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}
+.card{border:1px solid var(--border);border-radius:12px;padding:1rem}.card h3,.card h4{margin-top:0}
+.note,.tip,.warn,.practice{background:var(--surface2);padding:.85rem 1rem;border-radius:9px;border-left:5px solid var(--primary);margin:1rem 0}
+.tip{border-color:var(--green)}.warn{border-color:var(--orange)}.practice{border-color:var(--cyan)}.practice h3{margin-top:.1rem}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.94rem}th,td{border:1px solid var(--border);padding:.62rem .7rem;vertical-align:top}th{background:var(--surface2);text-align:left}
+pre{background:var(--code);color:#e8eefc;padding:1rem;border-radius:11px;overflow:auto;line-height:1.52}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+details{border:1px solid var(--border);border-radius:9px;padding:.6rem .75rem;margin:.7rem 0;background:var(--surface)}summary{cursor:pointer;font-weight:800;color:var(--primary)}
+.formula{background:var(--surface2);padding:.7rem .85rem;border-radius:8px;font-family:Georgia,serif;margin:.75rem 0}
+.good{color:var(--green);font-weight:800}.bad{color:var(--red);font-weight:800}.mysql{color:#0d7490;font-weight:800}
+svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:13px;background:#fff;margin:.7rem 0}
+.box{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.alt{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.warm{fill:#fff4e9;stroke:#c35a10;stroke-width:3}.green{fill:#ecfdf3;stroke:#157a55;stroke-width:3}.txt{font:700 18px system-ui;fill:#182033}.sm{font:14px system-ui;fill:#475569}.line{stroke:#475569;stroke-width:3;fill:none}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media print{.top,aside{display:none}.hero{background:#fff;color:#111;padding:1rem 0}.hero p{color:#333}.layout{display:block;max-width:none;padding:0}section{border:0;padding:0;break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="top"><div class="topin"><b>DBMS Lecture · SQL Data Types</b>
+<div>
+<button class="btn" type="button" onclick="toggleTheme()">◐ Giao diện</button>
+<a class="btn" href="#choose">Chọn kiểu</a>
+<a class="btn" href="#lab">Lab</a>
+<a class="btn" href="#quiz">Quiz</a>
+</div></div></div>
+
+<header class="hero"><div class="heroin">
+<div class="kicker">SQL · Data Modeling · MySQL-focused</div>
+<h1>SQL Data Types</h1>
+<p>Mỗi column trong database cần một data type phù hợp. Chọn đúng kiểu dữ liệu giúp bảo vệ integrity, tránh sai số, giảm storage, tăng hiệu quả indexing và làm cho schema thể hiện đúng ý nghĩa nghiệp vụ.</p>
+<div class="chips">
+<span class="chip">Integer</span><span class="chip">DECIMAL</span><span class="chip">FLOAT / DOUBLE</span>
+<span class="chip">CHAR / VARCHAR</span><span class="chip">TEXT / BLOB</span>
+<span class="chip">DATE / TIME</span><span class="chip">BOOLEAN</span><span class="chip">JSON</span>
+</div>
+</div></header>
+
+<div class="layout">
+<aside><nav class="toc">
+<b>Mục lục</b>
+<a href="#overview">1. Tổng quan</a>
+<a href="#categories">2. Các nhóm Data Type</a>
+<a href="#integer">3. Integer Types</a>
+<a href="#unsigned">4. SIGNED / UNSIGNED</a>
+<a href="#decimal">5. DECIMAL / NUMERIC</a>
+<a href="#float">6. FLOAT / DOUBLE</a>
+<a href="#char">7. CHAR vs VARCHAR</a>
+<a href="#text">8. TEXT Types</a>
+<a href="#binary">9. BINARY / VARBINARY</a>
+<a href="#blob">10. BLOB Types</a>
+<a href="#date">11. DATE / TIME</a>
+<a href="#timestamp">12. DATETIME vs TIMESTAMP</a>
+<a href="#boolean">13. BOOLEAN</a>
+<a href="#enum">14. ENUM / SET</a>
+<a href="#json">15. JSON</a>
+<a href="#spatial">16. Spatial Types</a>
+<a href="#charset">17. Character Set & Collation</a>
+<a href="#null">18. Type + NULL</a>
+<a href="#choose">19. Chọn đúng kiểu</a>
+<a href="#anti">20. Các lựa chọn sai thường gặp</a>
+<a href="#dialects">21. Khác biệt DBMS</a>
+<a href="#schema">22. Ví dụ Schema đầy đủ</a>
+<a href="#lab">23. Lab thực hành</a>
+<a href="#exercises">24. Bài tập</a>
+<a href="#cheat">25. Cheat Sheet</a>
+<a href="#quiz">26. Quiz</a>
+<a href="#sources">27. Tài liệu</a>
+</nav></aside>
+
+<main>
+
+<section id="overview">
+<h2>1. Data Type là gì?</h2>
+<p class="lead">Data type quy định <b>loại giá trị một column có thể lưu</b>, cách DBMS biểu diễn giá trị đó và những phép toán nào có ý nghĩa.</p>
+
+<div class="grid4">
+<div class="card"><h3>Integrity</h3><p>Ngăn lưu “abc” vào cột số hoặc ngày tháng sai loại.</p></div>
+<div class="card"><h3>Storage</h3><p>Kiểu nhỏ hơn có thể dùng ít dung lượng hơn.</p></div>
+<div class="card"><h3>Performance</h3><p>Ảnh hưởng index, sorting, comparison và calculation.</p></div>
+<div class="card"><h3>Semantics</h3><p>Schema thể hiện đúng ý nghĩa: ngày là DATE, tiền là DECIMAL.</p></div>
+</div>
+
+<div class="formula">Business meaning → Domain of values → Data type → Constraints</div>
+
+<div class="note"><b>Ví dụ:</b> “Giá sản phẩm” không chỉ là một con số. Nó cần số thập phân chính xác, không âm và có đơn vị tiền tệ. Vì vậy <code>DECIMAL(12,2) CHECK(price &gt;= 0)</code> thường phù hợp hơn <code>FLOAT</code>.</div>
+</section>
+
+<section id="categories">
+<h2>2. Các nhóm Data Type chính</h2>
+<table>
+<thead><tr><th>Nhóm</th><th>MySQL types điển hình</th><th>Dùng cho</th></tr></thead>
+<tbody>
+<tr><td>Integer</td><td>TINYINT, SMALLINT, MEDIUMINT, INT, BIGINT</td><td>ID, count, quantity</td></tr>
+<tr><td>Exact numeric</td><td>DECIMAL, NUMERIC</td><td>Tiền, tỷ lệ cần chính xác</td></tr>
+<tr><td>Approximate numeric</td><td>FLOAT, DOUBLE</td><td>Đo lường khoa học, giá trị xấp xỉ</td></tr>
+<tr><td>Character strings</td><td>CHAR, VARCHAR, TEXT</td><td>Tên, mã, mô tả</td></tr>
+<tr><td>Binary strings</td><td>BINARY, VARBINARY, BLOB</td><td>Bytes, hash, file binary</td></tr>
+<tr><td>Temporal</td><td>DATE, TIME, DATETIME, TIMESTAMP, YEAR</td><td>Ngày, giờ, sự kiện</td></tr>
+<tr><td>Logical</td><td>BOOLEAN / BOOL</td><td>True/False semantics</td></tr>
+<tr><td>Special</td><td>ENUM, SET, JSON, GEOMETRY...</td><td>Miền chuyên biệt</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="integer">
+<h2>3. Integer Types trong MySQL</h2>
+<p>Integer types lưu số nguyên chính xác. MySQL có nhiều kích thước để cân bằng range và storage.</p>
+
+<table>
+<thead><tr><th>Type</th><th>Bytes</th><th>Signed Range</th><th>Unsigned Range</th></tr></thead>
+<tbody>
+<tr><td>TINYINT</td><td>1</td><td>-128 … 127</td><td>0 … 255</td></tr>
+<tr><td>SMALLINT</td><td>2</td><td>-32,768 … 32,767</td><td>0 … 65,535</td></tr>
+<tr><td>MEDIUMINT</td><td>3</td><td>-8,388,608 … 8,388,607</td><td>0 … 16,777,215</td></tr>
+<tr><td>INT</td><td>4</td><td>-2,147,483,648 … 2,147,483,647</td><td>0 … 4,294,967,295</td></tr>
+<tr><td>BIGINT</td><td>8</td><td>-2<sup>63</sup> … 2<sup>63</sup>-1</td><td>0 … 2<sup>64</sup>-1</td></tr>
+</tbody>
+</table>
+
+<h3>Ví dụ</h3>
+<pre><code>CREATE TABLE inventory (
+    product_id BIGINT PRIMARY KEY,
+    stock      INT NOT NULL,
+    rating     TINYINT
+);</code></pre>
+
+<div class="tip"><b>Chọn type nhỏ nhất nhưng vẫn bao phủ được miền giá trị hợp lý trong tương lai.</b> Không cần BIGINT cho mọi cột số nguyên.</div>
+
+<div class="practice"><h3>Thực hành Integer</h3>
+<p>Chọn type cho: (a) tuổi người 0–120, (b) số lượng sản phẩm có thể đến 100,000, (c) ID của bảng có thể có hàng tỷ rows.</p>
+<details><summary>Gợi ý</summary>
+<p>(a) <code>TINYINT UNSIGNED</code>; (b) ít nhất <code>MEDIUMINT UNSIGNED</code> trong MySQL; (c) thường <code>BIGINT</code>.</p>
+</details></div>
+</section>
+
+<section id="unsigned">
+<h2>4. SIGNED và UNSIGNED</h2>
+<p>Integer types MySQL mặc định là signed. <code>UNSIGNED</code> bỏ miền âm để tăng miền dương.</p>
+
+<pre><code>stock INT UNSIGNED NOT NULL
+age   TINYINT UNSIGNED</code></pre>
+
+<div class="grid2">
+<div class="card"><h3>Dùng hợp lý</h3><p>Count, stock, age, identifier không có ý nghĩa âm.</p></div>
+<div class="card"><h3>Không chỉ dựa vào type</h3><p>Nếu business rule cần giới hạn hẹp hơn, thêm CHECK.</p></div>
+</div>
+
+<pre><code>age TINYINT UNSIGNED
+    CHECK (age BETWEEN 0 AND 120)</code></pre>
+
+<div class="warn">`UNSIGNED` là đặc trưng MySQL, không phải cú pháp portable giữa mọi DBMS.</div>
+</section>
+
+<section id="decimal">
+<h2>5. DECIMAL / NUMERIC — Exact Fixed-Point</h2>
+<p><code>DECIMAL(p,s)</code> phù hợp khi cần biểu diễn số thập phân <b>chính xác</b>.</p>
+
+<div class="formula">p = precision = tổng số chữ số<br>s = scale = số chữ số sau dấu thập phân</div>
+
+<h3>Ví dụ DECIMAL(10,2)</h3>
+<p>Có tối đa 10 chữ số, trong đó 2 chữ số sau dấu thập phân.</p>
+
+<pre><code>CREATE TABLE product (
+    product_id INT PRIMARY KEY,
+    price DECIMAL(12,2) NOT NULL,
+    tax_rate DECIMAL(5,4)
+);</code></pre>
+
+<h3>Tại sao dùng DECIMAL cho tiền?</h3>
+<p>Vì tiền thường yêu cầu arithmetic chính xác theo hệ thập phân. FLOAT/DOUBLE dùng biểu diễn floating-point nhị phân nên có thể xuất hiện sai số xấp xỉ.</p>
+
+<div class="practice"><h3>Thực hành DECIMAL</h3>
+<p>Chọn type cho: lương tối đa 99,999,999.99 và tỷ lệ lãi suất cần lưu tới 4 chữ số sau dấu phẩy.</p>
+<details><summary>Gợi ý</summary><pre><code>salary DECIMAL(10,2)
+interest_rate DECIMAL(7,4)</code></pre></details></div>
+</section>
+
+<section id="float">
+<h2>6. FLOAT và DOUBLE — Approximate Numeric</h2>
+<p>FLOAT và DOUBLE dành cho số thực xấp xỉ, đặc biệt trong đo lường, mô phỏng hoặc tính toán khoa học.</p>
+
+<div class="grid2">
+<div class="card"><h3>FLOAT</h3><p>Độ chính xác thấp hơn, storage nhỏ hơn trong các triển khai thông thường.</p></div>
+<div class="card"><h3>DOUBLE</h3><p>Độ chính xác lớn hơn FLOAT.</p></div>
+</div>
+
+<pre><code>CREATE TABLE sensor_reading (
+    sensor_id INT,
+    temperature DOUBLE,
+    humidity DOUBLE
+);</code></pre>
+
+<div class="warn"><b>Không dùng FLOAT/DOUBLE làm mặc định cho tiền.</b> Ví dụ phép cộng thập phân có thể không biểu diễn chính xác tuyệt đối trong floating point.</div>
+
+<div class="practice"><h3>Thực hành Exact vs Approximate</h3>
+<p>Chọn DECIMAL hay DOUBLE cho: (a) giá cổ phiếu cần tính tiền, (b) tọa độ/đo đạc khoa học, (c) số tiền hóa đơn.</p>
+<details><summary>Gợi ý</summary><p>(a) DECIMAL; (b) DOUBLE; (c) DECIMAL.</p></details></div>
+</section>
+
+<section id="char">
+<h2>7. CHAR vs VARCHAR</h2>
+
+<table>
+<thead><tr><th>Tiêu chí</th><th>CHAR(n)</th><th>VARCHAR(n)</th></tr></thead>
+<tbody>
+<tr><td>Độ dài</td><td>Cố định</td><td>Biến đổi</td></tr>
+<tr><td>Phù hợp</td><td>Mã luôn có chiều dài cố định</td><td>Tên, email, địa chỉ ngắn</td></tr>
+<tr><td>Ví dụ</td><td>CountryCode CHAR(2)</td><td>FullName VARCHAR(100)</td></tr>
+</tbody>
+</table>
+
+<pre><code>CREATE TABLE customer (
+    customer_id BIGINT PRIMARY KEY,
+    country_code CHAR(2),
+    full_name VARCHAR(100),
+    email VARCHAR(200)
+);</code></pre>
+
+<p>Trong MySQL, <code>CHAR</code> tối đa 255 characters; <code>VARCHAR</code> có giới hạn khai báo tới 65,535 characters nhưng giới hạn thực tế còn phụ thuộc row size và character set.</p>
+
+<div class="practice"><h3>Thực hành CHAR/VARCHAR</h3>
+<p>Chọn CHAR hay VARCHAR cho: ISO country code, mã giới tính 1 ký tự, tên khách hàng, email.</p>
+<details><summary>Gợi ý</summary><p>Country code: CHAR(2); mã 1 ký tự: CHAR(1); tên/email: VARCHAR.</p></details></div>
+</section>
+
+<section id="text">
+<h2>8. TEXT Types</h2>
+<p>MySQL có các TEXT types cho chuỗi dài:</p>
+<table>
+<thead><tr><th>Type</th><th>Mức dung lượng khái quát</th><th>Dùng khi</th></tr></thead>
+<tbody>
+<tr><td>TINYTEXT</td><td>Rất nhỏ</td><td>Text ngắn nhưng dài biến đổi</td></tr>
+<tr><td>TEXT</td><td>Khoảng 64 KB mức byte</td><td>Mô tả, ghi chú</td></tr>
+<tr><td>MEDIUMTEXT</td><td>Khoảng 16 MB</td><td>Nội dung dài</td></tr>
+<tr><td>LONGTEXT</td><td>Rất lớn</td><td>Tài liệu/text cực dài</td></tr>
+</tbody>
+</table>
+
+<pre><code>description TEXT,
+article_body MEDIUMTEXT</code></pre>
+
+<div class="tip">Không chọn TEXT chỉ vì “không biết dài bao nhiêu”. Nếu miền dữ liệu thực tế là tên 100 ký tự, VARCHAR(100) mô tả semantics rõ hơn.</div>
+</section>
+
+<section id="binary">
+<h2>9. BINARY và VARBINARY</h2>
+<p>Hai kiểu này giống CHAR/VARCHAR về ý tưởng fixed/variable length nhưng lưu <b>byte strings</b>, không phải character strings.</p>
+
+<pre><code>file_hash BINARY(32),
+token     VARBINARY(255)</code></pre>
+
+<div class="grid2">
+<div class="card"><h3>BINARY(n)</h3><p>Độ dài byte cố định.</p></div>
+<div class="card"><h3>VARBINARY(n)</h3><p>Độ dài byte biến đổi.</p></div>
+</div>
+
+<div class="note">Đừng nhầm binary data với chuỗi hex hiển thị cho con người. Một hash có thể được lưu dạng bytes hoặc dạng text hex tùy thiết kế.</div>
+</section>
+
+<section id="blob">
+<h2>10. BLOB Types</h2>
+<p>BLOB = Binary Large Object, dùng cho dữ liệu binary lớn.</p>
+
+<table>
+<thead><tr><th>Type</th><th>Quy mô</th></tr></thead>
+<tbody>
+<tr><td>TINYBLOB</td><td>Nhỏ</td></tr>
+<tr><td>BLOB</td><td>Khoảng 64 KB</td></tr>
+<tr><td>MEDIUMBLOB</td><td>Khoảng 16 MB</td></tr>
+<tr><td>LONGBLOB</td><td>Rất lớn</td></tr>
+</tbody>
+</table>
+
+<pre><code>CREATE TABLE attachment (
+    attachment_id BIGINT PRIMARY KEY,
+    file_name VARCHAR(255),
+    content_type VARCHAR(100),
+    file_data LONGBLOB
+);</code></pre>
+
+<div class="warn"><b>Không phải mọi file nên lưu trực tiếp trong database.</b> Với file rất lớn, hệ thống thường cân nhắc object storage và chỉ lưu URL/key + metadata trong database.</div>
+</section>
+
+<section id="date">
+<h2>11. DATE, TIME và YEAR</h2>
+
+<table>
+<thead><tr><th>Type</th><th>Ý nghĩa</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>DATE</td><td>Ngày lịch</td><td>2026-09-29</td></tr>
+<tr><td>TIME</td><td>Thời gian / khoảng thời gian theo semantics MySQL</td><td>14:30:00</td></tr>
+<tr><td>YEAR</td><td>Năm</td><td>2026</td></tr>
+</tbody>
+</table>
+
+<pre><code>date_of_birth DATE,
+opening_time  TIME,
+graduation_year YEAR</code></pre>
+
+<div class="tip"><b>Không lưu ngày dưới VARCHAR nếu muốn sort/filter/date arithmetic đúng.</b></div>
+
+<div class="practice"><h3>Thực hành Temporal</h3>
+<p>Chọn kiểu cho ngày sinh, giờ mở cửa, năm tốt nghiệp.</p>
+<details><summary>Đáp án</summary><p>DATE, TIME, YEAR.</p></details></div>
+</section>
+
+<section id="timestamp">
+<h2>12. DATETIME vs TIMESTAMP trong MySQL</h2>
+<p>Cả hai lưu date + time nhưng có semantics/range khác nhau trong MySQL.</p>
+
+<table>
+<thead><tr><th>Tiêu chí</th><th>DATETIME</th><th>TIMESTAMP</th></tr></thead>
+<tbody>
+<tr><td>Mục đích thường gặp</td><td>Ngày giờ “theo lịch” của sự kiện</td><td>Timestamp tạo/cập nhật record</td></tr>
+<tr><td>Range MySQL</td><td>Rộng hơn</td><td>Khoảng 1970–2038 ở MySQL hiện tại</td></tr>
+<tr><td>Timezone conversion</td><td>Không dùng như TIMESTAMP</td><td>MySQL chuyển đổi theo session time zone</td></tr>
+<tr><td>Default current time</td><td>Hỗ trợ</td><td>Hỗ trợ</td></tr>
+</tbody>
+</table>
+
+<pre><code>created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                     ON UPDATE CURRENT_TIMESTAMP,
+appointment_at DATETIME</code></pre>
+
+<div class="warn">Nếu hệ thống cần lưu ngày giờ ngoài range TIMESTAMP hoặc muốn giữ “wall-clock value” độc lập timezone conversion, DATETIME thường phù hợp hơn.</div>
+</section>
+
+<section id="boolean">
+<h2>13. BOOLEAN trong MySQL</h2>
+<p>Trong MySQL, <code>BOOL</code> và <code>BOOLEAN</code> là synonyms của <code>TINYINT(1)</code>. Zero được xem là false; nonzero được xem là true.</p>
+
+<pre><code>CREATE TABLE user_account (
+    user_id BIGINT PRIMARY KEY,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);</code></pre>
+
+<div class="note"><b>Boolean semantics ≠ chỉ lưu đúng 0 hoặc 1 về mặt type.</b> Nếu muốn bắt buộc chỉ 0/1 trong thiết kế cụ thể, có thể thêm CHECK.</div>
+
+<pre><code>is_active BOOLEAN NOT NULL
+    CHECK (is_active IN (0,1))</code></pre>
+</section>
+
+<section id="enum">
+<h2>14. ENUM và SET — MySQL-specific</h2>
+
+<h3>ENUM</h3>
+<p>Chọn đúng một giá trị trong danh sách.</p>
+<pre><code>status ENUM('NEW','PAID','SHIPPED','CANCELLED')
+       NOT NULL DEFAULT 'NEW'</code></pre>
+
+<h3>SET</h3>
+<p>Có thể chứa nhiều thành viên từ danh sách định trước.</p>
+<pre><code>permissions SET('READ','WRITE','DELETE')</code></pre>
+
+<div class="warn"><b>Trade-off:</b> ENUM/SET tiện nhưng gắn schema chặt vào danh sách giá trị. Nếu danh mục thay đổi thường xuyên hoặc có metadata riêng, lookup table + FK thường linh hoạt hơn.</div>
+
+<div class="practice"><h3>Thực hành ENUM vs Lookup Table</h3>
+<p>Status đơn hàng có 4 giá trị ổn định; còn danh mục sản phẩm có hàng trăm loại và thay đổi thường xuyên. Cái nào có thể cân nhắc ENUM? Cái nào nên dùng table riêng?</p>
+<details><summary>Gợi ý</summary><p>Order status có thể cân nhắc ENUM; product category nên dùng table CATEGORY + FK.</p></details></div>
+</section>
+
+<section id="json">
+<h2>15. JSON Data Type</h2>
+<p>MySQL có native <code>JSON</code> type, kiểm tra JSON hợp lệ và cung cấp các JSON functions để truy vấn/chỉnh sửa tài liệu.</p>
+
+<pre><code>CREATE TABLE product (
+    product_id BIGINT PRIMARY KEY,
+    product_name VARCHAR(150) NOT NULL,
+    attributes JSON
+);</code></pre>
+
+<pre><code>INSERT INTO product(product_id, product_name, attributes)
+VALUES (
+  1,
+  'Laptop',
+  '{"cpu":"i7","ram_gb":16,"ports":["USB-C","HDMI"]}'
+);</code></pre>
+
+<h3>Khi nào phù hợp?</h3>
+<ul>
+<li>Thuộc tính phụ biến đổi giữa các record.</li>
+<li>Dữ liệu bán cấu trúc.</li>
+<li>Không muốn tạo hàng chục nullable columns cho metadata hiếm.</li>
+</ul>
+
+<div class="warn"><b>Không dùng JSON để né relational design.</b> Các thuộc tính quan trọng cần constraint, join, index và query thường xuyên vẫn nên là columns/tables rõ ràng.</div>
+</section>
+
+<section id="spatial">
+<h2>16. Spatial Data Types</h2>
+<p>MySQL hỗ trợ geometry types cho dữ liệu không gian như point, line và polygon.</p>
+
+<pre><code>CREATE TABLE warehouse (
+    warehouse_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    location POINT NOT NULL
+);</code></pre>
+
+<div class="grid3">
+<div class="card"><h3>POINT</h3><p>Một tọa độ.</p></div>
+<div class="card"><h3>LINESTRING</h3><p>Một đường.</p></div>
+<div class="card"><h3>POLYGON</h3><p>Một vùng.</p></div>
+</div>
+
+<p>Ứng dụng: logistics, bản đồ, vùng giao hàng, nearest-neighbor và geofencing.</p>
+</section>
+
+<section id="charset">
+<h2>17. Character Set và Collation</h2>
+<p>Data type chuỗi chưa đủ; cần hiểu <b>character set</b> và <b>collation</b>.</p>
+
+<div class="grid2">
+<div class="card"><h3>Character Set</h3><p>Cách mã hóa tập ký tự. Với MySQL hiện đại, <code>utf8mb4</code> là lựa chọn phổ biến cho Unicode đầy đủ.</p></div>
+<div class="card"><h3>Collation</h3><p>Quy tắc so sánh/sắp xếp chuỗi: case sensitivity, accents, locale behavior.</p></div>
+</div>
+
+<pre><code>CREATE TABLE person (
+    full_name VARCHAR(200)
+      CHARACTER SET utf8mb4
+);</code></pre>
+
+<div class="note">Hai cột cùng VARCHAR có thể so sánh khác nhau nếu dùng collation khác nhau.</div>
+</section>
+
+<section id="null">
+<h2>18. Data Type và NULL là hai khái niệm khác nhau</h2>
+<p>Data type trả lời <b>“giá trị thuộc miền nào?”</b>; NULLability trả lời <b>“có cho phép thiếu/không biết giá trị không?”</b>.</p>
+
+<pre><code>salary DECIMAL(12,2) NOT NULL,
+middle_name VARCHAR(100) NULL,
+graduation_date DATE NULL</code></pre>
+
+<div class="warn">Đừng dùng giá trị giả như 0, 1900-01-01 hoặc '' để thay cho NULL nếu business semantics thực sự là “không biết/chưa có”.</div>
+</section>
+
+<section id="choose">
+<h2>19. Cách chọn đúng Data Type</h2>
+
+<table>
+<thead><tr><th>Câu hỏi</th><th>Gợi ý</th></tr></thead>
+<tbody>
+<tr><td>Có phải số dùng để tính toán?</td><td>Nếu không, mã số có thể nên là VARCHAR.</td></tr>
+<tr><td>Cần chính xác tuyệt đối?</td><td>DECIMAL thay vì FLOAT/DOUBLE.</td></tr>
+<tr><td>Có phần âm?</td><td>Nếu không, MySQL UNSIGNED có thể hữu ích.</td></tr>
+<tr><td>Chiều dài cố định?</td><td>CHAR.</td></tr>
+<tr><td>Chiều dài biến đổi?</td><td>VARCHAR/TEXT.</td></tr>
+<tr><td>Ngày/giờ thật?</td><td>DATE/TIME/DATETIME/TIMESTAMP.</td></tr>
+<tr><td>Bytes hay characters?</td><td>BINARY/BLOB vs CHAR/TEXT.</td></tr>
+<tr><td>Dữ liệu bán cấu trúc?</td><td>Cân nhắc JSON.</td></tr>
+</tbody>
+</table>
+
+<h3>Decision examples</h3>
+<div class="grid2">
+<div class="card"><h3>Phone number</h3><p><span class="bad">INT</span> → <span class="good">VARCHAR</span>. Không tính toán số học; có +, 0 đầu, mã quốc gia.</p></div>
+<div class="card"><h3>Money</h3><p><span class="bad">FLOAT</span> → <span class="good">DECIMAL</span>.</p></div>
+<div class="card"><h3>Date of birth</h3><p><span class="bad">VARCHAR</span> → <span class="good">DATE</span>.</p></div>
+<div class="card"><h3>True/False flag</h3><p><span class="good">BOOLEAN</span> semantics; hiểu implementation của DBMS.</p></div>
+</div>
+</section>
+
+<section id="anti">
+<h2>20. Các lựa chọn sai thường gặp</h2>
+
+<div class="grid2">
+<div class="card"><h3>1. Phone = INT</h3><p>Mất leading zero, không hỗ trợ '+'.</p></div>
+<div class="card"><h3>2. Money = FLOAT</h3><p>Có sai số floating-point.</p></div>
+<div class="card"><h3>3. Date = VARCHAR</h3><p>Khó validation, sort và date arithmetic.</p></div>
+<div class="card"><h3>4. Mọi số = BIGINT</h3><p>Lãng phí và che mất domain semantics.</p></div>
+<div class="card"><h3>5. Mọi text = TEXT</h3><p>Không thể hiện length expectations rõ.</p></div>
+<div class="card"><h3>6. JSON cho mọi thứ</h3><p>Mất lợi thế schema, constraints và relational query.</p></div>
+<div class="card"><h3>7. VARCHAR cho boolean</h3><p>Dễ phát sinh Yes/Y/TRUE/true/1 lẫn lộn.</p></div>
+<div class="card"><h3>8. ID có business meaning nhưng dùng số</h3><p>Mã như "00123A" nên là string.</p></div>
+</div>
+</section>
+
+<section id="dialects">
+<h2>21. Data Types khác nhau giữa các DBMS</h2>
+<p>Trang SQL tổng quát thường trộn type từ nhiều DBMS. Không nên coi mọi tên type là portable.</p>
+
+<table>
+<thead><tr><th>Concept</th><th>MySQL</th><th>PostgreSQL</th><th>SQL Server</th></tr></thead>
+<tbody>
+<tr><td>Variable text</td><td>VARCHAR</td><td>VARCHAR / TEXT</td><td>VARCHAR / NVARCHAR</td></tr>
+<tr><td>Boolean</td><td>BOOLEAN alias TINYINT(1)</td><td>BOOLEAN native</td><td>BIT thường dùng</td></tr>
+<tr><td>Large text</td><td>TEXT family</td><td>TEXT</td><td>VARCHAR(MAX)/NVARCHAR(MAX)</td></tr>
+<tr><td>Binary large object</td><td>BLOB family</td><td>BYTEA</td><td>VARBINARY(MAX)</td></tr>
+<tr><td>JSON</td><td>JSON</td><td>JSON / JSONB</td><td>Thường NVARCHAR + JSON features</td></tr>
+<tr><td>Auto-generated integer</td><td>AUTO_INCREMENT</td><td>IDENTITY/sequence patterns</td><td>IDENTITY</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>Bài này ưu tiên MySQL.</b> Ví dụ như <code>VARCHAR(MAX)</code> hay <code>IMAGE</code> trong một số tutorial là SQL Server-specific, không phải MySQL syntax.</div>
+</section>
+
+<section id="schema">
+<h2>22. Ví dụ Schema sử dụng nhiều Data Types</h2>
+
+<pre><code>CREATE TABLE customer (
+    customer_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    customer_code CHAR(10) NOT NULL UNIQUE,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(200) NOT NULL UNIQUE,
+    phone VARCHAR(30),
+
+    date_of_birth DATE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    credit_limit DECIMAL(14,2) NOT NULL DEFAULT 0,
+
+    profile JSON,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+               ON UPDATE CURRENT_TIMESTAMP,
+
+    note TEXT,
+
+    CONSTRAINT chk_credit_limit
+      CHECK (credit_limit >= 0)
+);</code></pre>
+
+<h3>Giải thích</h3>
+<table>
+<thead><tr><th>Column</th><th>Tại sao chọn type đó?</th></tr></thead>
+<tbody>
+<tr><td>customer_id BIGINT</td><td>Identifier có thể tăng lớn.</td></tr>
+<tr><td>customer_code CHAR(10)</td><td>Mã cố định 10 ký tự.</td></tr>
+<tr><td>phone VARCHAR</td><td>Không dùng để tính toán.</td></tr>
+<tr><td>date_of_birth DATE</td><td>Ngày lịch.</td></tr>
+<tr><td>credit_limit DECIMAL</td><td>Tiền cần chính xác.</td></tr>
+<tr><td>profile JSON</td><td>Metadata bán cấu trúc.</td></tr>
+<tr><td>created_at TIMESTAMP</td><td>Audit timestamp.</td></tr>
+<tr><td>note TEXT</td><td>Nội dung dài biến đổi.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="lab">
+<h2>23. Lab thực hành: Thiết kế Data Types cho E-commerce</h2>
+
+<p>Thiết kế bảng PRODUCT với các yêu cầu:</p>
+<ol>
+<li>ProductID có thể tăng tới hàng tỷ.</li>
+<li>SKU là mã 20 ký tự tối đa.</li>
+<li>Tên sản phẩm tối đa 200 ký tự.</li>
+<li>Giá tiền chính xác 2 chữ số thập phân.</li>
+<li>Stock không âm.</li>
+<li>WeightKg là số đo có thể xấp xỉ.</li>
+<li>Status chỉ gồm ACTIVE, INACTIVE, DISCONTINUED.</li>
+<li>Thông số kỹ thuật linh hoạt.</li>
+<li>Ngày tạo tự động.</li>
+<li>Mô tả có thể dài.</li>
+</ol>
+
+<details><summary>Xem một lời giải</summary>
+<pre><code>CREATE TABLE product (
+    product_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(20) NOT NULL UNIQUE,
+    product_name VARCHAR(200) NOT NULL,
+
+    price DECIMAL(14,2) NOT NULL
+          CHECK (price >= 0),
+
+    stock INT UNSIGNED NOT NULL DEFAULT 0,
+
+    weight_kg DOUBLE,
+
+    status ENUM(
+      'ACTIVE',
+      'INACTIVE',
+      'DISCONTINUED'
+    ) NOT NULL DEFAULT 'ACTIVE',
+
+    specifications JSON,
+
+    created_at TIMESTAMP
+      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    description TEXT
+);</code></pre>
+</details>
+
+<h3>Thử nghiệm</h3>
+<pre><code>INSERT INTO product
+(sku, product_name, price, stock, weight_kg, specifications)
+VALUES
+(
+  'LT-001',
+  'Laptop A',
+  25990000.00,
+  20,
+  1.42,
+  '{"ram_gb":16,"ssd_gb":512}'
+);</code></pre>
+</section>
+
+<section id="exercises">
+<h2>24. Bài tập củng cố</h2>
+
+<h3>Bài 1 — Chọn kiểu dữ liệu</h3>
+<p>Chọn type phù hợp cho: CitizenID, phone number, annual salary, percentage, GPS latitude, birth date, created timestamp.</p>
+
+<h3>Bài 2 — Sửa schema sai</h3>
+<pre><code>CREATE TABLE customer (
+  customer_id VARCHAR(100),
+  phone INT,
+  date_of_birth VARCHAR(50),
+  balance FLOAT,
+  is_active VARCHAR(20)
+);</code></pre>
+<p>Hãy viết lại schema hợp lý hơn và giải thích từng sửa đổi.</p>
+
+<h3>Bài 3 — DECIMAL</h3>
+<p>Giải thích ý nghĩa của <code>DECIMAL(15,3)</code>. Đề xuất type cho một số tiền tối đa 9,999,999,999.99.</p>
+
+<h3>Bài 4 — CHAR vs VARCHAR</h3>
+<p>Phân loại: country code, postal code, email, employee name, fixed 8-character product code.</p>
+
+<h3>Bài 5 — DATETIME vs TIMESTAMP</h3>
+<p>Chọn kiểu cho: ngày giờ một cuộc họp năm 2050; thời điểm row được tạo; ngày sinh.</p>
+
+<h3>Bài 6 — JSON hay relational?</h3>
+<p>Product có color, size, CPU, RAM, battery, material tùy loại sản phẩm. Những thuộc tính nào nên để JSON? Khi nào nên tạo bảng/column riêng?</p>
+
+<h3>Bài 7 — BLOB hay object storage?</h3>
+<p>Hệ thống lưu video 500 MB. Phân tích ưu/nhược điểm lưu LONGBLOB so với object storage + URL trong database.</p>
+
+<h3>Bài 8 — Dialect awareness</h3>
+<p>Tại sao <code>VARCHAR(MAX)</code> từ SQL Server không nên copy trực tiếp sang MySQL?</p>
+</section>
+
+<section id="cheat">
+<h2>25. Cheat Sheet</h2>
+
+<pre><code>-- Integers
+TINYINT
+SMALLINT
+MEDIUMINT
+INT
+BIGINT
+INT UNSIGNED
+
+-- Exact numeric
+DECIMAL(12,2)
+NUMERIC(12,2)
+
+-- Approximate numeric
+FLOAT
+DOUBLE
+
+-- Character strings
+CHAR(10)
+VARCHAR(200)
+TEXT
+MEDIUMTEXT
+LONGTEXT
+
+-- Binary strings
+BINARY(32)
+VARBINARY(255)
+BLOB
+MEDIUMBLOB
+LONGBLOB
+
+-- Temporal
+DATE
+TIME
+DATETIME
+TIMESTAMP
+YEAR
+
+-- Logical in MySQL
+BOOLEAN     -- synonym of TINYINT(1)
+BOOL
+
+-- MySQL special
+ENUM('A','B','C')
+SET('READ','WRITE')
+JSON
+
+-- Spatial
+POINT
+LINESTRING
+POLYGON
+GEOMETRY</code></pre>
+</section>
+
+
+<section id="quiz">
+<h2>26. Quiz tương tác</h2>
+
+<div class="quiz-item" data-answer="b">
+<b>Câu 1.</b> Kiểu dữ liệu nào phù hợp nhất để lưu tiền?
+<label><input type="radio" name="q1" value="a"> FLOAT</label>
+<label><input type="radio" name="q1" value="b"> DECIMAL</label>
+<label><input type="radio" name="q1" value="c"> VARCHAR</label>
+<div class="quiz-answer">Đáp án: <b>DECIMAL</b>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<b>Câu 2.</b> Kiểu nào phù hợp nhất cho số điện thoại?
+<label><input type="radio" name="q2" value="a"> INT</label>
+<label><input type="radio" name="q2" value="b"> BIGINT</label>
+<label><input type="radio" name="q2" value="c"> VARCHAR</label>
+<div class="quiz-answer">Đáp án: <b>VARCHAR</b>.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+<b>Câu 3.</b> Trong MySQL, BOOLEAN là alias của:
+<label><input type="radio" name="q3" value="a"> TINYINT(1)</label>
+<label><input type="radio" name="q3" value="b"> CHAR(1)</label>
+<label><input type="radio" name="q3" value="c"> BIT(64)</label>
+<div class="quiz-answer">Đáp án: <b>TINYINT(1)</b>.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+<b>Câu 4.</b> Kiểu nào phù hợp cho ngày sinh?
+<label><input type="radio" name="q4" value="a"> VARCHAR</label>
+<label><input type="radio" name="q4" value="b"> DATE</label>
+<label><input type="radio" name="q4" value="c"> TIMESTAMP</label>
+<div class="quiz-answer">Đáp án: <b>DATE</b>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<b>Câu 5.</b> Nếu text có độ dài biến đổi và tối đa 200 ký tự:
+<label><input type="radio" name="q5" value="a"> CHAR(200)</label>
+<label><input type="radio" name="q5" value="b"> TEXT luôn tốt hơn</label>
+<label><input type="radio" name="q5" value="c"> VARCHAR(200)</label>
+<div class="quiz-answer">Đáp án: <b>VARCHAR(200)</b>.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+<b>Câu 6.</b> Kiểu nào phù hợp với số đo khoa học xấp xỉ?
+<label><input type="radio" name="q6" value="a"> DOUBLE</label>
+<label><input type="radio" name="q6" value="b"> CHAR</label>
+<label><input type="radio" name="q6" value="c"> DATE</label>
+<div class="quiz-answer">Đáp án: <b>DOUBLE</b>.</div>
+</div>
+
+<button class="btn" type="button" onclick="gradeQuiz()">Kiểm tra kết quả</button>
+<button class="btn" type="button" onclick="resetQuiz()">Làm lại</button>
+<p id="quiz-score" style="font-weight:800"></p>
+</section>
+
+<section id="sources">
+<h2>27. Tài liệu tham khảo</h2>
+<ul>
+<li><a href="https://www.geeksforgeeks.org/sql/sql-data-types/" target="_blank" rel="noopener">GeeksforGeeks — SQL Data Types</a></li>
+<li><a href="https://dev.mysql.com/doc/refman/9.7/en/data-types.html" target="_blank" rel="noopener">MySQL 9.7 Reference Manual — Data Types</a></li>
+<li><a href="https://dev.mysql.com/doc/refman/9.7/en/integer-types.html" target="_blank" rel="noopener">MySQL — Integer Types</a></li>
+<li><a href="https://dev.mysql.com/doc/refman/9.7/en/char.html" target="_blank" rel="noopener">MySQL — CHAR and VARCHAR</a></li>
+<li><a href="https://dev.mysql.com/doc/refman/9.7/en/string-types.html" target="_blank" rel="noopener">MySQL — String Data Types</a></li>
+<li><a href="https://dev.mysql.com/doc/refman/9.7/en/choosing-types.html" target="_blank" rel="noopener">MySQL — Choosing the Right Type for a Column</a></li>
+</ul>
+
+<div class="tip"><b>Trình tự giảng đề xuất:</b> integer → DECIMAL vs FLOAT → CHAR vs VARCHAR → date/time → boolean → TEXT/BLOB → JSON. Sau đó cho sinh viên sửa một schema “cố tình chọn sai data type”.</div>
+</section>
+
+</main></div>
+
+<footer><hr><p><b>SQL Data Types</b> · Static-safe HTML · MySQL-focused · không dùng JavaScript để tránh lỗi preview.</p></footer>
+
+
+<script>
+(function(){
+  function setTheme(mode){
+    document.body.classList.toggle('dark', mode === 'dark');
+    try { localStorage.setItem('sql-types-theme', mode); } catch(e) {}
+  }
+  window.toggleTheme = function(){
+    setTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+  };
+  try {
+    if(localStorage.getItem('sql-types-theme') === 'dark') setTheme('dark');
+  } catch(e) {}
+
+  function updateProgress(){
+    var d = document.documentElement;
+    var max = d.scrollHeight - d.clientHeight;
+    var pct = max > 0 ? (d.scrollTop / max) * 100 : 0;
+    var bar = document.getElementById('progress');
+    if(bar) bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  updateProgress();
+
+  window.gradeQuiz = function(){
+    var items = document.querySelectorAll('.quiz-item');
+    var score = 0, answered = 0;
+    items.forEach(function(item){
+      var selected = item.querySelector('input:checked');
+      var answer = item.querySelector('.quiz-answer');
+      if(answer) answer.classList.add('show');
+      if(selected){
+        answered++;
+        if(selected.value === item.getAttribute('data-answer')) score++;
+      }
+    });
+    var el = document.getElementById('quiz-score');
+    if(el) el.textContent = 'Kết quả: ' + score + '/' + items.length + ' câu đúng · Đã trả lời ' + answered + '/' + items.length + ' câu.';
+  };
+
+  window.resetQuiz = function(){
+    document.querySelectorAll('.quiz-item input').forEach(function(x){x.checked=false;});
+    document.querySelectorAll('.quiz-answer').forEach(function(x){x.classList.remove('show');});
+    var el = document.getElementById('quiz-score');
+    if(el) el.textContent = '';
+  };
+})();
+</script>
+
+</body>
+</html>
