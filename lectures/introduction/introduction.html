@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Getting Started with Databases & DBMS</title>
+<style>
+:root{--bg:#f7f8fc;--surface:#fff;--s2:#f0f4ff;--text:#182033;--muted:#5f6b7a;--p:#2856d7;--a:#7a3ff2;--g:#157a55;--o:#c35a10;--border:#dbe2ef;--shadow:0 10px 30px #1a2e5914;--code:#101827}
+body.dark{--bg:#0e1420;--surface:#151e2e;--s2:#1a2740;--text:#eef3ff;--muted:#aab8ce;--p:#82a5ff;--a:#b69bff;--g:#63d5aa;--o:#ffb46f;--border:#2c3a54;--shadow:none;--code:#0a101b}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,Segoe UI,Arial,sans-serif}a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
+#progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--p),var(--a));z-index:1000}
+.top{position:sticky;top:0;z-index:900;background:var(--surface);border-bottom:1px solid var(--border)}.topin{max-width:1240px;margin:auto;padding:.65rem 1.2rem;display:flex;justify-content:space-between;gap:1rem;align-items:center}
+button,.btn{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:.45rem .7rem;cursor:pointer}
+.hero{background:linear-gradient(135deg,#103779,#4930a4);color:#fff;padding:4rem 1.2rem 3.3rem}.heroin{max-width:1120px;margin:auto}h1{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.05;margin:.4rem 0 1rem}.hero p{max-width:900px;color:#e8edff;font-size:1.1rem}.chips{display:flex;gap:.55rem;flex-wrap:wrap}.chip{border:1px solid #ffffff55;border-radius:999px;padding:.3rem .6rem}
+.layout{max-width:1240px;margin:auto;padding:2rem 1.2rem 5rem;display:grid;grid-template-columns:285px minmax(0,1fr);gap:2rem}.toc{position:sticky;top:72px;max-height:calc(100vh - 90px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:1rem;box-shadow:var(--shadow)}.toc a{display:block;color:var(--muted);padding:.25rem .35rem;border-radius:6px;font-size:.87rem}.toc a.active,.toc a:hover{background:var(--s2);color:var(--p);text-decoration:none}
+section{scroll-margin-top:80px;background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:clamp(1.2rem,3vw,2.1rem);margin-bottom:1.4rem;box-shadow:var(--shadow)}h2{font-size:1.7rem;margin:.1rem 0 1rem}h3{font-size:1.12rem;margin:1.1rem 0 .45rem}.lead{color:var(--muted);font-size:1.05rem}
+.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}.card{border:1px solid var(--border);border-radius:13px;padding:1rem}.card h3{margin-top:0}
+.note,.tip,.warn,.example{background:var(--s2);border-left:5px solid var(--p);padding:.85rem 1rem;border-radius:9px;margin:1rem 0}.tip{border-color:var(--g)}.warn{border-color:var(--o)}.example{border-color:var(--a)}.formula{background:var(--s2);padding:.65rem .8rem;border-radius:8px;font-family:Georgia,serif}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.94rem}th,td{border:1px solid var(--border);padding:.62rem .7rem;vertical-align:top}th{background:var(--s2);text-align:left}pre{background:var(--code);color:#e8eefc;padding:1rem;border-radius:11px;overflow:auto}code{font-family:ui-monospace,Consolas,monospace}svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:13px;background:#fff}.box{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.accent{fill:#f3edff;stroke:#7a3ff2;stroke-width:3}.orange{fill:#fff4e9;stroke:#c35a10;stroke-width:3}.t{font:700 20px system-ui;fill:#182033}.s{font:15px system-ui;fill:#475569}.line{stroke:#475569;stroke-width:3}
+.steps{counter-reset:x;list-style:none;padding:0}.steps li{counter-increment:x;position:relative;padding-left:3rem;margin:.75rem 0}.steps li:before{content:counter(x);position:absolute;left:0;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:var(--p);color:#fff;font-weight:800}
+.quiz-item{border:1px solid var(--border);border-radius:12px;padding:1rem;margin:.8rem 0}.quiz-item label{display:block;padding:.3rem}.ans{display:none;background:var(--s2);padding:.6rem;border-radius:8px;margin-top:.5rem}.ans.show{display:block}#score{font-weight:800}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media print{.top,aside,#progress{display:none}.hero{background:#fff;color:#111;padding:1rem 0}.hero p{color:#333}.layout{display:block;max-width:none;padding:0}section{box-shadow:none;border:0;padding:0;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="top"><div class="topin"><b>DBMS Lecture · Getting Started</b><div><button onclick="theme()">◐ Giao diện</button> <button onclick="print()">⎙ In/PDF</button> <a class="btn" href="#quiz">✓ Quiz</a></div></div></div>
+<header class="hero"><div class="heroin"><div style="text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:.78rem;opacity:.85">Database Management Systems · Introductory Lecture</div><h1>Getting Started with Databases & DBMS</h1><p>Bài nhập môn từ Data → Database → DBMS, sau đó mở rộng sang architecture, data models, relational/NoSQL, SQL, transaction, index, normalization, security, recovery và lộ trình học DBMS.</p><div class="chips"><span class="chip">Data → Database → DBMS</span><span class="chip">SQL & NoSQL</span><span class="chip">Architecture</span><span class="chip">ACID</span><span class="chip">Index & Normalization</span></div></div></header>
+<div class="layout"><aside><nav class="toc"><b>Mục lục</b><a href="#objectives">1. Mục tiêu học tập</a>
+<a href="#data">2. Data và Information</a>
+<a href="#database">3. Database là gì?</a>
+<a href="#dbms">4. DBMS là gì?</a>
+<a href="#compare">5. Database vs DBMS vs RDBMS</a>
+<a href="#files">6. File System vs DBMS</a>
+<a href="#functions">7. Chức năng cốt lõi của DBMS</a>
+<a href="#architecture">8. Kiến trúc ba mức</a>
+<a href="#schema">9. Schema, Instance và Metadata</a>
+<a href="#models">10. Các Data Models</a>
+<a href="#relational">11. Relational Database</a>
+<a href="#nosql">12. NoSQL</a>
+<a href="#types">13. Các loại Database khác</a>
+<a href="#sql">14. SQL trong DBMS</a>
+<a href="#keys">15. Keys và Constraints</a>
+<a href="#transaction">16. Transaction và ACID</a>
+<a href="#concurrency">17. Concurrency Control</a>
+<a href="#index">18. Index</a>
+<a href="#normalization">19. Normalization</a>
+<a href="#security">20. Security, Integrity và Recovery</a>
+<a href="#connect">21. Ứng dụng kết nối Database</a>
+<a href="#choose">22. Chọn Database thế nào?</a>
+<a href="#example">23. Ví dụ xuyên suốt: Đăng ký học phần</a>
+<a href="#roadmap">24. Lộ trình học DBMS</a>
+<a href="#mistakes">25. Ngộ nhận thường gặp</a>
+<a href="#exercises">26. Bài tập luyện tập</a>
+<a href="#quiz">27. Quiz tự kiểm tra</a>
+<a href="#sources">28. Tài liệu tham khảo</a></nav></aside><main><section id="objectives"><h2>1. Mục tiêu học tập</h2>
+<p class="lead">Sau bài học, người học có thể phân biệt <b>data, database, DBMS, RDBMS</b>; giải thích vì sao DBMS cần thiết; nhận diện các thành phần chính; và có bức tranh tổng thể về SQL, transaction, index, normalization, security và recovery.</p>
+<div class="grid2">
+<div class="card"><h3>Khái niệm</h3><p>Data → Information → Database → DBMS.</p></div>
+<div class="card"><h3>Kiến trúc</h3><p>User/Application → DBMS → Storage.</p></div>
+<div class="card"><h3>Mô hình dữ liệu</h3><p>Relational, document, key–value, graph, time-series…</p></div>
+<div class="card"><h3>Nền tảng học tiếp</h3><p>SQL, keys, ACID, concurrency, indexing và normalization.</p></div>
+</div>
+</section>
+<section id="data"><h2>2. Data và Information</h2>
+<p><b>Data</b> là các biểu diễn có thể lưu trữ và xử lý: số, chữ, ngày tháng, ảnh, âm thanh, tọa độ, log, dữ liệu cảm biến… <b>Information</b> là dữ liệu đã được đặt trong ngữ cảnh và xử lý để trở nên có ý nghĩa.</p>
+<div class="formula">Data + Context + Processing → Information → Decision</div>
+<div class="example"><b>Ví dụ:</b> <code>41,800</code> chỉ là dữ liệu. “Giá cổ phiếu là 41.800 VND tại 10:30” có ngữ cảnh. “Giá hiện tại cao hơn giá vốn 6,2%” là thông tin phục vụ phân tích.</div>
+</section>
+<section id="database"><h2>3. Database là gì?</h2>
+<p><b>Database (cơ sở dữ liệu)</b> là một tập dữ liệu có tổ chức, được thiết kế để lưu trữ, truy xuất và cập nhật hiệu quả.</p>
+<table><thead><tr><th>Hệ thống</th><th>Dữ liệu</th><th>Truy vấn điển hình</th></tr></thead><tbody>
+<tr><td>Đại học</td><td>Sinh viên, môn học, lớp, đăng ký</td><td>SV nào đang học DBMS?</td></tr>
+<tr><td>E-commerce</td><td>Khách, sản phẩm, đơn hàng</td><td>Doanh thu hôm nay?</td></tr>
+<tr><td>Logistics</td><td>Đơn hàng, xe, tuyến, kho</td><td>Đơn nào đang trễ?</td></tr>
+<tr><td>Ngân hàng</td><td>Tài khoản, giao dịch</td><td>Số dư hiện tại?</td></tr>
+</tbody></table>
+<div class="note"><b>Không nên đồng nhất database với một bảng Excel lớn.</b> Database thường phải hỗ trợ schema, nhiều người dùng, truy vấn, ràng buộc, giao dịch, bảo mật và phục hồi.</div>
+</section>
+<section id="dbms"><h2>4. DBMS là gì?</h2>
+<p><b>Database Management System (DBMS)</b> là phần mềm cho phép định nghĩa, tạo, duy trì và thao tác database. DBMS là lớp trung gian giữa users/applications và dữ liệu.</p>
+<svg class="diagram" viewBox="0 0 950 280">
+<rect x="60" y="85" width="210" height="100" rx="12" class="box"/><text x="165" y="125" text-anchor="middle" class="t">USERS / APPS</text><text x="165" y="155" text-anchor="middle" class="s">Web · Mobile · SQL</text>
+<rect x="370" y="55" width="240" height="160" rx="12" class="accent"/><text x="490" y="95" text-anchor="middle" class="t">DBMS</text><text x="490" y="130" text-anchor="middle" class="s">Query · Transaction</text><text x="490" y="160" text-anchor="middle" class="s">Security · Storage</text><text x="490" y="190" text-anchor="middle" class="s">Recovery</text>
+<rect x="710" y="85" width="190" height="100" rx="12" class="box"/><text x="805" y="125" text-anchor="middle" class="t">DATABASE</text><text x="805" y="155" text-anchor="middle" class="s">Data · Index · Log</text>
+<line x1="270" y1="135" x2="370" y2="135" class="line"/><line x1="610" y1="135" x2="710" y2="135" class="line"/>
+</svg>
+<div class="tip"><b>Cách nhớ:</b> Database = dữ liệu có tổ chức. DBMS = phần mềm quản lý dữ liệu đó.</div>
+</section>
+<section id="compare"><h2>5. Database vs DBMS vs RDBMS</h2>
+<table><thead><tr><th>Khái niệm</th><th>Là gì?</th><th>Ví dụ</th></tr></thead><tbody>
+<tr><td><b>Database</b></td><td>Tập dữ liệu có tổ chức.</td><td>CSDL quản lý sinh viên.</td></tr>
+<tr><td><b>DBMS</b></td><td>Phần mềm quản lý database.</td><td>MongoDB, Neo4j, MySQL.</td></tr>
+<tr><td><b>RDBMS</b></td><td>DBMS dựa trên relational model.</td><td>PostgreSQL, MySQL, SQL Server, Oracle, SQLite.</td></tr>
+</tbody></table>
+<div class="warn"><b>SQL là ngôn ngữ;</b> MySQL/PostgreSQL là DBMS; relational là mô hình dữ liệu.</div>
+</section>
+<section id="files"><h2>6. File System vs DBMS</h2>
+<p>Nếu mỗi ứng dụng tự lưu dữ liệu trong các file riêng, hệ thống dễ gặp redundancy, inconsistency, khó truy vấn, khó đồng bộ ghi, khó kiểm soát quyền và khó recovery.</p>
+<table><thead><tr><th>Vấn đề</th><th>File-based</th><th>DBMS</th></tr></thead><tbody>
+<tr><td>Redundancy</td><td>Dễ sao chép dữ liệu</td><td>Schema giúp kiểm soát duplication</td></tr>
+<tr><td>Consistency</td><td>Dễ lệch giữa nhiều file</td><td>Constraints + transactions</td></tr>
+<tr><td>Query</td><td>Tự viết code đọc/search</td><td>Query language + optimizer</td></tr>
+<tr><td>Concurrency</td><td>Khó xử lý ghi đồng thời</td><td>Concurrency control</td></tr>
+<tr><td>Security</td><td>Thường ở mức file</td><td>User/role/privilege</td></tr>
+<tr><td>Recovery</td><td>Ứng dụng tự xử lý</td><td>Logging + backup + recovery</td></tr>
+</tbody></table>
+</section>
+<section id="functions"><h2>7. Chức năng cốt lõi của DBMS</h2>
+<div class="grid3">
+<div class="card"><h3>Data Definition</h3><p>Schema, types, relationships, constraints.</p></div>
+<div class="card"><h3>Data Manipulation</h3><p>Insert, retrieve, update, delete.</p></div>
+<div class="card"><h3>Query Processing</h3><p>Parse, optimize, execute.</p></div>
+<div class="card"><h3>Integrity</h3><p>Duy trì dữ liệu hợp lệ.</p></div>
+<div class="card"><h3>Security</h3><p>Authentication, authorization.</p></div>
+<div class="card"><h3>Concurrency</h3><p>Điều phối nhiều transaction.</p></div>
+<div class="card"><h3>Backup & Recovery</h3><p>Khôi phục sau failure.</p></div>
+<div class="card"><h3>Metadata</h3><p>Catalog/schema/index/privilege.</p></div>
+<div class="card"><h3>Performance</h3><p>Index, cache, optimizer, statistics.</p></div>
+</div>
+</section>
+<section id="architecture"><h2>8. Kiến trúc ba mức</h2>
+<p>Một cách nhìn kinh điển chia database thành <b>External – Conceptual – Internal</b>.</p>
+<svg class="diagram" viewBox="0 0 940 500">
+<rect x="70" y="45" width="210" height="70" rx="10" class="box"/><text x="175" y="87" class="t" text-anchor="middle">External View 1</text>
+<rect x="365" y="45" width="210" height="70" rx="10" class="box"/><text x="470" y="87" class="t" text-anchor="middle">External View 2</text>
+<rect x="660" y="45" width="210" height="70" rx="10" class="box"/><text x="765" y="87" class="t" text-anchor="middle">External View 3</text>
+<line x1="175" y1="115" x2="430" y2="220" class="line"/><line x1="470" y1="115" x2="470" y2="220" class="line"/><line x1="765" y1="115" x2="510" y2="220" class="line"/>
+<rect x="310" y="220" width="320" height="85" rx="10" class="accent"/><text x="470" y="257" class="t" text-anchor="middle">CONCEPTUAL SCHEMA</text><text x="470" y="285" class="s" text-anchor="middle">Tables · Relationships · Constraints</text>
+<line x1="470" y1="305" x2="470" y2="380" class="line"/>
+<rect x="310" y="380" width="320" height="80" rx="10" class="orange"/><text x="470" y="415" class="t" text-anchor="middle">INTERNAL / PHYSICAL</text><text x="470" y="442" class="s" text-anchor="middle">Files · Pages · Indexes</text>
+</svg>
+<p><b>Data independence</b> nhằm giảm tác động của thay đổi ở tầng thấp lên tầng cao. Ví dụ, thêm một index vật lý không nên buộc ứng dụng đổi business logic.</p>
+</section>
+<section id="schema"><h2>9. Schema, Instance và Metadata</h2>
+<div class="grid2"><div class="card"><h3>Schema</h3><p>Mô tả cấu trúc tương đối ổn định của database.</p></div><div class="card"><h3>Instance / State</h3><p>Dữ liệu thực tế tại một thời điểm.</p></div></div>
+<pre><code>CREATE TABLE Student (
+  StudentID INT PRIMARY KEY,
+  FullName  VARCHAR(100),
+  Major     VARCHAR(50)
+);</code></pre>
+<p><b>Metadata</b> là “data about data”: table names, columns, types, indexes, constraints, privileges… được lưu trong catalog/data dictionary.</p>
+</section>
+
+<section id="models"><h2>10. Các Data Models</h2>
+<p><b>Data model</b> quy định cách dữ liệu được cấu trúc, liên hệ và thao tác ở mức logic/khái niệm. Để sinh viên dễ phân biệt, dưới đây là <b>bảng so sánh nhanh</b> và <b>các hình minh họa trực quan</b> cho từng mô hình.</p>
+<table><thead><tr><th>Model</th><th>Cấu trúc</th><th>Đặc trưng</th></tr></thead><tbody>
+<tr><td>Relational</td><td>Tables</td><td>Rows, columns, keys, SQL</td></tr>
+<tr><td>Hierarchical</td><td>Tree</td><td>Parent–child</td></tr>
+<tr><td>Network</td><td>Records + links</td><td>Quan hệ dạng mạng, một nút có thể có nhiều liên kết</td></tr>
+<tr><td>Object-oriented</td><td>Objects</td><td>Object identity, attributes, methods, inheritance</td></tr>
+<tr><td>Document</td><td>JSON/BSON-like documents</td><td>Nested, flexible structure</td></tr>
+<tr><td>Key–value</td><td>Key → value</td><td>Truy cập trực tiếp theo key</td></tr>
+<tr><td>Graph</td><td>Nodes + edges</td><td>Traversal và quan hệ phức tạp</td></tr>
+</tbody></table>
+
+<div class="note"><b>Không có một data model tốt nhất cho mọi bài toán.</b> Lựa chọn phụ thuộc workload, consistency, scalability, latency và khả năng vận hành. Tuy nhiên, nhìn đúng <i>hình dạng tự nhiên của dữ liệu</i> sẽ giúp chọn đúng mô hình hơn.</div>
+
+<h3>10.1 Hình minh họa tổng quát cho các loại mô hình CSDL</h3>
+<svg class="diagram" viewBox="0 0 1100 1180" aria-label="Minh họa các mô hình dữ liệu">
+<style>
+.dm-title{font:700 20px system-ui;fill:#182033}
+.dm-sub{font:14px system-ui;fill:#475569}
+.dm-box{fill:#eef3ff;stroke:#2856d7;stroke-width:2.5}
+.dm-alt{fill:#f4efff;stroke:#7a3ff2;stroke-width:2.5}
+.dm-warm{fill:#fff4e9;stroke:#c35a10;stroke-width:2.5}
+.dm-line{stroke:#475569;stroke-width:2.5;fill:none}
+.dm-table{fill:#ffffff;stroke:#2856d7;stroke-width:2}
+.dm-head{fill:#dce7ff}
+</style>
+
+<!-- relational -->
+<text x="95" y="45" class="dm-title">1) Relational Model</text>
+<text x="95" y="70" class="dm-sub">Dữ liệu nằm trong các bảng; liên hệ thông qua khóa.</text>
+<rect x="70" y="90" width="370" height="210" rx="12" class="dm-box"/>
+<rect x="105" y="125" width="135" height="125" class="dm-table"/>
+<rect x="105" y="125" width="135" height="28" class="dm-head"/>
+<text x="173" y="143" text-anchor="middle" class="dm-sub" style="font-weight:700">STUDENT</text>
+<line x1="105" y1="153" x2="240" y2="153" class="dm-line"/>
+<line x1="150" y1="125" x2="150" y2="250" class="dm-line"/>
+<text x="127" y="172" class="dm-sub">ID</text><text x="175" y="172" class="dm-sub">Name</text>
+<line x1="105" y1="182" x2="240" y2="182" class="dm-line"/>
+<text x="120" y="201" class="dm-sub">1</text><text x="165" y="201" class="dm-sub">An</text>
+<line x1="105" y1="211" x2="240" y2="211" class="dm-line"/>
+<text x="120" y="230" class="dm-sub">2</text><text x="160" y="230" class="dm-sub">Binh</text>
+
+<rect x="275" y="125" width="135" height="125" class="dm-table"/>
+<rect x="275" y="125" width="135" height="28" class="dm-head"/>
+<text x="343" y="143" text-anchor="middle" class="dm-sub" style="font-weight:700">ENROLLMENT</text>
+<line x1="275" y1="153" x2="410" y2="153" class="dm-line"/>
+<line x1="320" y1="125" x2="320" y2="250" class="dm-line"/>
+<text x="292" y="172" class="dm-sub">SID</text><text x="334" y="172" class="dm-sub">CID</text>
+<line x1="275" y1="182" x2="410" y2="182" class="dm-line"/>
+<text x="292" y="201" class="dm-sub">1</text><text x="340" y="201" class="dm-sub">DB</text>
+<line x1="275" y1="211" x2="410" y2="211" class="dm-line"/>
+<text x="292" y="230" class="dm-sub">2</text><text x="335" y="230" class="dm-sub">AI</text>
+<line x1="240" y1="188" x2="275" y2="188" class="dm-line"/>
+
+<!-- hierarchical -->
+<text x="615" y="45" class="dm-title">2) Hierarchical Model</text>
+<text x="615" y="70" class="dm-sub">Cấu trúc dạng cây, parent → child rõ ràng.</text>
+<rect x="590" y="90" width="420" height="210" rx="12" class="dm-alt"/>
+<rect x="745" y="112" width="105" height="36" rx="8" class="dm-table"/><text x="797" y="135" text-anchor="middle" class="dm-sub" style="font-weight:700">COMPANY</text>
+<rect x="640" y="182" width="105" height="36" rx="8" class="dm-table"/><text x="693" y="205" text-anchor="middle" class="dm-sub">HR</text>
+<rect x="850" y="182" width="105" height="36" rx="8" class="dm-table"/><text x="903" y="205" text-anchor="middle" class="dm-sub">IT</text>
+<rect x="610" y="245" width="95" height="34" rx="8" class="dm-table"/><text x="657" y="267" text-anchor="middle" class="dm-sub">Emp A</text>
+<rect x="720" y="245" width="95" height="34" rx="8" class="dm-table"/><text x="767" y="267" text-anchor="middle" class="dm-sub">Emp B</text>
+<rect x="820" y="245" width="95" height="34" rx="8" class="dm-table"/><text x="867" y="267" text-anchor="middle" class="dm-sub">Emp C</text>
+<rect x="930" y="245" width="65" height="34" rx="8" class="dm-table"/><text x="962" y="267" text-anchor="middle" class="dm-sub">Emp D</text>
+<line x1="797" y1="148" x2="693" y2="182" class="dm-line"/>
+<line x1="797" y1="148" x2="903" y2="182" class="dm-line"/>
+<line x1="693" y1="218" x2="657" y2="245" class="dm-line"/>
+<line x1="693" y1="218" x2="767" y2="245" class="dm-line"/>
+<line x1="903" y1="218" x2="867" y2="245" class="dm-line"/>
+<line x1="903" y1="218" x2="962" y2="245" class="dm-line"/>
+
+<!-- network -->
+<text x="95" y="355" class="dm-title">3) Network Model</text>
+<text x="95" y="380" class="dm-sub">Dữ liệu là các record liên kết chéo; một nút có thể có nhiều “cha”.</text>
+<rect x="70" y="400" width="370" height="260" rx="12" class="dm-warm"/>
+<circle cx="140" cy="480" r="28" class="dm-table"/><text x="140" y="486" text-anchor="middle" class="dm-sub">A</text>
+<circle cx="260" cy="445" r="28" class="dm-table"/><text x="260" y="451" text-anchor="middle" class="dm-sub">B</text>
+<circle cx="365" cy="500" r="28" class="dm-table"/><text x="365" y="506" text-anchor="middle" class="dm-sub">C</text>
+<circle cx="230" cy="565" r="28" class="dm-table"/><text x="230" y="571" text-anchor="middle" class="dm-sub">D</text>
+<circle cx="120" cy="590" r="28" class="dm-table"/><text x="120" y="596" text-anchor="middle" class="dm-sub">E</text>
+<line x1="166" y1="472" x2="232" y2="451" class="dm-line"/>
+<line x1="286" y1="457" x2="339" y2="488" class="dm-line"/>
+<line x1="340" y1="517" x2="257" y2="553" class="dm-line"/>
+<line x1="202" y1="568" x2="148" y2="587" class="dm-line"/>
+<line x1="131" y1="508" x2="123" y2="562" class="dm-line"/>
+<line x1="256" y1="472" x2="236" y2="537" class="dm-line"/>
+<line x1="153" y1="495" x2="206" y2="549" class="dm-line"/>
+<line x1="286" y1="438" x2="338" y2="421" class="dm-line" style="visibility:hidden"/>
+
+<!-- object-oriented -->
+<text x="615" y="355" class="dm-title">4) Object-Oriented Model</text>
+<text x="615" y="380" class="dm-sub">Dữ liệu dưới dạng object: thuộc tính + phương thức + kế thừa.</text>
+<rect x="590" y="400" width="420" height="260" rx="12" class="dm-box"/>
+<rect x="700" y="430" width="180" height="82" rx="10" class="dm-table"/>
+<text x="790" y="452" text-anchor="middle" class="dm-sub" style="font-weight:700">Person</text>
+<line x1="700" y1="460" x2="880" y2="460" class="dm-line"/>
+<text x="715" y="480" class="dm-sub">+ name</text>
+<text x="715" y="500" class="dm-sub">+ address</text>
+<rect x="610" y="565" width="165" height="72" rx="10" class="dm-table"/>
+<text x="692" y="588" text-anchor="middle" class="dm-sub" style="font-weight:700">Student</text>
+<line x1="610" y1="596" x2="775" y2="596" class="dm-line"/>
+<text x="625" y="618" class="dm-sub">+ major</text>
+<rect x="810" y="565" width="165" height="72" rx="10" class="dm-table"/>
+<text x="892" y="588" text-anchor="middle" class="dm-sub" style="font-weight:700">Lecturer</text>
+<line x1="810" y1="596" x2="975" y2="596" class="dm-line"/>
+<text x="825" y="618" class="dm-sub">+ salary</text>
+<line x1="790" y1="512" x2="692" y2="565" class="dm-line"/>
+<line x1="790" y1="512" x2="892" y2="565" class="dm-line"/>
+
+<!-- document -->
+<text x="95" y="715" class="dm-title">5) Document Model</text>
+<text x="95" y="740" class="dm-sub">Mỗi document có cấu trúc gần JSON; phù hợp dữ liệu lồng nhau.</text>
+<rect x="70" y="760" width="370" height="290" rx="12" class="dm-alt"/>
+<rect x="110" y="800" width="290" height="210" rx="10" class="dm-table"/>
+<text x="130" y="830" class="dm-sub">{</text>
+<text x="145" y="855" class="dm-sub">"studentId": 1001,</text>
+<text x="145" y="880" class="dm-sub">"name": "An",</text>
+<text x="145" y="905" class="dm-sub">"major": "Data Science",</text>
+<text x="145" y="930" class="dm-sub">"phones": ["090...", "091..."],</text>
+<text x="145" y="955" class="dm-sub">"address": &#123;</text>
+<text x="175" y="980" class="dm-sub">"city": "Hanoi"</text>
+<text x="145" y="1005" class="dm-sub">&#125;</text>
+<text x="130" y="1030" class="dm-sub">}</text>
+
+<!-- key-value -->
+<text x="615" y="715" class="dm-title">6) Key–Value Model</text>
+<text x="615" y="740" class="dm-sub">Mỗi key ánh xạ tới một value; truy cập trực tiếp và rất nhanh.</text>
+<rect x="590" y="760" width="420" height="290" rx="12" class="dm-warm"/>
+<rect x="640" y="810" width="120" height="46" rx="8" class="dm-table"/><text x="700" y="839" text-anchor="middle" class="dm-sub">session:abc</text>
+<rect x="810" y="810" width="150" height="46" rx="8" class="dm-table"/><text x="885" y="839" text-anchor="middle" class="dm-sub">&#123;user: 1001&#125;</text>
+<line x1="760" y1="833" x2="810" y2="833" class="dm-line"/>
+<rect x="640" y="885" width="120" height="46" rx="8" class="dm-table"/><text x="700" y="914" text-anchor="middle" class="dm-sub">product:52</text>
+<rect x="810" y="885" width="150" height="46" rx="8" class="dm-table"/><text x="885" y="914" text-anchor="middle" class="dm-sub">&#123;stock: 18&#125;</text>
+<line x1="760" y1="908" x2="810" y2="908" class="dm-line"/>
+<rect x="640" y="960" width="120" height="46" rx="8" class="dm-table"/><text x="700" y="989" text-anchor="middle" class="dm-sub">cache:home</text>
+<rect x="810" y="960" width="150" height="46" rx="8" class="dm-table"/><text x="885" y="989" text-anchor="middle" class="dm-sub">"&lt;html&gt;...&lt;/html&gt;"</text>
+<line x1="760" y1="983" x2="810" y2="983" class="dm-line"/>
+</svg>
+
+<h3>10.2 Minh họa riêng cho Graph Model</h3>
+<p>Graph model đặc biệt hữu ích khi trọng tâm là <b>mạng quan hệ</b>, ví dụ: social network, recommendation, fraud detection, route planning, citation network.</p>
+<svg class="diagram" viewBox="0 0 980 300" aria-label="Minh họa graph model">
+<style>
+.gnode{fill:#eef3ff;stroke:#2856d7;stroke-width:2.5}
+.gedge{stroke:#475569;stroke-width:2.5;fill:none}
+.gtext{font:14px system-ui;fill:#182033}
+.glabel{font:13px system-ui;fill:#7a3ff2}
+</style>
+<circle cx="110" cy="150" r="34" class="gnode"/><text x="110" y="155" text-anchor="middle" class="gtext">An</text>
+<circle cx="300" cy="80" r="34" class="gnode"/><text x="300" y="85" text-anchor="middle" class="gtext">Binh</text>
+<circle cx="300" cy="220" r="34" class="gnode"/><text x="300" y="225" text-anchor="middle" class="gtext">Chi</text>
+<circle cx="520" cy="150" r="38" class="gnode"/><text x="520" y="155" text-anchor="middle" class="gtext">DBMS</text>
+<circle cx="760" cy="80" r="34" class="gnode"/><text x="760" y="85" text-anchor="middle" class="gtext">Course</text>
+<circle cx="760" cy="220" r="34" class="gnode"/><text x="760" y="225" text-anchor="middle" class="gtext">Lab</text>
+<line x1="144" y1="138" x2="268" y2="92" class="gedge"/><text x="205" y="102" class="glabel">FRIEND</text>
+<line x1="144" y1="162" x2="268" y2="208" class="gedge"/><text x="205" y="199" class="glabel">FRIEND</text>
+<line x1="334" y1="90" x2="480" y2="141" class="gedge"/><text x="395" y="109" class="glabel">TAKES</text>
+<line x1="334" y1="210" x2="480" y2="159" class="gedge"/><text x="395" y="195" class="glabel">TAKES</text>
+<line x1="558" y1="140" x2="726" y2="90" class="gedge"/><text x="630" y="106" class="glabel">PART_OF</text>
+<line x1="558" y1="160" x2="726" y2="210" class="gedge"/><text x="632" y="206" class="glabel">USES</text>
+</svg>
+
+<div class="grid3">
+  <div class="card"><h3>Relational</h3><p>Tốt khi dữ liệu có cấu trúc rõ, nhiều ràng buộc và nhiều phép join.</p></div>
+  <div class="card"><h3>Document</h3><p>Phù hợp khi mỗi record có cấu trúc khá linh hoạt và có dữ liệu lồng nhau.</p></div>
+  <div class="card"><h3>Graph</h3><p>Rất mạnh khi cần đi theo đường liên kết nhiều bước giữa các đối tượng.</p></div>
+</div>
+</section>
+
+<section id="relational"><h2>11. Relational Database</h2>
+<p>Relational model tổ chức dữ liệu thành <b>relations</b>, thường được triển khai thành tables.</p>
+<table><caption>STUDENT</caption><thead><tr><th>StudentID</th><th>FullName</th><th>Major</th></tr></thead><tbody>
+<tr><td>1001</td><td>An Nguyen</td><td>Data Science</td></tr>
+<tr><td>1002</td><td>Binh Tran</td><td>Computer Science</td></tr>
+<tr><td>1003</td><td>Chi Le</td><td>Logistics</td></tr>
+</tbody></table>
+<p>Các khái niệm nền tảng: <b>relation/table, tuple/row, attribute/column, domain, key, constraint</b> và foreign key.</p>
+</section>
+<section id="nosql"><h2>12. NoSQL</h2>
+<p>NoSQL là nhãn rộng cho nhiều họ database không lấy relational table truyền thống làm mô hình chính.</p>
+<div class="grid2">
+<div class="card"><h3>Document</h3><pre><code>{"id":1001,"name":"An","phones":["090..."]}</code></pre><p>MongoDB, Couchbase.</p></div>
+<div class="card"><h3>Key–Value</h3><pre><code>session:abc → {"user":1001}</code></pre><p>Redis, DynamoDB.</p></div>
+<div class="card"><h3>Column-family</h3><p>Hướng tới dữ liệu phân tán và throughput lớn.</p></div>
+<div class="card"><h3>Graph</h3><p>Nodes/edges cho mạng quan hệ sâu.</p></div>
+</div>
+<div class="warn"><b>NoSQL không có nghĩa là “không có schema” hoặc “luôn nhanh hơn SQL”.</b></div>
+</section>
+<section id="types"><h2>13. Các loại Database khác</h2>
+<table><thead><tr><th>Loại</th><th>Mục tiêu</th><th>Use case</th></tr></thead><tbody>
+<tr><td>Cloud DB</td><td>Được cung cấp/vận hành trên cloud</td><td>Managed services</td></tr>
+<tr><td>In-memory</td><td>Giảm latency bằng RAM</td><td>Cache, session</td></tr>
+<tr><td>Time-series</td><td>Dữ liệu gắn timestamp</td><td>IoT, monitoring, finance</td></tr>
+<tr><td>Distributed</td><td>Nhiều node</td><td>Scale-out, HA, geo-distribution</td></tr>
+<tr><td>Operational / OLTP</td><td>Read/write giao dịch ngắn</td><td>Orders, booking, banking</td></tr>
+<tr><td>Analytical / OLAP</td><td>Scan/aggregation lớn</td><td>BI, warehouse</td></tr>
+</tbody></table>
+<div class="note">Các nhãn này có thể chồng lấp: một cloud database có thể đồng thời là relational, distributed và operational.</div>
+</section>
+<section id="sql"><h2>14. SQL trong DBMS</h2>
+<table><thead><tr><th>Nhóm</th><th>Mục tiêu</th><th>Lệnh</th></tr></thead><tbody>
+<tr><td>DDL</td><td>Định nghĩa cấu trúc</td><td>CREATE, ALTER, DROP</td></tr>
+<tr><td>DML</td><td>Thêm/sửa/xóa</td><td>INSERT, UPDATE, DELETE</td></tr>
+<tr><td>DQL</td><td>Truy vấn</td><td>SELECT</td></tr>
+<tr><td>DCL</td><td>Quyền</td><td>GRANT, REVOKE</td></tr>
+<tr><td>TCL</td><td>Transaction</td><td>COMMIT, ROLLBACK</td></tr>
+</tbody></table>
+<pre><code>SELECT StudentID, FullName
+FROM Student
+WHERE Major = 'Data Science'
+ORDER BY FullName;</code></pre>
+<div class="tip"><b>SQL thường mang tính declarative:</b> người dùng mô tả kết quả muốn lấy; optimizer chọn execution plan.</div>
+</section>
+<section id="keys"><h2>15. Keys và Constraints</h2>
+<pre><code>CREATE TABLE Department (
+  DepartmentID INT PRIMARY KEY,
+  Name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE Employee (
+  EmployeeID INT PRIMARY KEY,
+  FullName VARCHAR(100) NOT NULL,
+  Salary DECIMAL(12,2) CHECK (Salary >= 0),
+  DepartmentID INT,
+  FOREIGN KEY (DepartmentID)
+    REFERENCES Department(DepartmentID)
+);</code></pre>
+<table><thead><tr><th>Constraint</th><th>Mục tiêu</th></tr></thead><tbody>
+<tr><td>PRIMARY KEY</td><td>Nhận diện duy nhất row</td></tr>
+<tr><td>FOREIGN KEY</td><td>Referential integrity</td></tr>
+<tr><td>UNIQUE</td><td>Không trùng theo constraint</td></tr>
+<tr><td>NOT NULL</td><td>Bắt buộc có giá trị</td></tr>
+<tr><td>CHECK</td><td>Giá trị phải thỏa điều kiện</td></tr>
+</tbody></table>
+</section>
+<section id="transaction"><h2>16. Transaction và ACID</h2>
+<p><b>Transaction</b> là một đơn vị công việc logic cần được xử lý như một khối nhất quán.</p>
+<pre><code>BEGIN;
+UPDATE Account SET Balance = Balance - 1000000 WHERE AccountID='A';
+UPDATE Account SET Balance = Balance + 1000000 WHERE AccountID='B';
+COMMIT;</code></pre>
+<div class="grid4">
+<div class="card"><h3>Atomicity</h3><p>All-or-nothing.</p></div>
+<div class="card"><h3>Consistency</h3><p>Giữ các invariant/ràng buộc hợp lệ.</p></div>
+<div class="card"><h3>Isolation</h3><p>Kiểm soát tương tác giữa transaction đồng thời.</p></div>
+<div class="card"><h3>Durability</h3><p>Sau commit, kết quả phải bền vững theo cam kết hệ thống.</p></div>
+</div>
+</section>
+<section id="concurrency"><h2>17. Concurrency Control</h2>
+<p>Khi nhiều transaction cùng đọc/ghi, interleaving không phù hợp có thể gây <b>lost update</b> hoặc các hiện tượng đọc không mong muốn.</p>
+<table><thead><tr><th>Thời điểm</th><th>T1</th><th>T2</th></tr></thead><tbody>
+<tr><td>1</td><td>Read stock=10</td><td></td></tr>
+<tr><td>2</td><td></td><td>Read stock=10</td></tr>
+<tr><td>3</td><td>Sell 1 → write 9</td><td></td></tr>
+<tr><td>4</td><td></td><td>Sell 2 → write 8</td></tr>
+</tbody></table>
+<p>DBMS có thể dùng locking, timestamp/versioning, MVCC và isolation levels để điều phối.</p>
+</section>
+<section id="index"><h2>18. Index</h2>
+<p>Index là cấu trúc dữ liệu bổ sung giúp DBMS tìm row nhanh hơn cho một số workload, đổi lại tốn storage và chi phí bảo trì khi ghi.</p>
+<div class="grid2"><div class="card"><h3>Lợi ích</h3><p>Giảm lượng dữ liệu phải scan cho predicates, joins, ranges hoặc ordering phù hợp.</p></div><div class="card"><h3>Chi phí</h3><p>Tốn disk/RAM; INSERT/UPDATE/DELETE có thể phải cập nhật index.</p></div></div>
+<div class="warn"><b>Không tạo index cho mọi cột.</b> Index design phải dựa trên truy vấn thực tế và execution plans.</div>
+</section>
+<section id="normalization"><h2>19. Normalization</h2>
+<p><b>Normalization</b> tổ chức relational schema nhằm giảm redundancy có hại và insert/update/delete anomalies dựa trên dependencies của dữ liệu.</p>
+<table><thead><tr><th>StudentID</th><th>StudentName</th><th>CourseID</th><th>CourseName</th><th>Lecturer</th></tr></thead><tbody>
+<tr><td>S01</td><td>An</td><td>C01</td><td>DBMS</td><td>Dr. Minh</td></tr>
+<tr><td>S02</td><td>Binh</td><td>C01</td><td>DBMS</td><td>Dr. Minh</td></tr>
+</tbody></table>
+<p>CourseName và Lecturer bị lặp. Có thể tách:</p>
+<pre><code>STUDENT(StudentID, StudentName)
+COURSE(CourseID, CourseName, Lecturer)
+ENROLLMENT(StudentID, CourseID)</code></pre>
+</section>
+<section id="security"><h2>20. Security, Integrity và Recovery</h2>
+<div class="grid3">
+<div class="card"><h3>Authentication</h3><p>Xác minh user/service.</p></div>
+<div class="card"><h3>Authorization</h3><p>Ai được SELECT/INSERT/UPDATE/DELETE?</p></div>
+<div class="card"><h3>Integrity</h3><p>PK, FK, UNIQUE, CHECK, NOT NULL.</p></div>
+<div class="card"><h3>Audit</h3><p>Theo dõi thao tác quan trọng.</p></div>
+<div class="card"><h3>Backup</h3><p>Tạo bản sao có thể phục hồi.</p></div>
+<div class="card"><h3>Recovery</h3><p>Khôi phục sau crash/lỗi/thao tác sai.</p></div>
+</div>
+<div class="tip"><b>Least privilege:</b> user/service chỉ nên có quyền tối thiểu cần thiết.</div>
+<div class="warn"><b>Backup chưa kiểm thử restore chưa đủ.</b> Cần quy trình recovery và mục tiêu RPO/RTO phù hợp.</div>
+</section>
+<section id="connect"><h2>21. Ứng dụng kết nối Database</h2>
+<svg class="diagram" viewBox="0 0 1000 260">
+<rect x="35" y="85" width="180" height="85" rx="10" class="box"/><text x="125" y="120" class="t" text-anchor="middle">Frontend</text><text x="125" y="148" class="s" text-anchor="middle">Web / Mobile</text>
+<rect x="285" y="85" width="190" height="85" rx="10" class="box"/><text x="380" y="120" class="t" text-anchor="middle">Backend / API</text><text x="380" y="148" class="s" text-anchor="middle">Business Logic</text>
+<rect x="545" y="85" width="190" height="85" rx="10" class="accent"/><text x="640" y="120" class="t" text-anchor="middle">Driver / ORM</text><text x="640" y="148" class="s" text-anchor="middle">SQL / Protocol</text>
+<rect x="805" y="85" width="160" height="85" rx="10" class="box"/><text x="885" y="120" class="t" text-anchor="middle">DBMS</text><text x="885" y="148" class="s" text-anchor="middle">Database</text>
+<line x1="215" y1="128" x2="285" y2="128" class="line"/><line x1="475" y1="128" x2="545" y2="128" class="line"/><line x1="735" y1="128" x2="805" y2="128" class="line"/>
+</svg>
+<p>Các cơ chế phổ biến: native drivers/connectors, JDBC/ODBC, ORM và ODM.</p>
+<div class="warn"><b>ORM không thay thế kiến thức database.</b> Schema, index, transaction và query patterns vẫn quyết định tính đúng và hiệu năng.</div>
+</section>
+<section id="choose"><h2>22. Chọn Database thế nào?</h2>
+<p>Không nên bắt đầu bằng “database nào nhanh nhất?”. Hãy bắt đầu bằng workload.</p>
+<table><thead><tr><th>Câu hỏi</th><th>Cần phân tích</th></tr></thead><tbody>
+<tr><td>Dữ liệu?</td><td>Tabular, nested document, graph, time-series?</td></tr>
+<tr><td>Query?</td><td>Point lookup, joins, traversal, aggregation?</td></tr>
+<tr><td>Consistency?</td><td>Giao dịch tài chính hay cache/session?</td></tr>
+<tr><td>Read/write?</td><td>Read-heavy, write-heavy, append-only?</td></tr>
+<tr><td>Scale?</td><td>Volume, request rate, geographic distribution?</td></tr>
+<tr><td>Availability?</td><td>Replication/failover, downtime?</td></tr>
+<tr><td>Team?</td><td>Expertise và toolchain?</td></tr>
+</tbody></table>
+<div class="example"><b>Ví dụ:</b> hệ thống đăng ký học phần có transactions, constraints và nhiều relationships → relational DB là điểm khởi đầu tự nhiên; social graph có truy vấn nhiều hop → cân nhắc graph DB; sensor telemetry → cân nhắc time-series storage.</div>
+</section>
+<section id="example"><h2>23. Ví dụ xuyên suốt: Đăng ký học phần</h2>
+<div class="formula">STUDENT —&lt; ENROLLMENT &gt;— SECTION —&gt; COURSE</div>
+<pre><code>STUDENT(StudentID PK, FullName, Email UNIQUE)
+COURSE(CourseID PK, CourseName, Credits)
+SECTION(SectionID PK, CourseID FK, Semester, Capacity)
+ENROLLMENT(StudentID PK/FK, SectionID PK/FK, EnrollDate, FinalGrade)</code></pre>
+<pre><code>SELECT s.StudentID, s.FullName, e.FinalGrade
+FROM Student s
+JOIN Enrollment e ON e.StudentID = s.StudentID
+WHERE e.SectionID = 202601;</code></pre>
+<p>Một ví dụ duy nhất có thể nối toàn bộ môn: ER model → relational model → SQL → constraints → normalization → transaction → indexing → authorization.</p>
+</section>
+<section id="roadmap"><h2>24. Lộ trình học DBMS</h2>
+<ol class="steps">
+<li><b>Foundations:</b> data, database, DBMS, architecture.</li>
+<li><b>ER/EER Modeling:</b> entity, relationship, cardinality, specialization.</li>
+<li><b>Relational Model:</b> relations, tuples, domains, keys.</li>
+<li><b>ER → Relational Mapping.</b></li>
+<li><b>SQL:</b> DDL, CRUD, joins, aggregation, subqueries, views.</li>
+<li><b>Relational Algebra.</b></li>
+<li><b>Functional Dependencies.</b></li>
+<li><b>Normalization:</b> 1NF → 3NF/BCNF.</li>
+<li><b>Storage & Indexing:</b> files, B/B+ trees, hashing.</li>
+<li><b>Transactions:</b> ACID, schedules, serializability.</li>
+<li><b>Concurrency & Recovery.</b></li>
+<li><b>Security & Administration.</b></li>
+<li><b>NoSQL / Distributed / Warehousing.</b></li>
+</ol>
+<div class="formula">Model correctly → Query correctly → Store efficiently → Execute safely → Operate reliably</div>
+</section>
+<section id="mistakes"><h2>25. Ngộ nhận thường gặp</h2>
+<div class="grid2">
+<div class="card"><h3>Database = Excel</h3><p>DBMS còn có transactions, concurrency, query engine, constraints, privileges…</p></div>
+<div class="card"><h3>MySQL = SQL</h3><p>MySQL là DBMS; SQL là ngôn ngữ.</p></div>
+<div class="card"><h3>NoSQL = không schema</h3><p>Dữ liệu vẫn có structure và invariants.</p></div>
+<div class="card"><h3>Index luôn tốt</h3><p>Index có trade-off read/write/storage.</p></div>
+<div class="card"><h3>Cloud DB là data model</h3><p>Cloud là môi trường cung cấp/triển khai.</p></div>
+<div class="card"><h3>ORM thay thế SQL</h3><p>ORM chỉ là abstraction phía ứng dụng.</p></div>
+</div>
+</section>
+<section id="exercises"><h2>26. Bài tập luyện tập</h2>
+<h3>Bài 1 – Phân loại</h3><p>Phân loại: PostgreSQL, SQL, database sinh viên, RDBMS, SELECT, index.</p>
+<h3>Bài 2 – File System vs DBMS</h3><p>Một cửa hàng dùng customers.xlsx, orders.xlsx, shipping.xlsx. Nêu ít nhất 5 rủi ro khi quy mô tăng.</p>
+<h3>Bài 3 – Chọn mô hình</h3><p>Đề xuất loại database nên nghiên cứu đầu tiên cho: ngân hàng, session cache, social graph, sensor telemetry, catalog sản phẩm biến động schema.</p>
+<h3>Bài 4 – SQL cơ bản</h3><p>Cho PRODUCT(ProductID, Name, Price, Stock). Viết CREATE, INSERT, SELECT, UPDATE, DELETE.</p>
+<h3>Bài 5 – Transaction</h3><p>Mô tả transaction đặt hàng: kiểm tra stock → tạo order → tạo order item → giảm stock → commit.</p>
+<h3>Bài 6 – Mini project</h3><p>Chọn thư viện/logistics/bán hàng/quản lý lớp học. Xác định users, data, 10 queries chính, ERD và DBMS requirements.</p>
+</section>
+<section id="quiz"><h2>27. Quiz tự kiểm tra</h2>
+<div class="quiz-item" data-a="b"><b>Câu 1.</b> DBMS là gì?
+<label><input type="radio" name="q1" value="a"> Một tập row</label><label><input type="radio" name="q1" value="b"> Phần mềm quản lý database</label><label><input type="radio" name="q1" value="c"> Ngôn ngữ lập trình</label><div class="ans">Đáp án: <b>B</b>.</div></div>
+<div class="quiz-item" data-a="a"><b>Câu 2.</b> RDBMS tổ chức dữ liệu chủ yếu theo:
+<label><input type="radio" name="q2" value="a"> Relations/tables</label><label><input type="radio" name="q2" value="b"> Chỉ graph</label><label><input type="radio" name="q2" value="c"> Chỉ key-value</label><div class="ans">Đáp án: <b>A</b>.</div></div>
+<div class="quiz-item" data-a="b"><b>Câu 3.</b> Schema và instance:
+<label><input type="radio" name="q3" value="a"> Giống nhau</label><label><input type="radio" name="q3" value="b"> Schema là cấu trúc; instance là dữ liệu tại một thời điểm</label><label><input type="radio" name="q3" value="c"> Instance là cấu trúc</label><div class="ans">Đáp án: <b>B</b>.</div></div>
+<div class="quiz-item" data-a="c"><b>Câu 4.</b> Foreign key chủ yếu hỗ trợ:
+<label><input type="radio" name="q4" value="a"> Nén</label><label><input type="radio" name="q4" value="b"> Mã hóa</label><label><input type="radio" name="q4" value="c"> Referential integrity</label><div class="ans">Đáp án: <b>C</b>.</div></div>
+<div class="quiz-item" data-a="a"><b>Câu 5.</b> All-or-nothing trong ACID:
+<label><input type="radio" name="q5" value="a"> Atomicity</label><label><input type="radio" name="q5" value="b"> Isolation</label><label><input type="radio" name="q5" value="c"> Durability</label><div class="ans">Đáp án: <b>A</b>.</div></div>
+<div class="quiz-item" data-a="b"><b>Câu 6.</b> Index:
+<label><input type="radio" name="q6" value="a"> Luôn miễn phí và nhanh hơn</label><label><input type="radio" name="q6" value="b"> Có thể tăng tốc đọc nhưng có chi phí ghi/storage</label><label><input type="radio" name="q6" value="c"> Chỉ dùng NoSQL</label><div class="ans">Đáp án: <b>B</b>.</div></div>
+<div class="quiz-item" data-a="c"><b>Câu 7.</b> Nodes và edges là trung tâm của:
+<label><input type="radio" name="q7" value="a"> Relational DB</label><label><input type="radio" name="q7" value="b"> Time-series DB</label><label><input type="radio" name="q7" value="c"> Graph DB</label><div class="ans">Đáp án: <b>C</b>.</div></div>
+<div class="quiz-item" data-a="a"><b>Câu 8.</b> Normalization hướng tới:
+<label><input type="radio" name="q8" value="a"> Giảm redundancy có hại và anomalies</label><label><input type="radio" name="q8" value="b"> Tăng số cột</label><label><input type="radio" name="q8" value="c"> Thay thế transaction</label><div class="ans">Đáp án: <b>A</b>.</div></div>
+<div class="quiz-item" data-a="b"><b>Câu 9.</b> Cloud database:
+<label><input type="radio" name="q9" value="a"> Là một data model duy nhất</label><label><input type="radio" name="q9" value="b"> Có thể là relational hoặc NoSQL</label><label><input type="radio" name="q9" value="c"> Không cần backup</label><div class="ans">Đáp án: <b>B</b>.</div></div>
+<div class="quiz-item" data-a="c"><b>Câu 10.</b> Tầng gần storage nhất trong kiến trúc ba mức:
+<label><input type="radio" name="q10" value="a"> External</label><label><input type="radio" name="q10" value="b"> Conceptual</label><label><input type="radio" name="q10" value="c"> Internal</label><div class="ans">Đáp án: <b>C</b>.</div></div>
+<button onclick="grade()">Kiểm tra kết quả</button> <button onclick="resetQuiz()">Làm lại</button><p id="score"></p>
+</section>
+<section id="sources"><h2>28. Tài liệu tham khảo</h2>
+<p>Bài giảng được tổ chức lại và mở rộng từ các chủ đề nhập môn DBMS:</p>
+<ul>
+<li><a href="https://www.geeksforgeeks.org/dbms/getting-started-with-database-management-system/" target="_blank">GeeksforGeeks — Getting started with Databases: Essential Guide for Beginners</a></li>
+<li><a href="https://www.geeksforgeeks.org/dbms/advantages-of-database-management-system/" target="_blank">Advantages of Database Management System</a></li>
+<li><a href="https://www.geeksforgeeks.org/dbms/structure-of-database-management-system/" target="_blank">Structure of Database Management System</a></li>
+<li><a href="https://www.geeksforgeeks.org/dbms/database-design-in-dbms/" target="_blank">Database Design in DBMS</a></li>
+<li><a href="https://www.geeksforgeeks.org/dbms/introduction-of-database-normalization/" target="_blank">Introduction to Database Normalization</a></li>
+</ul>
+<div class="tip"><b>Trình tự giảng đề xuất:</b> dùng bài này như Lecture 1 → ER Model → EER Model → Relational Model → SQL → Functional Dependencies & Normalization → Transaction & Indexing.</div>
+</section></main></div>
+<footer><hr><p><b>Getting Started with Databases & DBMS</b> · HTML độc lập; mở bằng Chrome/Edge/Firefox và dùng In/PDF khi cần.</p></footer>
+<script>
+function theme(){document.body.classList.toggle('dark');localStorage.setItem('dbms-theme',document.body.classList.contains('dark')?'dark':'light')}if(localStorage.getItem('dbms-theme')==='dark')document.body.classList.add('dark');
+function prog(){let d=document.documentElement,h=d.scrollHeight-d.clientHeight;document.getElementById('progress').style.width=(h?d.scrollTop/h*100:0)+'%'}addEventListener('scroll',prog,{passive:true});prog();
+let secs=[...document.querySelectorAll('main section')],links=[...document.querySelectorAll('.toc a')];new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-20% 0px -70% 0px'}).observe(secs[0]);secs.slice(1).forEach(s=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-20% 0px -70% 0px'}).observe(s));
+function grade(){let qs=[...document.querySelectorAll('.quiz-item')],sc=0,n=0;qs.forEach(q=>{let x=q.querySelector('input:checked');q.querySelector('.ans').classList.add('show');if(x){n++;if(x.value===q.dataset.a)sc++}});document.getElementById('score').textContent=`Kết quả: ${sc}/${qs.length} câu đúng · Đã trả lời ${n}/${qs.length} câu.`}
+function resetQuiz(){document.querySelectorAll('.quiz-item input').forEach(x=>x.checked=false);document.querySelectorAll('.ans').forEach(x=>x.classList.remove('show'));document.getElementById('score').textContent=''}
+</script>
+</body></html>

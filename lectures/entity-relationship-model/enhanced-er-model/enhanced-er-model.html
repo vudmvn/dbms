@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài giảng tiếp theo: Enhanced ER Model (EER)</title>
+<meta name="description" content="Bài giảng đầy đủ về Enhanced Entity-Relationship Model (EER): superclass/subclass, specialization, generalization, inheritance, constraints, category/union, multiple inheritance, aggregation và ánh xạ sang mô hình quan hệ.">
+<style>
+:root{
+  --bg:#f7f8fc; --surface:#ffffff; --surface2:#f0f4ff; --text:#182033; --muted:#5f6b7a;
+  --primary:#2856d7; --primary2:#173b9b; --accent:#7a3ff2; --green:#157a55;
+  --orange:#c35a10; --red:#b42318; --border:#dbe2ef; --shadow:0 10px 30px rgba(26,46,89,.08);
+  --code:#101827; --codeText:#e8eefc;
+}
+body.dark{
+  --bg:#0e1420; --surface:#151e2e; --surface2:#1a2740; --text:#eef3ff; --muted:#aab8ce;
+  --primary:#82a5ff; --primary2:#b5c7ff; --accent:#b69bff; --green:#63d5aa;
+  --orange:#ffb46f; --red:#ff8f86; --border:#2c3a54; --shadow:none; --code:#0a101b; --codeText:#e7edf8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+#progress{position:fixed;left:0;top:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent));width:0;z-index:1000}
+.topbar{position:sticky;top:0;z-index:900;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1240px;margin:auto;padding:.65rem 1.2rem;display:flex;gap:1rem;align-items:center;justify-content:space-between}
+.brand{font-weight:800}.brand span{color:var(--primary)}
+.actions{display:flex;gap:.55rem;flex-wrap:wrap}
+button,.btn{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:.5rem .75rem;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--primary);text-decoration:none}
+.hero{background:linear-gradient(135deg,#112f78,#4b29a6);color:white;padding:4.2rem 1.2rem 3.5rem}
+.hero-inner{max-width:1120px;margin:auto}
+.kicker{text-transform:uppercase;font-weight:800;letter-spacing:.12em;opacity:.85;font-size:.78rem}
+h1{font-size:clamp(2.1rem,5vw,4.2rem);line-height:1.06;margin:.5rem 0 1rem;max-width:960px}
+.hero p{max-width:890px;font-size:1.12rem;color:#e5ecff}
+.meta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.3rem}
+.chip{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);padding:.35rem .65rem;border-radius:999px;font-size:.9rem}
+.layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:280px minmax(0,1fr);gap:2rem;padding:2rem 1.2rem 5rem}
+.toc{position:sticky;top:76px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;box-shadow:var(--shadow);max-height:calc(100vh - 96px);overflow:auto}
+.toc h2{font-size:1rem;margin:.1rem 0 .7rem}
+.toc a{display:block;padding:.28rem .4rem;border-radius:7px;color:var(--muted);font-size:.88rem}
+.toc a:hover,.toc a.active{background:var(--surface2);color:var(--primary);text-decoration:none}
+main{min-width:0}
+section{scroll-margin-top:82px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:clamp(1.2rem,3vw,2.15rem);margin-bottom:1.4rem;box-shadow:var(--shadow)}
+h2{font-size:1.75rem;line-height:1.2;margin:.15rem 0 1rem}
+h3{font-size:1.2rem;margin:1.55rem 0 .55rem}
+h4{margin:1.1rem 0 .35rem}
+.lead{font-size:1.07rem;color:var(--muted)}
+.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{border:1px solid var(--border);border-radius:14px;padding:1rem;background:var(--surface)}
+.card h3,.card h4{margin-top:0}
+.note,.tip,.warn,.example{border-left:5px solid var(--primary);background:var(--surface2);padding:.9rem 1rem;border-radius:10px;margin:1rem 0}
+.tip{border-left-color:var(--green)} .warn{border-left-color:var(--orange)} .example{border-left-color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+th,td{border:1px solid var(--border);padding:.65rem .7rem;vertical-align:top}
+th{background:var(--surface2);text-align:left}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--surface2);padding:.1rem .28rem;border-radius:5px}
+pre{background:var(--code);color:var(--codeText);padding:1rem;border-radius:12px;overflow:auto;line-height:1.5}
+pre code{background:none;padding:0;color:inherit}
+svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:14px;background:white;margin:.8rem 0}
+.small{font-size:.88rem;color:var(--muted)}
+.badge{display:inline-block;padding:.18rem .5rem;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:.82rem;font-weight:700}
+.formula{font-family:Cambria,Georgia,serif;background:var(--surface2);padding:.7rem .85rem;border-radius:8px;margin:.65rem 0}
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps li{counter-increment:step;margin:.8rem 0;padding-left:3rem;position:relative}
+.steps li:before{content:counter(step);position:absolute;left:0;top:.05rem;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:white;font-weight:800}
+.quiz-item{border:1px solid var(--border);border-radius:14px;padding:1rem;margin:.9rem 0}
+.quiz-item label{display:block;padding:.35rem .45rem;border-radius:8px;cursor:pointer}
+.quiz-item label:hover{background:var(--surface2)}
+.answer{display:none;margin-top:.7rem;padding:.7rem;border-radius:9px;background:var(--surface2)}
+.answer.show{display:block}
+.matrix td,.matrix th{text-align:center}
+.ok{color:var(--green);font-weight:800}.no{color:var(--red);font-weight:800}
+kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:.08rem .32rem;background:var(--surface);font:inherit;font-size:.86rem}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:1.5rem 0}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+@media print{
+  body{background:white;color:#111;font-size:11pt}.topbar,aside,#progress,.no-print{display:none!important}
+  .hero{background:white!important;color:#111;padding:1rem 0}.hero p{color:#333}
+  .layout{display:block;max-width:none;padding:0}.hero-inner{max-width:none}
+  section{box-shadow:none;border:0;border-radius:0;padding:0;margin:0 0 16pt;break-inside:avoid}
+  a{color:#111}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">DBMS Lecture · <span>Enhanced ER Model</span></div>
+    <div class="actions">
+      <a class="btn" href="../er-model/er-model.html">← ER Model</a>
+      <button onclick="toggleTheme()">◐ Giao diện</button>
+      <button onclick="window.print()">⎙ In/PDF</button>
+      <a class="btn" href="#quiz">✓ Quiz</a>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Database Management Systems · Conceptual Data Modeling · Part 2</div>
+    <h1>Enhanced Entity–Relationship Model (EER Model)</h1>
+    <p>Bài giảng tiếp nối ER Model, tập trung vào các cơ chế mô hình hóa dữ liệu phức tạp: superclass–subclass, IS-A, specialization, generalization, inheritance, specialization constraints, shared subclass, multiple inheritance, category/union type, aggregation và cách chuyển sang mô hình quan hệ.</p>
+    <div class="meta">
+      <span class="chip">Tiếp nối: ER Model</span>
+      <span class="chip">Specialization & Generalization</span>
+      <span class="chip">Disjoint / Overlapping</span>
+      <span class="chip">Total / Partial</span>
+      <span class="chip">Category / Union</span>
+      <span class="chip">Aggregation</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<aside>
+<nav class="toc" id="toc">
+  <h2>Mục lục</h2>
+  <a href="#objectives">1. Mục tiêu học tập</a>
+  <a href="#why-eer">2. Vì sao cần EER?</a>
+  <a href="#super-sub">3. Superclass & Subclass</a>
+  <a href="#isa">4. Quan hệ IS-A</a>
+  <a href="#specialization">5. Specialization</a>
+  <a href="#generalization">6. Generalization</a>
+  <a href="#compare-sg">7. So sánh hai khái niệm</a>
+  <a href="#inheritance">8. Inheritance</a>
+  <a href="#membership">9. Xác định membership</a>
+  <a href="#constraints">10. Specialization constraints</a>
+  <a href="#four-cases">11. Bốn tổ hợp constraint</a>
+  <a href="#multiple">12. Shared subclass & multiple inheritance</a>
+  <a href="#category">13. Category / Union Type</a>
+  <a href="#category-vs-shared">14. Category vs shared subclass</a>
+  <a href="#aggregation">15. Aggregation</a>
+  <a href="#notation">16. Ký hiệu EER</a>
+  <a href="#mapping">17. EER → Relational</a>
+  <a href="#example1">18. Ví dụ 1: Nhân sự</a>
+  <a href="#example2">19. Ví dụ 2: Thư viện</a>
+  <a href="#example3">20. Ví dụ 3: Dự án–máy móc</a>
+  <a href="#workflow">21. Quy trình thiết kế EER</a>
+  <a href="#mistakes">22. Lỗi thường gặp</a>
+  <a href="#exercises">23. Bài tập</a>
+  <a href="#quiz">24. Quiz</a>
+  <a href="#glossary">25. Thuật ngữ</a>
+  <a href="#sources">26. Tài liệu tham khảo</a>
+</nav>
+</aside>
+
+<main>
+<section id="objectives">
+<h2>1. Mục tiêu học tập</h2>
+<p class="lead">Sau bài học, người học cần có thể nhận biết khi ER cơ bản chưa đủ biểu đạt yêu cầu và lựa chọn đúng cấu trúc EER cho từng business rule.</p>
+<div class="grid2">
+  <div class="card"><h3>Hiểu cấu trúc phân cấp</h3><p>Phân biệt superclass, subclass và quan hệ IS-A.</p></div>
+  <div class="card"><h3>Phân tích abstraction</h3><p>Phân biệt specialization (top-down) và generalization (bottom-up).</p></div>
+  <div class="card"><h3>Mô hình hóa constraint</h3><p>Xác định disjoint/overlapping và total/partial từ phát biểu nghiệp vụ.</p></div>
+  <div class="card"><h3>Thiết kế nâng cao</h3><p>Sử dụng shared subclass, category/union type, aggregation và ánh xạ sang relational schema.</p></div>
+</div>
+</section>
+
+<section id="why-eer">
+<h2>2. Vì sao ER Model cơ bản chưa đủ?</h2>
+<p>ER cơ bản mô tả rất tốt <strong>entity–attribute–relationship</strong>. Tuy nhiên, nhiều miền nghiệp vụ còn có cấu trúc phân loại, kế thừa và abstraction mà chỉ rectangle–diamond–oval sẽ trở nên dài, lặp và khó thể hiện chính xác.</p>
+<div class="grid3">
+  <div class="card"><h3>Phân loại</h3><p>EMPLOYEE có thể gồm ENGINEER, SECRETARY, MANAGER.</p></div>
+  <div class="card"><h3>Kế thừa</h3><p>ENGINEER vẫn có EmployeeID, Name, Salary của EMPLOYEE.</p></div>
+  <div class="card"><h3>Ràng buộc loại</h3><p>Một employee có được đồng thời là MANAGER và ENGINEER? Có bắt buộc thuộc một subtype không?</p></div>
+</div>
+<p><strong>Enhanced ER Model (EER)</strong> mở rộng ER truyền thống để biểu diễn trực tiếp các cấu trúc này, đặc biệt là superclass/subclass, specialization/generalization, inheritance, union/category và aggregation.</p>
+<div class="note"><strong>Tư duy chính:</strong> EER không thay thế ER. Nó <em>mở rộng</em> ER khi bài toán có cấu trúc dữ liệu giàu ngữ nghĩa hơn.</div>
+</section>
+
+<section id="super-sub">
+<h2>3. Superclass và Subclass</h2>
+<h3>3.1 Superclass</h3>
+<p><strong>Superclass</strong> là entity type ở mức tổng quát hơn, chứa các thuộc tính và relationships chung.</p>
+<div class="formula">EMPLOYEE(EmployeeID, Name, Address, Salary)</div>
+
+<h3>3.2 Subclass</h3>
+<p><strong>Subclass</strong> là tập con của một superclass. Nó kế thừa đặc trưng của superclass nhưng có thể bổ sung thuộc tính hoặc relationships riêng.</p>
+<div class="formula">
+ENGINEER ⊆ EMPLOYEE<br>
+SECRETARY ⊆ EMPLOYEE<br>
+MANAGER ⊆ EMPLOYEE
+</div>
+
+<svg class="diagram" viewBox="0 0 960 430">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.sub{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.t{font:700 22px system-ui;fill:#182033}.s{font:16px system-ui;fill:#475569}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="e" x="350" y="45" width="260" height="95" rx="10"/>
+  <text class="t" x="480" y="82" text-anchor="middle">EMPLOYEE</text>
+  <text class="s" x="480" y="112" text-anchor="middle">EmployeeID, Name, Salary</text>
+  <line class="l" x1="480" y1="140" x2="480" y2="205"/>
+  <circle cx="480" cy="235" r="30" fill="#fff" stroke="#2856d7" stroke-width="3"/>
+  <text class="t" x="480" y="243" text-anchor="middle">d</text>
+  <line class="l" x1="480" y1="265" x2="480" y2="290"/>
+  <line class="l" x1="180" y1="290" x2="780" y2="290"/>
+  <line class="l" x1="180" y1="290" x2="180" y2="330"/>
+  <line class="l" x1="480" y1="290" x2="480" y2="330"/>
+  <line class="l" x1="780" y1="290" x2="780" y2="330"/>
+  <rect class="sub" x="70" y="330" width="220" height="70" rx="10"/>
+  <rect class="sub" x="370" y="330" width="220" height="70" rx="10"/>
+  <rect class="sub" x="670" y="330" width="220" height="70" rx="10"/>
+  <text class="t" x="180" y="373" text-anchor="middle">ENGINEER</text>
+  <text class="t" x="480" y="373" text-anchor="middle">SECRETARY</text>
+  <text class="t" x="780" y="373" text-anchor="middle">MANAGER</text>
+</svg>
+
+<div class="tip"><strong>Subset semantics:</strong> mọi ENGINEER instance cũng là một EMPLOYEE instance. Chiều ngược lại không nhất thiết đúng.</div>
+</section>
+
+<section id="isa">
+<h2>4. Quan hệ IS-A</h2>
+<p>Cách kiểm tra đơn giản nhất cho superclass/subclass là đọc thành câu <strong>“X IS-A Y”</strong>.</p>
+<table>
+<thead><tr><th>Phát biểu</th><th>Hợp lý?</th><th>Diễn giải</th></tr></thead>
+<tbody>
+<tr><td>Engineer IS-A Employee</td><td class="ok">Có</td><td>ENGINEER có thể là subclass của EMPLOYEE.</td></tr>
+<tr><td>Car IS-A Vehicle</td><td class="ok">Có</td><td>CAR là một dạng VEHICLE.</td></tr>
+<tr><td>Department IS-A Employee</td><td class="no">Không</td><td>Đây không phải quan hệ phân loại.</td></tr>
+<tr><td>Employee IS-A Department</td><td class="no">Không</td><td>Nên là relationship WORKS_FOR, không phải subclass.</td></tr>
+</tbody>
+</table>
+<div class="warn"><strong>IS-A khác HAS-A.</strong> “CAR has ENGINE” là relationship giữa hai entity type; “CAR is a VEHICLE” mới là subtype/supertype.</div>
+</section>
+
+<section id="specialization">
+<h2>5. Specialization – Chuyên biệt hóa</h2>
+<p><strong>Specialization</strong> là quá trình <strong>top-down</strong>: bắt đầu từ một superclass rồi chia thành các subclass dựa trên các đặc trưng phân biệt.</p>
+
+<div class="formula">EMPLOYEE → ENGINEER, SECRETARY, TECHNICIAN</div>
+
+<h3>5.1 Khi nào dùng?</h3>
+<ul>
+  <li>Một số entity có thuộc tính riêng mà entity khác không có.</li>
+  <li>Một số entity tham gia relationship riêng.</li>
+  <li>Business rules cần phân biệt các loại entity.</li>
+  <li>Cần thể hiện ràng buộc giữa các loại.</li>
+</ul>
+
+<h3>5.2 Ví dụ</h3>
+<table>
+<thead><tr><th>Superclass</th><th>Subclass</th><th>Thuộc tính riêng</th></tr></thead>
+<tbody>
+<tr><td rowspan="3">EMPLOYEE</td><td>ENGINEER</td><td>EngineeringField</td></tr>
+<tr><td>SECRETARY</td><td>TypingSpeed</td></tr>
+<tr><td>TECHNICIAN</td><td>SkillLevel</td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Không nên specialize chỉ vì “có nhiều giá trị”.</strong> Nếu EMPLOYEE có Gender hoặc Status, không phải lúc nào cũng cần tạo MALE_EMPLOYEE / FEMALE_EMPLOYEE hay ACTIVE_EMPLOYEE / INACTIVE_EMPLOYEE. Chỉ tạo subtype khi nó mang ý nghĩa cấu trúc hoặc relationship riêng.</div>
+</section>
+
+<section id="generalization">
+<h2>6. Generalization – Khái quát hóa</h2>
+<p><strong>Generalization</strong> là quá trình <strong>bottom-up</strong>: bắt đầu từ nhiều entity type cụ thể, tìm các thuộc tính/relationships chung và tạo một superclass.</p>
+
+<div class="formula">STUDENT + FACULTY → PERSON</div>
+
+<h3>6.1 Trước generalization</h3>
+<pre><code>STUDENT(StudentID, Name, Address, Major)
+FACULTY(FacultyID, Name, Address, Rank)</code></pre>
+
+<h3>6.2 Sau generalization</h3>
+<pre><code>PERSON(PersonID, Name, Address)
+  ├── STUDENT(Major)
+  └── FACULTY(Rank)</code></pre>
+
+<p>Generalization giúp đưa phần dùng chung lên một mức trừu tượng cao hơn, giảm lặp về mặt mô hình và làm rõ rằng các entity cụ thể cùng thuộc một khái niệm tổng quát.</p>
+</section>
+
+<section id="compare-sg">
+<h2>7. Specialization và Generalization: giống và khác</h2>
+<table>
+<thead><tr><th>Tiêu chí</th><th>Specialization</th><th>Generalization</th></tr></thead>
+<tbody>
+<tr><td>Hướng suy luận</td><td>Top-down</td><td>Bottom-up</td></tr>
+<tr><td>Điểm bắt đầu</td><td>Một entity tổng quát</td><td>Nhiều entity cụ thể</td></tr>
+<tr><td>Mục tiêu</td><td>Tách đặc trưng riêng</td><td>Rút ra đặc trưng chung</td></tr>
+<tr><td>Kết quả logic</td><td>Superclass → subclasses</td><td>Subclasses → superclass</td></tr>
+<tr><td>Ngữ nghĩa cuối cùng</td><td colspan="2">Đều tạo cấu trúc IS-A và inheritance</td></tr>
+</tbody>
+</table>
+<div class="tip"><strong>Quan trọng:</strong> Hai quá trình khác nhau về <em>cách người thiết kế đi đến mô hình</em>, nhưng sơ đồ EER cuối cùng có thể giống nhau.</div>
+</section>
+
+<section id="inheritance">
+<h2>8. Inheritance – Kế thừa</h2>
+<p>Subclass không chỉ “được nối” với superclass. Nó mang ngữ nghĩa <strong>kế thừa</strong>.</p>
+
+<h3>8.1 Attribute inheritance</h3>
+<p>Nếu EMPLOYEE có <code>EmployeeID, Name, Salary</code>, thì ENGINEER kế thừa ba thuộc tính này và có thể bổ sung <code>EngineeringField</code>.</p>
+<div class="formula">Attrs(ENGINEER) = Attrs(EMPLOYEE) ∪ {EngineeringField}</div>
+
+<h3>8.2 Key inheritance</h3>
+<p>Subclass thường được nhận diện bởi cùng key của superclass. Nếu EmployeeID nhận diện EMPLOYEE, thì EmployeeID cũng nhận diện ENGINEER tương ứng.</p>
+
+<h3>8.3 Relationship inheritance</h3>
+<p>Nếu EMPLOYEE <em>WORKS_FOR</em> DEPARTMENT, một ENGINEER với tư cách là EMPLOYEE cũng tham gia được relationship này mà không cần vẽ lại WORKS_FOR riêng cho ENGINEER.</p>
+
+<svg class="diagram" viewBox="0 0 980 380">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.sub{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.t{font:700 21px system-ui;fill:#182033}.s{font:16px system-ui;fill:#475569}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="e" x="70" y="75" width="230" height="90" rx="9"/><text class="t" x="185" y="112" text-anchor="middle">EMPLOYEE</text><text class="s" x="185" y="140" text-anchor="middle">ID, Name, Salary</text>
+  <polygon points="410,120 490,75 570,120 490,165" fill="#fff" stroke="#7a3ff2" stroke-width="3"/><text class="s" x="490" y="126" text-anchor="middle">WORKS_FOR</text>
+  <rect class="e" x="685" y="75" width="230" height="90" rx="9"/><text class="t" x="800" y="112" text-anchor="middle">DEPARTMENT</text><text class="s" x="800" y="140" text-anchor="middle">DeptID, Name</text>
+  <line class="l" x1="300" y1="120" x2="410" y2="120"/><line class="l" x1="570" y1="120" x2="685" y2="120"/>
+  <line class="l" x1="185" y1="165" x2="185" y2="235"/>
+  <circle cx="185" cy="255" r="20" fill="white" stroke="#2856d7" stroke-width="3"/><text class="s" x="185" y="261" text-anchor="middle">d</text>
+  <line class="l" x1="185" y1="275" x2="185" y2="315"/>
+  <rect class="sub" x="70" y="315" width="230" height="50" rx="9"/><text class="t" x="185" y="348" text-anchor="middle">ENGINEER</text>
+  <text class="s" x="495" y="320">ENGINEER kế thừa WORKS_FOR thông qua EMPLOYEE.</text>
+</svg>
+
+<div class="warn"><strong>Đừng sao chép thuộc tính inherited vào sơ đồ conceptual.</strong> Ghi <code>Name</code> cả ở EMPLOYEE lẫn ENGINEER làm người đọc tưởng đó là hai thuộc tính khác nhau.</div>
+</section>
+
+<section id="membership">
+<h2>9. Cách xác định một entity thuộc subclass nào</h2>
+<p>Ngoài disjoint/overlap và total/partial, còn một câu hỏi quan trọng: <strong>membership của subclass được quyết định như thế nào?</strong></p>
+
+<h3>9.1 Predicate-/attribute-defined specialization</h3>
+<p>Membership được xác định bằng một điều kiện trên thuộc tính của superclass.</p>
+<div class="example"><strong>Ví dụ:</strong> EMPLOYEE có <code>JobType</code>. Nếu JobType='Engineer' thì entity thuộc ENGINEER.</div>
+
+<h3>9.2 User-defined specialization</h3>
+<p>Không có một predicate đơn giản quyết định membership; việc xếp loại do người dùng/quy trình nghiệp vụ chỉ định.</p>
+<div class="example"><strong>Ví dụ:</strong> EMPLOYEE được chọn vào nhóm HIGH_POTENTIAL dựa trên hội đồng đánh giá, không phải chỉ một giá trị thuộc tính.</div>
+
+<h3>9.3 Attribute-defined với một discriminator</h3>
+<p>Nếu một thuộc tính duy nhất như <code>EmployeeType</code> quyết định subtype và mỗi entity chỉ có một giá trị, cấu trúc này thường gắn với specialization <strong>disjoint</strong>.</p>
+
+<h3>9.4 Overlapping cần nhiều điều kiện độc lập</h3>
+<p>Nếu một employee có thể vừa là RESEARCHER vừa là MANAGER, membership có thể được xác định bằng nhiều predicate hoặc nhiều cờ độc lập.</p>
+</section>
+
+<section id="constraints">
+<h2>10. Specialization Constraints</h2>
+<p>Hai nhóm constraint phải phân tích <strong>độc lập</strong>: <strong>disjointness</strong> và <strong>completeness</strong>.</p>
+
+<h3>10.1 Disjointness constraint</h3>
+<div class="grid2">
+  <div class="card">
+    <h3>Disjoint (d)</h3>
+    <p>Một superclass entity được phép thuộc <strong>tối đa một</strong> subclass trong specialization đó.</p>
+    <p><code>ACCOUNT → SAVINGS | CURRENT</code></p>
+  </div>
+  <div class="card">
+    <h3>Overlapping (o)</h3>
+    <p>Một superclass entity có thể thuộc <strong>nhiều subclass đồng thời</strong>.</p>
+    <p><code>PERSON → STUDENT, EMPLOYEE</code></p>
+  </div>
+</div>
+
+<h3>10.2 Completeness constraint</h3>
+<div class="grid2">
+  <div class="card">
+    <h3>Total</h3>
+    <p>Mọi superclass entity phải thuộc <strong>ít nhất một</strong> subclass.</p>
+    <p>Thường vẽ <strong>double line</strong> từ superclass tới specialization circle.</p>
+  </div>
+  <div class="card">
+    <h3>Partial</h3>
+    <p>Một số superclass entity có thể không thuộc subclass nào.</p>
+    <p>Thường vẽ <strong>single line</strong>.</p>
+  </div>
+</div>
+
+<div class="formula">
+Disjointness hỏi: “Một entity có thể thuộc <em>bao nhiêu subtype cùng lúc</em>?”<br>
+Completeness hỏi: “Một entity có <em>bắt buộc thuộc subtype nào đó</em> không?”
+</div>
+</section>
+
+<section id="four-cases">
+<h2>11. Bốn tổ hợp specialization constraint</h2>
+<table class="matrix">
+<thead><tr><th></th><th>Partial</th><th>Total</th></tr></thead>
+<tbody>
+<tr><th>Disjoint</th><td>Mỗi entity thuộc 0 hoặc 1 subtype.</td><td>Mỗi entity thuộc đúng 1 subtype.</td></tr>
+<tr><th>Overlapping</th><td>Mỗi entity thuộc 0, 1 hoặc nhiều subtype.</td><td>Mỗi entity thuộc ít nhất 1 subtype; có thể nhiều.</td></tr>
+</tbody>
+</table>
+
+<div class="grid4">
+  <div class="card"><h4>Disjoint + Partial</h4><p>EMPLOYEE → SECRETARY, ENGINEER; có employee không thuộc hai nhóm.</p></div>
+  <div class="card"><h4>Disjoint + Total</h4><p>ACCOUNT → SAVINGS hoặc CURRENT; mọi account phải thuộc đúng một loại.</p></div>
+  <div class="card"><h4>Overlap + Partial</h4><p>PERSON → STUDENT, EMPLOYEE; có người không thuộc nhóm nào, có người thuộc cả hai.</p></div>
+  <div class="card"><h4>Overlap + Total</h4><p>STAFF → RESEARCHER, TEACHER; mọi staff phải thuộc ít nhất một vai trò và có thể thuộc cả hai.</p></div>
+</div>
+
+<div class="tip"><strong>Cách làm bài:</strong> xác định <em>minimum</em> trước (0 hay ≥1) để ra partial/total; sau đó hỏi “có được thuộc nhiều subtype không?” để ra disjoint/overlapping.</div>
+</section>
+
+<section id="multiple">
+<h2>12. Shared Subclass và Multiple Inheritance</h2>
+<h3>12.1 Shared subclass</h3>
+<p>Một subclass có thể là subclass của <strong>nhiều superclass</strong>. Khi đó entity thuộc subclass phải thỏa ngữ nghĩa của <em>tất cả</em> superclass liên quan.</p>
+
+<div class="formula">TEACHING_ASSISTANT ⊆ STUDENT ∩ EMPLOYEE</div>
+
+<svg class="diagram" viewBox="0 0 960 390">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.sub{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.t{font:700 21px system-ui;fill:#182033}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="e" x="120" y="60" width="230" height="75" rx="9"/><text class="t" x="235" y="106" text-anchor="middle">STUDENT</text>
+  <rect class="e" x="610" y="60" width="230" height="75" rx="9"/><text class="t" x="725" y="106" text-anchor="middle">EMPLOYEE</text>
+  <line class="l" x1="235" y1="135" x2="420" y2="245"/><line class="l" x1="725" y1="135" x2="540" y2="245"/>
+  <rect class="sub" x="345" y="245" width="270" height="85" rx="9"/><text class="t" x="480" y="295" text-anchor="middle">TEACHING_ASSISTANT</text>
+</svg>
+
+<h3>12.2 Multiple inheritance</h3>
+<p>TEACHING_ASSISTANT kế thừa thuộc tính/relationships từ cả STUDENT và EMPLOYEE. Nếu các superclass có cùng tên thuộc tính nhưng khác nghĩa, cần xử lý semantic conflict một cách rõ ràng trong thiết kế.</p>
+
+<div class="warn"><strong>Intersection semantics:</strong> shared subclass thường mang ý nghĩa <strong>AND</strong>: đối tượng phải đồng thời là instance của các superclass cha.</div>
+</section>
+
+<section id="category">
+<h2>13. Category / Union Type</h2>
+<p><strong>Category</strong> (hay <strong>union type</strong>) là một subclass mà các thành viên được lấy từ <strong>hợp của hai hoặc nhiều superclass</strong>, và các superclass này có thể không cùng một hệ phân cấp.</p>
+
+<div class="formula">OWNER ⊆ PERSON ∪ COMPANY</div>
+
+<p>Ví dụ một tài sản có chủ sở hữu. Chủ sở hữu có thể là một PERSON <em>hoặc</em> một COMPANY. Thay vì buộc PERSON và COMPANY cùng kế thừa một superclass giả tạo chỉ để tạo relationship OWNS, EER có thể dùng category OWNER.</p>
+
+<svg class="diagram" viewBox="0 0 980 440">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.cat{fill:#fff5ec;stroke:#c35a10;stroke-width:3}.t{font:700 21px system-ui;fill:#182033}.s{font:16px system-ui;fill:#475569}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="e" x="100" y="55" width="220" height="75" rx="9"/><text class="t" x="210" y="101" text-anchor="middle">PERSON</text>
+  <rect class="e" x="660" y="55" width="220" height="75" rx="9"/><text class="t" x="770" y="101" text-anchor="middle">COMPANY</text>
+  <line class="l" x1="210" y1="130" x2="420" y2="230"/><line class="l" x1="770" y1="130" x2="540" y2="230"/>
+  <circle cx="480" cy="245" r="34" fill="white" stroke="#c35a10" stroke-width="3"/><text class="t" x="480" y="253" text-anchor="middle">U</text>
+  <line class="l" x1="480" y1="279" x2="480" y2="320"/>
+  <rect class="cat" x="365" y="320" width="230" height="75" rx="9"/><text class="t" x="480" y="366" text-anchor="middle">OWNER</text>
+  <text class="s" x="480" y="420" text-anchor="middle">OWNER là PERSON hoặc COMPANY.</text>
+</svg>
+
+<h3>13.1 Partial vs total category</h3>
+<p>Một category có thể chứa <strong>một phần</strong> của union các superclass hoặc toàn bộ union, tùy business rules. Thực tế, category thường được dùng để chọn một tập con các entity từ nhiều type khác nhau để cùng tham gia một relationship.</p>
+
+<div class="example"><strong>Ví dụ khác:</strong> LIBRARY_MEMBER có thể là STUDENT, FACULTY hoặc STAFF. Chỉ những người đã đăng ký thư viện mới thuộc category LIBRARY_MEMBER.</div>
+</section>
+
+<section id="category-vs-shared">
+<h2>14. Category/Union Type khác Shared Subclass thế nào?</h2>
+<p>Đây là phần rất dễ nhầm.</p>
+<table>
+<thead><tr><th>Tiêu chí</th><th>Shared subclass</th><th>Category / Union type</th></tr></thead>
+<tbody>
+<tr><td>Logic tập hợp</td><td>Intersection-like</td><td>Union-like</td></tr>
+<tr><td>Ý nghĩa</td><td>Entity thuộc <strong>tất cả</strong> superclass</td><td>Entity xuất phát từ <strong>một trong</strong> các superclass</td></tr>
+<tr><td>Ví dụ</td><td>TA là STUDENT <strong>và</strong> EMPLOYEE</td><td>OWNER là PERSON <strong>hoặc</strong> COMPANY</td></tr>
+<tr><td>Kế thừa</td><td>Có thể kế thừa từ nhiều superclass</td><td>Không nên hiểu đơn giản là đồng thời kế thừa mọi superclass</td></tr>
+<tr><td>Tư duy kiểm tra</td><td>AND</td><td>OR</td></tr>
+</tbody>
+</table>
+
+<div class="formula">
+Shared subclass: X ⊆ A ∩ B<br>
+Category: X ⊆ A ∪ B
+</div>
+
+<div class="warn"><strong>Sai lầm phổ biến:</strong> vẽ OWNER là subclass đồng thời của PERSON và COMPANY sẽ mang nghĩa một owner phải vừa là người vừa là công ty — hoàn toàn khác business rule “người hoặc công ty”.</div>
+</section>
+
+<section id="aggregation">
+<h2>15. Aggregation – Kết tập</h2>
+<p>ER thông thường mô tả relationship giữa entity types. Nhưng đôi khi ta cần tạo relationship giữa một entity và <strong>chính một relationship đã có</strong>. Aggregation cung cấp abstraction này.</p>
+
+<h3>15.1 Tình huống</h3>
+<p>EMPLOYEE <em>WORKS_ON</em> PROJECT. Một MACHINE được cấp không phải cho EMPLOYEE chung chung, cũng không phải cho PROJECT chung chung, mà cho <strong>assignment cụ thể “Employee E làm Project P”</strong>.</p>
+
+<svg class="diagram" viewBox="0 0 1040 510">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.r{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.a{fill:none;stroke:#c35a10;stroke-width:4;stroke-dasharray:10 7}.t{font:700 21px system-ui;fill:#182033}.s{font:16px system-ui;fill:#475569}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="a" x="45" y="45" width="700" height="300" rx="15"/>
+  <rect class="e" x="90" y="140" width="200" height="75" rx="9"/><text class="t" x="190" y="185" text-anchor="middle">EMPLOYEE</text>
+  <polygon class="r" points="375,177 455,132 535,177 455,222"/><text class="s" x="455" y="183" text-anchor="middle">WORKS_ON</text>
+  <rect class="e" x="610" y="140" width="200" height="75" rx="9"/><text class="t" x="710" y="185" text-anchor="middle">PROJECT</text>
+  <line class="l" x1="290" y1="177" x2="375" y2="177"/><line class="l" x1="535" y1="177" x2="610" y2="177"/>
+  <text class="s" x="395" y="320">Aggregation: assignment EMPLOYEE–PROJECT</text>
+
+  <polygon class="r" points="810,330 875,292 940,330 875,368"/><text class="s" x="875" y="336" text-anchor="middle">USES</text>
+  <line class="l" x1="745" y1="290" x2="810" y2="330"/>
+  <rect class="e" x="785" y="410" width="180" height="65" rx="9"/><text class="t" x="875" y="450" text-anchor="middle">MACHINE</text>
+  <line class="l" x1="875" y1="368" x2="875" y2="410"/>
+</svg>
+
+<h3>15.2 Khi nào cần aggregation?</h3>
+<ul>
+  <li>Có relationship R(A,B) đã mang ý nghĩa một đối tượng nghiệp vụ.</li>
+  <li>Một entity C cần liên hệ với <em>một occurrence của R</em>, không chỉ với A hoặc B.</li>
+  <li>Gắn C trực tiếp với A hay B sẽ làm mất ngữ nghĩa hoặc tạo ambiguity.</li>
+</ul>
+
+<div class="tip"><strong>Trong thiết kế quan hệ:</strong> base relationship WORKS_ON thường trở thành một bảng/associative relation; relationship cấp cao hơn có thể tham chiếu khóa của assignment đó.</div>
+</section>
+
+<section id="notation">
+<h2>16. Ký hiệu thường dùng trong EER</h2>
+<table>
+<thead><tr><th>Ký hiệu</th><th>Ý nghĩa</th></tr></thead>
+<tbody>
+<tr><td>Circle nối superclass và subclasses</td><td>Specialization/generalization connector</td></tr>
+<tr><td><strong>d</strong> trong circle</td><td>Disjoint specialization</td></tr>
+<tr><td><strong>o</strong> trong circle</td><td>Overlapping specialization</td></tr>
+<tr><td>Single line superclass → circle</td><td>Partial specialization</td></tr>
+<tr><td>Double line superclass → circle</td><td>Total specialization</td></tr>
+<tr><td><strong>U</strong> trong circle</td><td>Category/union type</td></tr>
+<tr><td>Khung bao một relationship + entities</td><td>Aggregation</td></tr>
+</tbody>
+</table>
+
+<div class="note"><strong>Lưu ý công cụ:</strong> ký hiệu cụ thể có thể khác giữa textbook/CASE tool. Khi nộp bài, quan trọng nhất là nhất quán và ghi rõ semantics nếu công cụ không hỗ trợ đầy đủ EER.</div>
+</section>
+
+<section id="mapping">
+<h2>17. Ánh xạ EER sang Relational Model</h2>
+<p>Không có một chiến lược duy nhất tốt cho mọi specialization. Việc chọn mapping phụ thuộc disjoint/overlap, total/partial, truy vấn và khả năng chấp nhận NULL.</p>
+
+<h3>17.1 Strategy A – Một bảng cho superclass + một bảng cho mỗi subclass</h3>
+<pre><code>EMPLOYEE(
+    EmployeeID PK,
+    Name,
+    Salary
+)
+
+ENGINEER(
+    EmployeeID PK/FK -> EMPLOYEE.EmployeeID,
+    EngineeringField
+)
+
+SECRETARY(
+    EmployeeID PK/FK -> EMPLOYEE.EmployeeID,
+    TypingSpeed
+)</code></pre>
+
+<p><strong>Ưu điểm:</strong> tổng quát, hỗ trợ partial và overlapping tốt; ít NULL. <strong>Nhược:</strong> truy vấn một subtype thường cần JOIN.</p>
+
+<h3>17.2 Strategy B – Chỉ tạo bảng cho các subclass</h3>
+<pre><code>ENGINEER(EmployeeID PK, Name, Salary, EngineeringField)
+SECRETARY(EmployeeID PK, Name, Salary, TypingSpeed)</code></pre>
+<p>Phù hợp nhất khi specialization <strong>total + disjoint</strong>. Nếu partial, superclass-only entity không có nơi lưu. Nếu overlapping, dữ liệu chung bị lặp ở nhiều bảng.</p>
+
+<h3>17.3 Strategy C – Một bảng duy nhất + type discriminator</h3>
+<pre><code>EMPLOYEE(
+    EmployeeID PK,
+    Name,
+    Salary,
+    EmployeeType,       -- 'Engineer' | 'Secretary'
+    EngineeringField,   -- NULL nếu không phải Engineer
+    TypingSpeed         -- NULL nếu không phải Secretary
+)</code></pre>
+<p>Phù hợp hơn với <strong>disjoint</strong>, nhất là khi số subtype ít. Nhược điểm là nhiều NULL và constraint subtype phải được kiểm soát.</p>
+
+<h3>17.4 Strategy D – Một bảng duy nhất + nhiều membership flags</h3>
+<pre><code>PERSON(
+    PersonID PK,
+    Name,
+    IsStudent,
+    IsEmployee,
+    Major,
+    Salary
+)</code></pre>
+<p>Có thể biểu diễn overlapping, nhưng dễ phát sinh NULL và các tổ hợp không hợp lệ nếu constraints không được enforce tốt.</p>
+
+<h3>17.5 Category/Union mapping</h3>
+<p>Category thường cần một identifier riêng cho category cùng cơ chế đảm bảo mỗi member tham chiếu đúng một source type. Một cách khái niệm:</p>
+<pre><code>PERSON(PersonID PK, ...)
+COMPANY(CompanyID PK, ...)
+
+OWNER(
+    OwnerID PK,
+    PersonID  FK NULL UNIQUE,
+    CompanyID FK NULL UNIQUE,
+    CHECK (exactly one of PersonID, CompanyID is non-NULL)
+)</code></pre>
+<p>Thiết kế production có thể dùng supertype chung, shared identifier, separate bridge tables hoặc DBMS-specific constraints tùy bối cảnh.</p>
+
+<h3>17.6 Aggregation mapping</h3>
+<pre><code>WORKS_ON(
+    EmployeeID PK/FK,
+    ProjectID  PK/FK,
+    Role
+)
+
+MACHINE_ASSIGNMENT(
+    EmployeeID PK,
+    ProjectID  PK,
+    MachineID  PK/FK,
+    FOREIGN KEY(EmployeeID, ProjectID)
+      REFERENCES WORKS_ON(EmployeeID, ProjectID)
+)</code></pre>
+
+<div class="warn"><strong>Conceptual ≠ physical.</strong> EER cho biết ngữ nghĩa; cách ánh xạ cuối cùng còn phụ thuộc DBMS và workload. Đừng chọn mapping chỉ vì “ít bảng hơn”.</div>
+</section>
+
+<section id="example1">
+<h2>18. Ví dụ tổng hợp 1: Hệ thống nhân sự</h2>
+<h3>18.1 Business rules</h3>
+<ul>
+  <li>Mỗi EMPLOYEE có EmployeeID, Name, Salary.</li>
+  <li>Một employee có thể là ENGINEER, MANAGER hoặc cả hai.</li>
+  <li>ENGINEER có EngineeringField.</li>
+  <li>MANAGER có ManagementLevel.</li>
+  <li>Có employee không thuộc hai subtype trên.</li>
+</ul>
+
+<h3>18.2 Suy luận constraint</h3>
+<table>
+<thead><tr><th>Câu hỏi</th><th>Kết luận</th></tr></thead>
+<tbody>
+<tr><td>Có thể vừa ENGINEER vừa MANAGER?</td><td>Có → <strong>Overlapping</strong>.</td></tr>
+<tr><td>Mọi EMPLOYEE có bắt buộc thuộc ít nhất một subtype?</td><td>Không → <strong>Partial</strong>.</td></tr>
+</tbody>
+</table>
+
+<svg class="diagram" viewBox="0 0 960 410">
+  <style>.e{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.sub{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.t{font:700 21px system-ui;fill:#182033}.s{font:16px system-ui;fill:#475569}.l{stroke:#475569;stroke-width:3;fill:none}</style>
+  <rect class="e" x="330" y="45" width="300" height="90" rx="9"/><text class="t" x="480" y="82" text-anchor="middle">EMPLOYEE</text><text class="s" x="480" y="111" text-anchor="middle">EmployeeID, Name, Salary</text>
+  <line class="l" x1="480" y1="135" x2="480" y2="205"/>
+  <circle cx="480" cy="235" r="30" fill="white" stroke="#2856d7" stroke-width="3"/><text class="t" x="480" y="243" text-anchor="middle">o</text>
+  <line class="l" x1="480" y1="265" x2="480" y2="290"/><line class="l" x1="260" y1="290" x2="700" y2="290"/>
+  <line class="l" x1="260" y1="290" x2="260" y2="325"/><line class="l" x1="700" y1="290" x2="700" y2="325"/>
+  <rect class="sub" x="130" y="325" width="260" height="65" rx="9"/><text class="t" x="260" y="365" text-anchor="middle">ENGINEER</text>
+  <rect class="sub" x="570" y="325" width="260" height="65" rx="9"/><text class="t" x="700" y="365" text-anchor="middle">MANAGER</text>
+</svg>
+
+<p><strong>Đáp án mô hình:</strong> specialization <strong>overlapping + partial</strong>.</p>
+</section>
+
+<section id="example2">
+<h2>19. Ví dụ tổng hợp 2: Thành viên thư viện</h2>
+<h3>19.1 Business rules</h3>
+<p>Người sử dụng thư viện có thể đến từ ba hệ thống đã tồn tại độc lập: STUDENT, FACULTY và STAFF. Không phải tất cả các student/faculty/staff đều đăng ký thư viện. Mỗi LIBRARY_MEMBER có MembershipStartDate và BorrowingLimit.</p>
+
+<h3>19.2 Phân tích</h3>
+<p>LIBRARY_MEMBER không phải là intersection của STUDENT, FACULTY và STAFF. Một member chỉ cần xuất phát từ <strong>một trong</strong> các tập nguồn.</p>
+<div class="formula">LIBRARY_MEMBER ⊆ STUDENT ∪ FACULTY ∪ STAFF</div>
+
+<p>Do đó mô hình phù hợp là <strong>Category / Union Type</strong>.</p>
+
+<div class="warn"><strong>Không dùng shared subclass:</strong> shared subclass sẽ ngụ ý một library member đồng thời phải là STUDENT, FACULTY và STAFF.</div>
+</section>
+
+<section id="example3">
+<h2>20. Ví dụ tổng hợp 3: Dự án và máy móc</h2>
+<h3>20.1 Business rules</h3>
+<p>EMPLOYEE làm việc trên PROJECT thông qua assignment WORKS_ON. Một MACHINE được cấp cho một assignment cụ thể. Cùng employee ở project khác có thể dùng machine khác.</p>
+
+<h3>20.2 Tại sao không nối MACHINE trực tiếp?</h3>
+<table>
+<thead><tr><th>Mô hình</th><th>Vấn đề</th></tr></thead>
+<tbody>
+<tr><td>EMPLOYEE — USES — MACHINE</td><td>Không biết machine được dùng cho project nào.</td></tr>
+<tr><td>PROJECT — USES — MACHINE</td><td>Không biết employee nào được cấp machine.</td></tr>
+<tr><td>Aggregation của WORKS_ON</td><td>Giữ đúng cặp Employee–Project mà machine được cấp.</td></tr>
+</tbody>
+</table>
+<p><strong>Kết luận:</strong> aggregation là lựa chọn phù hợp khi relationship occurrence trở thành đối tượng tham gia relationship khác.</p>
+</section>
+
+<section id="workflow">
+<h2>21. Quy trình thiết kế EER từ yêu cầu nghiệp vụ</h2>
+<ol class="steps">
+  <li><strong>Dựng ER cơ bản trước:</strong> entity, attribute, relationship, key, cardinality.</li>
+  <li><strong>Tìm câu “là một loại của”:</strong> ứng viên IS-A.</li>
+  <li><strong>Tìm thuộc tính dùng chung:</strong> cân nhắc generalization.</li>
+  <li><strong>Tìm thuộc tính/relationship chỉ có ở một nhóm:</strong> cân nhắc specialization.</li>
+  <li><strong>Xác định membership rule:</strong> predicate-defined hay user-defined.</li>
+  <li><strong>Hỏi có thể thuộc nhiều subtype?</strong> Có → overlapping; không → disjoint.</li>
+  <li><strong>Hỏi có bắt buộc thuộc subtype?</strong> Có → total; không → partial.</li>
+  <li><strong>Kiểm tra nhiều cha:</strong> nếu AND → shared subclass / multiple inheritance.</li>
+  <li><strong>Kiểm tra nhiều nguồn thay thế:</strong> nếu OR → category/union.</li>
+  <li><strong>Kiểm tra relationship-of-relationship:</strong> cân nhắc aggregation.</li>
+  <li><strong>Đọc lại thành tập hợp:</strong> dùng ⊆, ∩, ∪ để kiểm tra semantics.</li>
+  <li><strong>Chọn mapping strategy:</strong> dựa trên constraints và truy vấn, không máy móc.</li>
+</ol>
+</section>
+
+<section id="mistakes">
+<h2>22. Các lỗi thường gặp</h2>
+<div class="grid2">
+  <div class="card"><h3>1. Nhầm IS-A với HAS-A</h3><p>ENGINEER IS-A EMPLOYEE; EMPLOYEE HAS-A ADDRESS hoặc WORKS_FOR DEPARTMENT.</p></div>
+  <div class="card"><h3>2. Nhầm total với disjoint</h3><p>Total nói về “ít nhất một subtype”; disjoint nói về “tối đa một subtype”.</p></div>
+  <div class="card"><h3>3. Nghĩ total = exactly one</h3><p>Chỉ đúng nếu đồng thời disjoint. Total + overlapping cho phép nhiều subtype.</p></div>
+  <div class="card"><h3>4. Nghĩ overlapping = phải nhiều subtype</h3><p>Overlapping chỉ cho phép nhiều; entity vẫn có thể thuộc một subtype.</p></div>
+  <div class="card"><h3>5. Category thành multiple inheritance</h3><p>OWNER = PERSON ∪ COMPANY không có nghĩa OWNER vừa là PERSON vừa là COMPANY.</p></div>
+  <div class="card"><h3>6. Tạo subtype cho mọi giá trị enum</h3><p>Chỉ subtype khi có thêm semantics, attributes hoặc relationships đáng kể.</p></div>
+  <div class="card"><h3>7. Lặp inherited attributes</h3><p>Không cần chép Name, Salary xuống từng subtype ở conceptual EERD.</p></div>
+  <div class="card"><h3>8. Dùng aggregation quá mức</h3><p>Chỉ dùng khi cần relationship tới chính một relationship occurrence.</p></div>
+</div>
+</section>
+
+<section id="exercises">
+<h2>23. Bài tập luyện tập</h2>
+
+<h3>Bài 1 – Tài khoản ngân hàng</h3>
+<p>Mọi ACCOUNT phải là SAVINGS_ACCOUNT hoặc CURRENT_ACCOUNT, không được đồng thời cả hai. Savings có InterestRate; Current có OverdraftLimit.</p>
+<p><strong>Yêu cầu:</strong> xác định specialization constraints và vẽ EERD.</p>
+
+<h3>Bài 2 – Con người trong trường đại học</h3>
+<p>PERSON có thể là STUDENT, EMPLOYEE hoặc cả hai; có PERSON là khách nên không thuộc nhóm nào. STUDENT có Major; EMPLOYEE có Salary.</p>
+<p><strong>Yêu cầu:</strong> xác định disjoint/overlapping và total/partial.</p>
+
+<h3>Bài 3 – Trợ giảng</h3>
+<p>TEACHING_ASSISTANT phải vừa là STUDENT vừa là EMPLOYEE và có thêm HoursPerWeek.</p>
+<p><strong>Yêu cầu:</strong> mô hình hóa shared subclass và giải thích inheritance.</p>
+
+<h3>Bài 4 – Chủ phương tiện</h3>
+<p>VEHICLE_OWNER có thể là PERSON hoặc ORGANIZATION. PERSON và ORGANIZATION là các entity type độc lập.</p>
+<p><strong>Yêu cầu:</strong> dùng Category/Union và giải thích vì sao không dùng shared subclass.</p>
+
+<h3>Bài 5 – Nhà cung cấp cho hợp đồng</h3>
+<p>SUPPLIER cung cấp PART cho PROJECT qua relationship SUPPLIES. Một INSPECTOR được phân công kiểm tra một occurrence cụ thể của việc cung cấp đó.</p>
+<p><strong>Yêu cầu:</strong> cân nhắc ternary relationship và/hoặc aggregation; mô tả semantics trước khi vẽ.</p>
+
+<h3>Bài 6 – Chọn mapping</h3>
+<p>EMPLOYEE → {SALARIED_EMPLOYEE, HOURLY_EMPLOYEE} là total + disjoint. So sánh Strategy A, B và C ở phần 17; nêu ưu/nhược điểm khi truy vấn toàn bộ employee và khi truy vấn theo subtype.</p>
+</section>
+
+<section id="quiz">
+<h2>24. Quiz tự kiểm tra</h2>
+
+<div class="quiz-item" data-answer="b">
+<strong>Câu 1.</strong> Specialization là:
+<label><input type="radio" name="q1" value="a"> Bottom-up: gộp nhiều entity thành superclass</label>
+<label><input type="radio" name="q1" value="b"> Top-down: chia superclass thành các subclass</label>
+<label><input type="radio" name="q1" value="c"> Chuyển M:N thành associative entity</label>
+<div class="answer">Đáp án: <strong>B</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<strong>Câu 2.</strong> “Mọi account phải là Savings hoặc Current, và không thể là cả hai.” là:
+<label><input type="radio" name="q2" value="a"> Partial + overlapping</label>
+<label><input type="radio" name="q2" value="b"> Partial + disjoint</label>
+<label><input type="radio" name="q2" value="c"> Total + disjoint</label>
+<div class="answer">Đáp án: <strong>C</strong>. “Mọi” → total; “không thể cả hai” → disjoint.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+<strong>Câu 3.</strong> “Một PERSON có thể vừa là STUDENT vừa là EMPLOYEE” cho biết:
+<label><input type="radio" name="q3" value="a"> Overlapping</label>
+<label><input type="radio" name="q3" value="b"> Disjoint</label>
+<label><input type="radio" name="q3" value="c"> Total</label>
+<div class="answer">Đáp án: <strong>A</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+<strong>Câu 4.</strong> TEACHING_ASSISTANT phải vừa là STUDENT vừa là EMPLOYEE. Đây là:
+<label><input type="radio" name="q4" value="a"> Category/Union</label>
+<label><input type="radio" name="q4" value="b"> Shared subclass / multiple inheritance</label>
+<label><input type="radio" name="q4" value="c"> Aggregation</label>
+<div class="answer">Đáp án: <strong>B</strong>. Ngữ nghĩa là intersection/AND.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<strong>Câu 5.</strong> OWNER có thể là PERSON hoặc COMPANY. Mô hình phù hợp nhất là:
+<label><input type="radio" name="q5" value="a"> Weak entity</label>
+<label><input type="radio" name="q5" value="b"> Shared subclass</label>
+<label><input type="radio" name="q5" value="c"> Category/Union type</label>
+<div class="answer">Đáp án: <strong>C</strong>. Ngữ nghĩa là union/OR.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+<strong>Câu 6.</strong> Partial specialization có nghĩa:
+<label><input type="radio" name="q6" value="a"> Mỗi superclass entity phải thuộc đúng một subtype</label>
+<label><input type="radio" name="q6" value="b"> Có superclass entity không thuộc subtype nào</label>
+<label><input type="radio" name="q6" value="c"> Một entity phải thuộc nhiều subtype</label>
+<div class="answer">Đáp án: <strong>B</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+<strong>Câu 7.</strong> Subclass thường nhận primary identifier từ đâu?
+<label><input type="radio" name="q7" value="a"> Kế thừa key của superclass</label>
+<label><input type="radio" name="q7" value="b"> Từ relationship gần nhất</label>
+<label><input type="radio" name="q7" value="c"> Luôn tạo một key mới độc lập</label>
+<div class="answer">Đáp án: <strong>A</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<strong>Câu 8.</strong> Khi một MACHINE liên hệ với assignment “Employee E works on Project P”, khái niệm EER phù hợp là:
+<label><input type="radio" name="q8" value="a"> Generalization</label>
+<label><input type="radio" name="q8" value="b"> Union type</label>
+<label><input type="radio" name="q8" value="c"> Aggregation</label>
+<div class="answer">Đáp án: <strong>C</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+<strong>Câu 9.</strong> Strategy “chỉ tạo bảng cho các subclass” phù hợp tự nhiên nhất khi:
+<label><input type="radio" name="q9" value="a"> Partial + overlapping</label>
+<label><input type="radio" name="q9" value="b"> Total + disjoint</label>
+<label><input type="radio" name="q9" value="c"> Category/Union</label>
+<div class="answer">Đáp án: <strong>B</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+<strong>Câu 10.</strong> Phát biểu đúng nhất về Generalization và Specialization:
+<label><input type="radio" name="q10" value="a"> Chúng tạo hai loại cấu trúc hoàn toàn khác nhau</label>
+<label><input type="radio" name="q10" value="b"> Generalization không có inheritance</label>
+<label><input type="radio" name="q10" value="c"> Khác hướng thiết kế nhưng có thể dẫn đến cùng một cấu trúc IS-A</label>
+<div class="answer">Đáp án: <strong>C</strong>.</div>
+</div>
+
+<button onclick="gradeQuiz()">Kiểm tra kết quả</button>
+<button onclick="resetQuiz()">Làm lại</button>
+<p id="score" style="font-weight:800;margin-top:1rem"></p>
+</section>
+
+<section id="glossary">
+<h2>25. Thuật ngữ Anh–Việt</h2>
+<table>
+<thead><tr><th>English</th><th>Tiếng Việt</th><th>Gợi nhớ</th></tr></thead>
+<tbody>
+<tr><td>Enhanced ER Model</td><td>Mô hình ER mở rộng / nâng cao</td><td>ER + abstraction/inheritance</td></tr>
+<tr><td>Superclass / Supertype</td><td>Kiểu cha / kiểu tổng quát</td><td>Entity cấp cao</td></tr>
+<tr><td>Subclass / Subtype</td><td>Kiểu con / kiểu chuyên biệt</td><td>Tập con của superclass</td></tr>
+<tr><td>Specialization</td><td>Chuyên biệt hóa</td><td>Top-down</td></tr>
+<tr><td>Generalization</td><td>Khái quát hóa</td><td>Bottom-up</td></tr>
+<tr><td>Inheritance</td><td>Kế thừa</td><td>Attribute/key/relationship</td></tr>
+<tr><td>Disjoint</td><td>Rời nhau</td><td>Tối đa một subtype</td></tr>
+<tr><td>Overlapping</td><td>Chồng lấp</td><td>Có thể nhiều subtype</td></tr>
+<tr><td>Total specialization</td><td>Chuyên biệt hóa toàn phần</td><td>Ít nhất một subtype</td></tr>
+<tr><td>Partial specialization</td><td>Chuyên biệt hóa bộ phận</td><td>Có thể không thuộc subtype</td></tr>
+<tr><td>Shared subclass</td><td>Subclass dùng chung / nhiều superclass</td><td>AND / intersection</td></tr>
+<tr><td>Multiple inheritance</td><td>Đa kế thừa</td><td>Kế thừa nhiều cha</td></tr>
+<tr><td>Category / Union type</td><td>Kiểu phạm trù / kiểu hợp</td><td>OR / union</td></tr>
+<tr><td>Aggregation</td><td>Kết tập</td><td>Relationship như đối tượng cấp cao</td></tr>
+<tr><td>Subtype discriminator</td><td>Thuộc tính phân loại subtype</td><td>Ví dụ EmployeeType</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="sources">
+<h2>26. Tài liệu tham khảo và đọc thêm</h2>
+<p>Bài giảng phát triển từ nội dung Enhanced ER Model và các bài liên quan, sau đó mở rộng thêm ví dụ, ràng buộc và chiến lược ánh xạ để phục vụ giảng dạy:</p>
+<ul>
+  <li><a href="https://www.geeksforgeeks.org/dbms/enhanced-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Enhanced ER Model</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/generalization-specialization-and-aggregation-in-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Generalization, Specialization and Aggregation in ER Model</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/constraints-on-generalization/" target="_blank" rel="noopener">GeeksforGeeks — Constraints on Generalization</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/mapping-from-er-model-to-relational-model/" target="_blank" rel="noopener">GeeksforGeeks — Mapping from ER Model to Relational Model</a>.</li>
+</ul>
+<div class="tip"><strong>Gợi ý dạy học:</strong> sau ER cơ bản, nên dành một buổi cho EER. Cho sinh viên phân loại 10–15 business rules thành: ordinary relationship, specialization, shared subclass, category hoặc aggregation trước khi yêu cầu vẽ sơ đồ hoàn chỉnh.</div>
+</section>
+</main>
+</div>
+
+<footer>
+<hr>
+<p><strong>Enhanced ER Model Lecture Notes</strong> · Part 2 của bài ER Model. File HTML độc lập, có thể mở trực tiếp trên Chrome/Edge/Firefox và dùng <kbd>In/PDF</kbd> để xuất bản in.</p>
+</footer>
+
+<script>
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('eer-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+if(localStorage.getItem('eer-theme') === 'dark'){ document.body.classList.add('dark'); }
+
+function updateProgress(){
+  const d=document.documentElement, h=d.scrollHeight-d.clientHeight;
+  document.getElementById('progress').style.width=(h>0?(d.scrollTop/h)*100:0)+'%';
+}
+window.addEventListener('scroll',updateProgress,{passive:true}); updateProgress();
+
+const sections=[...document.querySelectorAll('main section')];
+const links=[...document.querySelectorAll('#toc a')];
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px',threshold:0});
+sections.forEach(s=>observer.observe(s));
+
+function gradeQuiz(){
+  const items=[...document.querySelectorAll('.quiz-item')];
+  let score=0, answered=0;
+  items.forEach(item=>{
+    const selected=item.querySelector('input[type=radio]:checked');
+    item.querySelector('.answer').classList.add('show');
+    if(selected){answered++; if(selected.value===item.dataset.answer) score++;}
+  });
+  document.getElementById('score').textContent=
+    `Kết quả: ${score}/${items.length} câu đúng · Đã trả lời ${answered}/${items.length} câu.`;
+}
+function resetQuiz(){
+  document.querySelectorAll('.quiz-item input').forEach(x=>x.checked=false);
+  document.querySelectorAll('.answer').forEach(x=>x.classList.remove('show'));
+  document.getElementById('score').textContent='';
+}
+</script>
+</body>
+</html>

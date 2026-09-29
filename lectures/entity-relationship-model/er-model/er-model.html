@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài giảng: Entity–Relationship Model (ER Model)</title>
+<meta name="description" content="Bài giảng đầy đủ về Entity–Relationship Model (ER Model), ERD, Chen notation, Crow's Foot, cardinality, participation, weak entity, EER và chuyển ER sang mô hình quan hệ.">
+<style>
+:root{
+  --bg:#f7f8fc; --surface:#ffffff; --surface2:#f0f4ff; --text:#182033; --muted:#5f6b7a;
+  --primary:#2856d7; --primary2:#173b9b; --accent:#7a3ff2; --green:#157a55;
+  --orange:#c35a10; --red:#b42318; --border:#dbe2ef; --shadow:0 10px 30px rgba(26,46,89,.08);
+  --code:#101827; --codeText:#e8eefc;
+}
+body.dark{
+  --bg:#0e1420; --surface:#151e2e; --surface2:#1a2740; --text:#eef3ff; --muted:#aab8ce;
+  --primary:#82a5ff; --primary2:#b5c7ff; --accent:#b69bff; --green:#63d5aa;
+  --orange:#ffb46f; --red:#ff8f86; --border:#2c3a54; --shadow:none; --code:#0a101b; --codeText:#e7edf8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+#progress{position:fixed;left:0;top:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent));width:0;z-index:1000}
+.topbar{position:sticky;top:0;z-index:900;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1220px;margin:auto;padding:.65rem 1.2rem;display:flex;gap:1rem;align-items:center;justify-content:space-between}
+.brand{font-weight:800;letter-spacing:.2px}.brand span{color:var(--primary)}
+.actions{display:flex;gap:.55rem;flex-wrap:wrap}
+button,.btn{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:.5rem .75rem;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--primary);text-decoration:none}
+.hero{background:linear-gradient(135deg,#112f78,#4b29a6);color:white;padding:4.2rem 1.2rem 3.5rem}
+.hero-inner{max-width:1120px;margin:auto}
+.kicker{text-transform:uppercase;font-weight:800;letter-spacing:.12em;opacity:.85;font-size:.78rem}
+h1{font-size:clamp(2.1rem,5vw,4.3rem);line-height:1.06;margin:.5rem 0 1rem;max-width:900px}
+.hero p{max-width:830px;font-size:1.12rem;color:#e5ecff}
+.meta{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.3rem}
+.chip{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);padding:.35rem .65rem;border-radius:999px;font-size:.9rem}
+.layout{max-width:1220px;margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:2rem;padding:2rem 1.2rem 5rem}
+aside{position:relative}
+.toc{position:sticky;top:76px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;box-shadow:var(--shadow);max-height:calc(100vh - 96px);overflow:auto}
+.toc h2{font-size:1rem;margin:.1rem 0 .7rem}
+.toc a{display:block;padding:.28rem .4rem;border-radius:7px;color:var(--muted);font-size:.88rem}
+.toc a:hover,.toc a.active{background:var(--surface2);color:var(--primary);text-decoration:none}
+main{min-width:0}
+section{scroll-margin-top:82px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:clamp(1.2rem,3vw,2.15rem);margin-bottom:1.4rem;box-shadow:var(--shadow)}
+h2{font-size:1.75rem;line-height:1.2;margin:.15rem 0 1rem}
+h3{font-size:1.2rem;margin:1.55rem 0 .55rem}
+h4{margin:1.1rem 0 .35rem}
+.lead{font-size:1.07rem;color:var(--muted)}
+.grid2,.grid3{display:grid;gap:1rem;margin:1rem 0}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--border);border-radius:14px;padding:1rem;background:var(--surface)}
+.card h3,.card h4{margin-top:0}
+.note,.tip,.warn,.example{border-left:5px solid var(--primary);background:var(--surface2);padding:.9rem 1rem;border-radius:10px;margin:1rem 0}
+.tip{border-left-color:var(--green)} .warn{border-left-color:var(--orange)} .example{border-left-color:var(--accent)}
+.note strong,.tip strong,.warn strong,.example strong{display:inline-block;margin-right:.25rem}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem}
+th,td{border:1px solid var(--border);padding:.65rem .7rem;vertical-align:top}
+th{background:var(--surface2);text-align:left}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--surface2);padding:.1rem .28rem;border-radius:5px}
+pre{background:var(--code);color:var(--codeText);padding:1rem;border-radius:12px;overflow:auto;line-height:1.5}
+pre code{background:none;padding:0;color:inherit}
+svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:14px;background:white;margin:.8rem 0}
+.small{font-size:.88rem;color:var(--muted)}
+.entity-box{border:2px solid var(--primary);border-radius:10px;padding:.8rem;text-align:center;font-weight:800;background:var(--surface2)}
+.arrow{font-size:1.6rem;color:var(--primary);text-align:center}
+.formula{font-family:Cambria,Georgia,serif;background:var(--surface2);padding:.6rem .8rem;border-radius:8px}
+.badge{display:inline-block;padding:.18rem .5rem;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:.82rem;font-weight:700}
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps li{counter-increment:step;margin:.8rem 0;padding-left:3rem;position:relative}
+.steps li:before{content:counter(step);position:absolute;left:0;top:.05rem;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:white;font-weight:800}
+.quiz-item{border:1px solid var(--border);border-radius:14px;padding:1rem;margin:.9rem 0}
+.quiz-item label{display:block;padding:.35rem .45rem;border-radius:8px;cursor:pointer}
+.quiz-item label:hover{background:var(--surface2)}
+.answer{display:none;margin-top:.7rem;padding:.7rem;border-radius:9px;background:var(--surface2)}
+.answer.show{display:block}
+kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:.08rem .32rem;background:var(--surface);font:inherit;font-size:.86rem}
+footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:1.5rem 0}
+.print-only{display:none}
+.crow{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;letter-spacing:.04em}
+.key-pk{color:var(--primary);font-weight:800}.key-fk{color:var(--accent);font-weight:800}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid2,.grid3{grid-template-columns:1fr}
+  aside{order:0}main{order:1}
+}
+@media print{
+  body{background:white;color:#111;font-size:11pt}.topbar,aside,#progress,.no-print{display:none!important}
+  .hero{background:white!important;color:#111;padding:1rem 0}.hero p{color:#333}
+  .layout{display:block;max-width:none;padding:0}.hero-inner{max-width:none}
+  section{box-shadow:none;border:0;border-radius:0;padding:0;margin:0 0 16pt;break-inside:avoid}
+  a{color:#111}.print-only{display:block}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">DBMS Lecture · <span>ER Model</span></div>
+    <div class="actions">
+      <button onclick="toggleTheme()" title="Đổi giao diện sáng/tối">◐ Giao diện</button>
+      <button onclick="window.print()" title="In hoặc lưu PDF">⎙ In/PDF</button>
+      <a class="btn" href="#quiz">✓ Quiz</a>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">Database Management Systems · Conceptual Data Modeling</div>
+    <h1>Entity–Relationship Model (ER Model)</h1>
+    <p>Bài giảng đầy đủ từ yêu cầu nghiệp vụ đến ERD: entity, attribute, key, relationship, cardinality, participation, weak entity, Chen notation, Crow’s Foot, EER và quy tắc ánh xạ sang mô hình quan hệ.</p>
+    <div class="meta">
+      <span class="chip">Ngôn ngữ: Tiếng Việt</span>
+      <span class="chip">Mức độ: Cơ bản → Trung cấp</span>
+      <span class="chip">Có ví dụ + bài tập + quiz</span>
+      <span class="chip">HTML độc lập, dùng offline</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<aside>
+<nav class="toc" id="toc">
+  <h2>Mục lục</h2>
+  <a href="#objectives">1. Mục tiêu học tập</a>
+  <a href="#overview">2. ER Model là gì?</a>
+  <a href="#process">3. ER trong quy trình thiết kế</a>
+  <a href="#entity">4. Entity & Entity Set</a>
+  <a href="#attributes">5. Attributes</a>
+  <a href="#keys">6. Keys</a>
+  <a href="#relationships">7. Relationships</a>
+  <a href="#degree">8. Degree của relationship</a>
+  <a href="#constraints">9. Cardinality & Participation</a>
+  <a href="#chen">10. Chen notation</a>
+  <a href="#crow">11. Crow’s Foot notation</a>
+  <a href="#weak">12. Weak entity</a>
+  <a href="#associative">13. Associative entity</a>
+  <a href="#eer">14. Enhanced ER</a>
+  <a href="#workflow">15. Cách dựng ERD từ đề bài</a>
+  <a href="#example1">16. Ví dụ: Đăng ký học</a>
+  <a href="#example2">17. Ví dụ: Công ty–Dự án</a>
+  <a href="#mapping">18. ER → Relational</a>
+  <a href="#mistakes">19. Lỗi thường gặp</a>
+  <a href="#exercises">20. Bài tập</a>
+  <a href="#quiz">21. Quiz tự kiểm tra</a>
+  <a href="#glossary">22. Thuật ngữ</a>
+  <a href="#sources">23. Tài liệu tham khảo</a>
+</nav>
+</aside>
+
+<main>
+<section id="objectives">
+<h2>1. Mục tiêu học tập</h2>
+<p class="lead">Sau bài học, người học không chỉ đọc được một ERD mà còn có thể <strong>chuyển yêu cầu nghiệp vụ thành mô hình dữ liệu khái niệm</strong> và chuẩn bị cho bước thiết kế lược đồ quan hệ.</p>
+<div class="grid2">
+  <div class="card"><h3>Nhận biết</h3><p>Phân biệt entity, entity type, entity set, attribute, relationship, key và các ký hiệu ERD.</p></div>
+  <div class="card"><h3>Giải thích</h3><p>Giải thích cardinality, participation, strong/weak entity, recursive relationship và relationship attribute.</p></div>
+  <div class="card"><h3>Vận dụng</h3><p>Rút trích entity–relationship từ các business rules và biểu diễn bằng Chen hoặc Crow’s Foot.</p></div>
+  <div class="card"><h3>Thiết kế</h3><p>Ánh xạ ERD sang bảng, khóa chính, khóa ngoại và bảng nối cho quan hệ M:N.</p></div>
+</div>
+</section>
+
+<section id="overview">
+<h2>2. ER Model là gì?</h2>
+<p><strong>Entity–Relationship Model</strong> là mô hình dữ liệu khái niệm dùng để mô tả cấu trúc thông tin của một miền nghiệp vụ thông qua ba khối cơ bản: <strong>thực thể (entity)</strong>, <strong>thuộc tính (attribute)</strong> và <strong>mối quan hệ (relationship)</strong>. Biểu diễn đồ họa của mô hình này gọi là <strong>Entity–Relationship Diagram (ERD)</strong>.</p>
+<div class="grid3">
+  <div class="card"><h3>Entity</h3><p>Đối tượng/khái niệm cần lưu dữ liệu.</p><p><span class="badge">STUDENT</span> <span class="badge">COURSE</span></p></div>
+  <div class="card"><h3>Attribute</h3><p>Đặc trưng mô tả entity hoặc relationship.</p><p><span class="badge">StudentID</span> <span class="badge">FullName</span></p></div>
+  <div class="card"><h3>Relationship</h3><p>Liên hệ có ý nghĩa nghiệp vụ giữa các entity.</p><p><span class="badge">ENROLLS</span></p></div>
+</div>
+<svg class="diagram" viewBox="0 0 900 240" role="img" aria-label="Minh họa Entity Relationship">
+  <rect x="70" y="78" width="210" height="80" rx="10" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="175" y="126" text-anchor="middle" font-size="24" font-weight="700" fill="#182033">STUDENT</text>
+  <polygon points="390,118 480,65 570,118 480,171" fill="#f4efff" stroke="#7a3ff2" stroke-width="3"/>
+  <text x="480" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#182033">ENROLLS</text>
+  <rect x="680" y="78" width="160" height="80" rx="10" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="760" y="126" text-anchor="middle" font-size="24" font-weight="700" fill="#182033">COURSE</text>
+  <line x1="280" y1="118" x2="390" y2="118" stroke="#4a5568" stroke-width="3"/>
+  <line x1="570" y1="118" x2="680" y2="118" stroke="#4a5568" stroke-width="3"/>
+</svg>
+<div class="note"><strong>Ý tưởng cốt lõi:</strong> ERD mô tả <em>cấu trúc và quy tắc dữ liệu</em>, không phải dữ liệu cụ thể. Nó nói “một STUDENT có StudentID” chứ không liệt kê “SV001 – Nguyễn An”.</div>
+</section>
+
+<section id="process">
+<h2>3. ER Model trong quy trình thiết kế cơ sở dữ liệu</h2>
+<ol class="steps">
+  <li><strong>Thu thập yêu cầu:</strong> xác định dữ liệu cần quản lý, quy tắc nghiệp vụ, báo cáo, giao dịch.</li>
+  <li><strong>Thiết kế khái niệm:</strong> dựng ER/EER model độc lập với DBMS cụ thể.</li>
+  <li><strong>Thiết kế logic:</strong> chuyển ERD thành các quan hệ/bảng, xác định PK, FK và constraints.</li>
+  <li><strong>Chuẩn hóa:</strong> kiểm tra phụ thuộc hàm, redundancy và các normal form phù hợp.</li>
+  <li><strong>Thiết kế vật lý:</strong> kiểu dữ liệu, index, partition, storage, tối ưu truy vấn.</li>
+  <li><strong>Cài đặt:</strong> tạo schema, constraints, views, procedures và dữ liệu.</li>
+</ol>
+<div class="tip"><strong>Điểm cần nhớ:</strong> ER Model chủ yếu phục vụ <strong>conceptual design</strong>. Đừng vội đưa kiểu dữ liệu SQL, index hoặc chi tiết lưu trữ vào ERD khái niệm.</div>
+</section>
+
+<section id="entity">
+<h2>4. Entity, Entity Type và Entity Set</h2>
+<h3>4.1 Entity</h3>
+<p>Một <strong>entity</strong> là một đối tượng có thể phân biệt trong miền nghiệp vụ và ta muốn lưu thông tin về nó. Entity có thể là vật thể hữu hình (<em>Product, Vehicle</em>), con người/tổ chức (<em>Student, Supplier</em>) hoặc khái niệm/sự kiện (<em>Course, Reservation, Shipment</em>).</p>
+
+<h3>4.2 Entity Type</h3>
+<p><strong>Entity type</strong> mô tả cấu trúc chung của một nhóm entity. Ví dụ, STUDENT có các thuộc tính StudentID, FullName, DOB.</p>
+
+<h3>4.3 Entity Instance và Entity Set</h3>
+<p>Một sinh viên cụ thể là một <strong>entity instance</strong>. Tập hợp tất cả các instance cùng entity type tại một thời điểm gọi là <strong>entity set</strong>.</p>
+
+<table>
+<thead><tr><th>Khái niệm</th><th>Ví dụ</th><th>Tương tự trong mô hình quan hệ</th></tr></thead>
+<tbody>
+<tr><td>Entity type</td><td>STUDENT</td><td>Cấu trúc bảng</td></tr>
+<tr><td>Entity instance</td><td>ST001, Nguyễn An, 2006-05-10</td><td>Một tuple/row</td></tr>
+<tr><td>Entity set</td><td>Tất cả sinh viên hiện có</td><td>Tập các row của bảng</td></tr>
+</tbody>
+</table>
+
+<h3>4.4 Strong Entity</h3>
+<p><strong>Strong entity</strong> có thể được nhận diện duy nhất bằng khóa của chính nó. Ví dụ <code>EMPLOYEE(EmployeeID, ...)</code>.</p>
+</section>
+
+<section id="attributes">
+<h2>5. Attributes – Thuộc tính</h2>
+<p>Attribute mô tả đặc trưng của entity hoặc đôi khi của relationship. Trong Chen notation, attribute thường được biểu diễn bằng hình oval.</p>
+<table>
+<thead><tr><th>Loại</th><th>Ý nghĩa</th><th>Ví dụ</th><th>Ký hiệu Chen</th></tr></thead>
+<tbody>
+<tr><td><strong>Simple / Atomic</strong></td><td>Không tách thêm theo nhu cầu mô hình.</td><td>Gender, Salary</td><td>Oval đơn</td></tr>
+<tr><td><strong>Composite</strong></td><td>Có các thành phần con.</td><td>Address → Street, City, Province</td><td>Oval cha nối các oval con</td></tr>
+<tr><td><strong>Single-valued</strong></td><td>Mỗi entity có tối đa một giá trị.</td><td>DateOfBirth</td><td>Oval đơn</td></tr>
+<tr><td><strong>Multivalued</strong></td><td>Mỗi entity có thể có nhiều giá trị.</td><td>PhoneNumber</td><td>Oval kép</td></tr>
+<tr><td><strong>Derived</strong></td><td>Có thể tính từ dữ liệu khác.</td><td>Age từ DateOfBirth</td><td>Oval nét đứt</td></tr>
+<tr><td><strong>Key attribute</strong></td><td>Tham gia nhận diện duy nhất entity.</td><td>StudentID</td><td>Tên được gạch chân</td></tr>
+</tbody>
+</table>
+
+<svg class="diagram" viewBox="0 0 940 420" role="img" aria-label="Các loại attribute trong ER model">
+  <rect x="365" y="165" width="210" height="85" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="470" y="215" text-anchor="middle" font-size="25" font-weight="700" fill="#182033">STUDENT</text>
+  <ellipse cx="160" cy="90" rx="105" ry="42" fill="#fff" stroke="#2856d7" stroke-width="2"/>
+  <text x="160" y="97" text-anchor="middle" font-size="19" text-decoration="underline">StudentID</text>
+  <line x1="240" y1="117" x2="380" y2="170" stroke="#64748b" stroke-width="2"/>
+  <ellipse cx="470" cy="70" rx="92" ry="40" fill="#fff" stroke="#2856d7" stroke-width="2"/>
+  <text x="470" y="77" text-anchor="middle" font-size="19">FullName</text>
+  <line x1="470" y1="110" x2="470" y2="165" stroke="#64748b" stroke-width="2"/>
+  <ellipse cx="760" cy="95" rx="105" ry="42" fill="#fff" stroke="#2856d7" stroke-width="2"/>
+  <ellipse cx="760" cy="95" rx="98" ry="35" fill="none" stroke="#2856d7" stroke-width="2"/>
+  <text x="760" y="102" text-anchor="middle" font-size="19">Phone</text>
+  <line x1="680" y1="123" x2="560" y2="172" stroke="#64748b" stroke-width="2"/>
+  <ellipse cx="760" cy="330" rx="98" ry="40" fill="#fff" stroke="#7a3ff2" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="760" y="337" text-anchor="middle" font-size="19">Age</text>
+  <line x1="690" y1="303" x2="560" y2="244" stroke="#64748b" stroke-width="2"/>
+  <ellipse cx="220" cy="330" rx="105" ry="42" fill="#fff" stroke="#2856d7" stroke-width="2"/>
+  <text x="220" y="337" text-anchor="middle" font-size="19">Address</text>
+  <line x1="300" y1="305" x2="390" y2="245" stroke="#64748b" stroke-width="2"/>
+  <ellipse cx="80" cy="385" rx="65" ry="28" fill="#fff" stroke="#94a3b8"/><text x="80" y="391" text-anchor="middle" font-size="15">Street</text>
+  <ellipse cx="215" cy="390" rx="55" ry="28" fill="#fff" stroke="#94a3b8"/><text x="215" y="396" text-anchor="middle" font-size="15">City</text>
+  <ellipse cx="350" cy="385" rx="70" ry="28" fill="#fff" stroke="#94a3b8"/><text x="350" y="391" text-anchor="middle" font-size="15">Province</text>
+  <line x1="155" y1="350" x2="105" y2="365" stroke="#94a3b8"/><line x1="220" y1="372" x2="215" y2="362" stroke="#94a3b8"/><line x1="285" y1="350" x2="325" y2="363" stroke="#94a3b8"/>
+</svg>
+
+<div class="warn"><strong>Không đồng nhất “multivalued attribute” với cột chứa chuỗi nhiều giá trị.</strong> Khi chuyển sang mô hình quan hệ, nhiều trường hợp multivalued attribute cần tách thành bảng riêng để đảm bảo tính nguyên tử.</div>
+</section>
+
+<section id="keys">
+<h2>6. Keys trong mô hình dữ liệu</h2>
+<p>Trong ER conceptual model, ta quan tâm nhất tới thuộc tính hoặc tập thuộc tính có khả năng nhận diện duy nhất entity. Khi sang relational model, khái niệm khóa được mô tả chi tiết hơn.</p>
+<table>
+<thead><tr><th>Khóa</th><th>Diễn giải</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>Superkey</td><td>Bất kỳ tập thuộc tính nào xác định duy nhất một row.</td><td>{StudentID}, {StudentID, Email}</td></tr>
+<tr><td>Candidate key</td><td>Superkey tối thiểu; bỏ bất kỳ thuộc tính nào sẽ mất tính duy nhất.</td><td>StudentID; Email (nếu unique)</td></tr>
+<tr><td>Primary key (PK)</td><td>Candidate key được chọn làm khóa chính.</td><td>StudentID</td></tr>
+<tr><td>Alternate key</td><td>Candidate key không được chọn làm PK.</td><td>Email</td></tr>
+<tr><td>Composite key</td><td>Khóa gồm nhiều thuộc tính.</td><td>(StudentID, CourseID, Semester)</td></tr>
+<tr><td>Foreign key (FK)</td><td>Thuộc tính tham chiếu khóa của quan hệ khác.</td><td>DepartmentID trong EMPLOYEE</td></tr>
+<tr><td>Partial key</td><td>Phân biệt các weak entity thuộc cùng một owner.</td><td>DependentName trong DEPENDENT</td></tr>
+</tbody>
+</table>
+<div class="example"><strong>Ví dụ:</strong> Nếu mỗi sinh viên chỉ có một bản ghi đăng ký cho mỗi học phần trong một học kỳ, bảng ENROLLMENT có thể dùng khóa ghép <code>(StudentID, CourseID, Semester)</code>.</div>
+</section>
+
+<section id="relationships">
+<h2>7. Relationship – Mối quan hệ</h2>
+<p>Relationship thể hiện một liên hệ có ý nghĩa nghiệp vụ giữa các entity type. Đặt tên relationship bằng <strong>động từ hoặc cụm động từ</strong> giúp ERD dễ đọc như một câu.</p>
+<div class="grid2">
+  <div class="card"><h3>Tốt</h3><p><code>STUDENT — ENROLLS_IN — COURSE</code></p><p><code>EMPLOYEE — WORKS_FOR — DEPARTMENT</code></p></div>
+  <div class="card"><h3>Kém rõ</h3><p><code>STUDENT — COURSE_REL — COURSE</code></p><p><code>EMPLOYEE — HAS — DEPARTMENT</code></p></div>
+</div>
+
+<h3>7.1 Relationship Type vs Relationship Set</h3>
+<p><strong>Relationship type</strong> là định nghĩa chung, ví dụ ENROLLS_IN. <strong>Relationship set</strong> là tập các liên kết cụ thể hiện đang tồn tại, ví dụ (ST001, DB101), (ST002, DB101).</p>
+
+<h3>7.2 Relationship Attributes</h3>
+<p>Một thuộc tính thuộc về <em>chính mối quan hệ</em> nếu giá trị của nó phụ thuộc vào sự kết hợp của các entity tham gia, không thuộc riêng entity nào.</p>
+<div class="example"><strong>Ví dụ:</strong> STUDENT <em>ENROLLS_IN</em> COURSE. Các thuộc tính <code>EnrollmentDate</code>, <code>Grade</code> thuộc ENROLLS_IN, bởi điểm số của sinh viên chỉ có nghĩa đối với một môn/lớp cụ thể.</div>
+</section>
+
+<section id="degree">
+<h2>8. Degree của một Relationship</h2>
+<table>
+<thead><tr><th>Degree</th><th>Tên gọi</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Unary / Recursive</td><td>EMPLOYEE supervises EMPLOYEE</td></tr>
+<tr><td>2</td><td>Binary</td><td>STUDENT enrolls COURSE</td></tr>
+<tr><td>3</td><td>Ternary</td><td>SUPPLIER supplies PART to PROJECT</td></tr>
+<tr><td>n</td><td>N-ary</td><td>Quan hệ có n entity type tham gia</td></tr>
+</tbody>
+</table>
+<h3>8.1 Recursive relationship và role name</h3>
+<p>Khi một entity type tham gia cùng một relationship nhiều lần, cần dùng <strong>role names</strong> để phân biệt vai trò.</p>
+<svg class="diagram" viewBox="0 0 900 240">
+  <rect x="340" y="78" width="220" height="80" rx="10" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="450" y="126" text-anchor="middle" font-size="24" font-weight="700" fill="#182033">EMPLOYEE</text>
+  <path d="M 560 105 C 730 10, 790 205, 560 143" fill="none" stroke="#7a3ff2" stroke-width="3"/>
+  <text x="716" y="60" font-size="18" fill="#182033">supervisor</text>
+  <text x="698" y="188" font-size="18" fill="#182033">subordinate</text>
+  <text x="70" y="125" font-size="22" fill="#182033">SUPERVISES</text>
+  <line x1="235" y1="118" x2="340" y2="118" stroke="#7a3ff2" stroke-width="3"/>
+</svg>
+<div class="warn"><strong>Ternary không phải lúc nào cũng thay được bằng ba binary relationships.</strong> Nếu ý nghĩa phụ thuộc đồng thời vào bộ ba entity, tách ra có thể làm mất ràng buộc nghiệp vụ.</div>
+</section>
+
+<section id="constraints">
+<h2>9. Structural Constraints: Cardinality và Participation</h2>
+<p>Hai nhóm constraint quan trọng mô tả <strong>mỗi entity có thể/phải tham gia relationship bao nhiêu lần</strong>.</p>
+
+<h3>9.1 Maximum cardinality</h3>
+<div class="grid2">
+  <div class="card"><h3>1 : 1</h3><p>Mỗi A liên kết tối đa một B và mỗi B tối đa một A.</p><p>PERSON — PASSPORT</p></div>
+  <div class="card"><h3>1 : N</h3><p>Một A có thể liên kết nhiều B; mỗi B tối đa một A.</p><p>DEPARTMENT — EMPLOYEE</p></div>
+  <div class="card"><h3>N : 1</h3><p>Cùng quan hệ 1:N nhưng đọc theo chiều ngược lại.</p><p>EMPLOYEE — DEPARTMENT</p></div>
+  <div class="card"><h3>M : N</h3><p>Mỗi A có thể liên kết nhiều B và ngược lại.</p><p>STUDENT — COURSE</p></div>
+</div>
+
+<h3>9.2 Participation: minimum cardinality</h3>
+<p><strong>Total participation</strong>: mọi entity của entity set phải tham gia relationship ít nhất một lần. <strong>Partial participation</strong>: có entity có thể không tham gia.</p>
+
+<h3>9.3 Min–max notation</h3>
+<p>Biểu diễn mỗi phía bằng cặp <strong>(min, max)</strong>. Đây là cách đọc chính xác hơn chỉ ghi 1:N.</p>
+<table>
+<thead><tr><th>Ký hiệu</th><th>Ý nghĩa</th><th>Cách nói nghiệp vụ</th></tr></thead>
+<tbody>
+<tr><td>(0,1)</td><td>Không bắt buộc, tối đa một</td><td>“có thể có tối đa một…”</td></tr>
+<tr><td>(1,1)</td><td>Bắt buộc, đúng một</td><td>“phải có đúng một…”</td></tr>
+<tr><td>(0,N)</td><td>Không bắt buộc, có thể nhiều</td><td>“có thể có nhiều…”</td></tr>
+<tr><td>(1,N)</td><td>Bắt buộc ít nhất một, có thể nhiều</td><td>“phải có ít nhất một…”</td></tr>
+</tbody>
+</table>
+<div class="example"><strong>Business rule:</strong> “Mỗi PROJECT phải có ít nhất một EMPLOYEE; mỗi EMPLOYEE có thể chưa tham gia dự án nào hoặc tham gia nhiều dự án.” → PROJECT phía EMPLOYEE là (1,N), EMPLOYEE phía PROJECT là (0,N).</div>
+</section>
+
+<section id="chen">
+<h2>10. Chen Notation</h2>
+<p>Chen notation nhấn mạnh sự khác biệt giữa entity, attribute và relationship. Nó phù hợp để dạy mô hình khái niệm vì các thành phần được thể hiện tách biệt.</p>
+<table>
+<thead><tr><th>Thành phần</th><th>Ký hiệu</th></tr></thead>
+<tbody>
+<tr><td>Strong entity</td><td>Rectangle</td></tr>
+<tr><td>Weak entity</td><td>Double rectangle</td></tr>
+<tr><td>Relationship</td><td>Diamond</td></tr>
+<tr><td>Identifying relationship</td><td>Double diamond</td></tr>
+<tr><td>Attribute</td><td>Oval</td></tr>
+<tr><td>Multivalued attribute</td><td>Double oval</td></tr>
+<tr><td>Derived attribute</td><td>Dashed oval</td></tr>
+<tr><td>Key attribute</td><td>Underlined attribute name</td></tr>
+<tr><td>Total participation</td><td>Double line</td></tr>
+</tbody>
+</table>
+<div class="tip"><strong>Khi nào dùng?</strong> Chen notation tốt cho phân tích khái niệm và giảng dạy. Crow’s Foot thường thuận tiện hơn khi tiến gần thiết kế bảng và công cụ CASE.</div>
+</section>
+
+<section id="crow">
+<h2>11. Crow’s Foot Notation</h2>
+<p>Crow’s Foot gắn trực tiếp ký hiệu cardinality/optionality ở hai đầu relationship. Bốn mẫu cơ bản cần nhớ:</p>
+<table>
+<thead><tr><th>Ký hiệu khái niệm</th><th>Đọc là</th><th>Min–max</th></tr></thead>
+<tbody>
+<tr><td class="crow">○|</td><td>zero or one</td><td>(0,1)</td></tr>
+<tr><td class="crow">||</td><td>one and only one</td><td>(1,1)</td></tr>
+<tr><td class="crow">○&lt;</td><td>zero or many</td><td>(0,N)</td></tr>
+<tr><td class="crow">|&lt;</td><td>one or many</td><td>(1,N)</td></tr>
+</tbody>
+</table>
+
+<svg class="diagram" viewBox="0 0 940 420" aria-label="Crow's Foot examples">
+  <style>.et{font:700 22px system-ui;fill:#182033}.lab{font:17px system-ui;fill:#475569}.ln{stroke:#334155;stroke-width:3;fill:none}</style>
+  <rect x="65" y="70" width="220" height="75" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="175" y="116" text-anchor="middle" class="et">DEPARTMENT</text>
+  <rect x="655" y="70" width="220" height="75" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="765" y="116" text-anchor="middle" class="et">EMPLOYEE</text>
+  <line x1="285" y1="108" x2="655" y2="108" class="ln"/>
+  <line x1="320" y1="92" x2="320" y2="124" class="ln"/><line x1="333" y1="92" x2="333" y2="124" class="ln"/>
+  <line x1="620" y1="108" x2="647" y2="92" class="ln"/><line x1="620" y1="108" x2="647" y2="108" class="ln"/><line x1="620" y1="108" x2="647" y2="124" class="ln"/>
+  <circle cx="608" cy="108" r="10" fill="white" stroke="#334155" stroke-width="3"/>
+  <text x="470" y="80" text-anchor="middle" class="lab">employs</text>
+  <text x="470" y="145" text-anchor="middle" class="lab">Một department có 0..N employee; mỗi employee thuộc đúng 1 department</text>
+
+  <rect x="65" y="270" width="220" height="75" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="175" y="316" text-anchor="middle" class="et">STUDENT</text>
+  <rect x="655" y="270" width="220" height="75" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="765" y="316" text-anchor="middle" class="et">COURSE</text>
+  <line x1="285" y1="308" x2="655" y2="308" class="ln"/>
+  <circle cx="320" cy="308" r="10" fill="white" stroke="#334155" stroke-width="3"/>
+  <line x1="333" y1="308" x2="360" y2="292" class="ln"/><line x1="333" y1="308" x2="360" y2="308" class="ln"/><line x1="333" y1="308" x2="360" y2="324" class="ln"/>
+  <circle cx="620" cy="308" r="10" fill="white" stroke="#334155" stroke-width="3"/>
+  <line x1="580" y1="292" x2="607" y2="308" class="ln"/><line x1="580" y1="308" x2="607" y2="308" class="ln"/><line x1="580" y1="324" x2="607" y2="308" class="ln"/>
+  <text x="470" y="280" text-anchor="middle" class="lab">enrolls</text>
+  <text x="470" y="365" text-anchor="middle" class="lab">0..N ở cả hai phía → M:N, optional ở cả hai phía</text>
+</svg>
+
+<div class="note"><strong>Cách đọc Crow’s Foot:</strong> đọc ký hiệu ở đầu gần một entity để biết “một instance ở phía đối diện có thể liên kết với bao nhiêu instance của entity này”. Khi mới học, hãy luôn dịch relationship thành hai câu business rule để tránh đọc ngược.</div>
+</section>
+
+<section id="weak">
+<h2>12. Weak Entity và Identifying Relationship</h2>
+<p><strong>Weak entity</strong> không có đủ thuộc tính để tự nhận diện duy nhất một instance. Nó phụ thuộc vào một <strong>owner/identifying strong entity</strong> và thường có <strong>partial key</strong>.</p>
+<div class="example">
+<strong>Ví dụ:</strong> EMPLOYEE và DEPENDENT. Hai nhân viên khác nhau đều có thể có người phụ thuộc tên “An”; do đó <code>DependentName</code> không nhận diện duy nhất trên toàn hệ thống. Một dependent có thể được nhận diện bởi <code>(EmployeeID, DependentName)</code>.
+</div>
+<svg class="diagram" viewBox="0 0 940 260">
+  <rect x="75" y="82" width="200" height="82" rx="8" fill="#eef3ff" stroke="#2856d7" stroke-width="3"/>
+  <text x="175" y="132" text-anchor="middle" font-size="23" font-weight="700">EMPLOYEE</text>
+  <polygon points="385,123 465,75 545,123 465,171" fill="#f4efff" stroke="#7a3ff2" stroke-width="3"/>
+  <polygon points="396,123 465,82 534,123 465,164" fill="none" stroke="#7a3ff2" stroke-width="2"/>
+  <text x="465" y="130" text-anchor="middle" font-size="18" font-weight="700">HAS</text>
+  <rect x="655" y="78" width="210" height="90" rx="8" fill="#fff5ec" stroke="#c35a10" stroke-width="3"/>
+  <rect x="663" y="86" width="194" height="74" rx="6" fill="none" stroke="#c35a10" stroke-width="2"/>
+  <text x="760" y="132" text-anchor="middle" font-size="23" font-weight="700">DEPENDENT</text>
+  <line x1="275" y1="123" x2="385" y2="123" stroke="#475569" stroke-width="3"/>
+  <line x1="545" y1="116" x2="655" y2="116" stroke="#475569" stroke-width="3"/>
+  <line x1="545" y1="130" x2="655" y2="130" stroke="#475569" stroke-width="3"/>
+  <text x="176" y="202" text-anchor="middle" font-size="16">PK: EmployeeID</text>
+  <text x="760" y="202" text-anchor="middle" font-size="16">Partial key: DependentName</text>
+</svg>
+<p>Đặc trưng thường gặp: weak entity có <strong>total participation</strong> trong identifying relationship vì nó không thể tồn tại theo mô hình nếu thiếu owner.</p>
+</section>
+
+<section id="associative">
+<h2>13. Associative Entity và quan hệ M:N</h2>
+<p>Khi relationship M:N có thuộc tính riêng hoặc cần được tham chiếu bởi quan hệ khác, ta thường chuyển nó thành <strong>associative entity</strong> (còn gọi là bridge/intersection entity trong bối cảnh thiết kế quan hệ).</p>
+
+<div class="grid3">
+  <div class="entity-box">STUDENT</div>
+  <div class="entity-box" style="border-color:var(--accent)">ENROLLMENT<br><span class="small">EnrollDate, Grade</span></div>
+  <div class="entity-box">COURSE</div>
+</div>
+<div class="formula">STUDENT 1 : N ENROLLMENT N : 1 COURSE</div>
+<p>Thay vì giữ trực tiếp STUDENT M:N COURSE, ta tạo ENROLLMENT. Khóa có thể là khóa ghép từ các FK hoặc một surrogate key tùy thiết kế.</p>
+<div class="tip"><strong>Dấu hiệu nên có associative entity:</strong> relationship M:N có thuộc tính; cần lưu lịch sử; có entity khác tham chiếu vào “lần tham gia”; hoặc bản thân relationship đã có ý nghĩa nghiệp vụ độc lập.</div>
+</section>
+
+<section id="eer">
+<h2>14. Enhanced ER Model (EER)</h2>
+<p>EER mở rộng ER cơ bản để mô hình hóa các miền phức tạp hơn.</p>
+
+<h3>14.1 Specialization</h3>
+<p>Tiếp cận <strong>top-down</strong>: từ một supertype chia thành các subtype dựa trên đặc điểm riêng.</p>
+<div class="formula">EMPLOYEE → {LECTURER, ADMIN_STAFF}</div>
+
+<h3>14.2 Generalization</h3>
+<p>Tiếp cận <strong>bottom-up</strong>: gom các entity type có thuộc tính chung thành một supertype.</p>
+<div class="formula">{STUDENT, FACULTY} → PERSON</div>
+
+<h3>14.3 Inheritance</h3>
+<p>Subtype kế thừa các thuộc tính nhận dạng và các đặc trưng chung của supertype, sau đó bổ sung các thuộc tính/relationship riêng.</p>
+
+<h3>14.4 Disjoint vs Overlapping</h3>
+<table>
+<thead><tr><th>Constraint</th><th>Ý nghĩa</th><th>Ví dụ</th></tr></thead>
+<tbody>
+<tr><td>Disjoint</td><td>Một supertype instance chỉ thuộc tối đa một subtype.</td><td>ACCOUNT → SAVINGS hoặc CURRENT</td></tr>
+<tr><td>Overlapping</td><td>Một instance có thể đồng thời thuộc nhiều subtype.</td><td>PERSON có thể vừa là STUDENT vừa là EMPLOYEE</td></tr>
+</tbody>
+</table>
+
+<h3>14.5 Total vs Partial specialization</h3>
+<p><strong>Total:</strong> mọi supertype instance phải thuộc ít nhất một subtype. <strong>Partial:</strong> có instance chỉ thuộc supertype.</p>
+
+<h3>14.6 Aggregation</h3>
+<p>Aggregation cho phép coi một relationship cùng các entity tham gia như một đối tượng cấp cao để tham gia relationship khác.</p>
+<div class="example"><strong>Ví dụ:</strong> EMPLOYEE <em>WORKS_ON</em> PROJECT là một assignment. Nếu MACHINE được cấp cho một assignment cụ thể, ta cần biểu diễn MACHINE liên hệ với chính “EMPLOYEE làm PROJECT”, không chỉ với EMPLOYEE hoặc PROJECT riêng lẻ.</div>
+</section>
+
+<section id="workflow">
+<h2>15. Quy trình dựng ERD từ một đề bài nghiệp vụ</h2>
+<ol class="steps">
+  <li><strong>Gạch chân danh từ:</strong> ứng viên entity/attribute.</li>
+  <li><strong>Khoanh động từ:</strong> ứng viên relationship.</li>
+  <li><strong>Loại bỏ “entity giả”:</strong> thứ chỉ là thuộc tính, giá trị hoặc báo cáo.</li>
+  <li><strong>Chọn identifier:</strong> xác định candidate key và key chính ở mức khái niệm.</li>
+  <li><strong>Gắn attribute:</strong> đặt attribute đúng entity/relationship.</li>
+  <li><strong>Xác định degree:</strong> unary, binary, ternary…</li>
+  <li><strong>Viết hai câu business rule cho mỗi binary relationship.</strong></li>
+  <li><strong>Xác định min/max mỗi phía:</strong> 0/1/N.</li>
+  <li><strong>Xử lý M:N:</strong> giữ ở conceptual ERD hoặc tạo associative entity nếu phù hợp mục tiêu.</li>
+  <li><strong>Kiểm tra existence dependency:</strong> có weak entity không?</li>
+  <li><strong>Kiểm tra EER:</strong> có supertype/subtype, disjoint/overlap, total/partial không?</li>
+  <li><strong>Đọc lại ERD thành tiếng tự nhiên:</strong> sơ đồ có phản ánh đúng business rules không?</li>
+</ol>
+
+<div class="note"><strong>Mẹo thực hành:</strong> với mỗi relationship A—R—B, hãy bắt buộc viết hai câu: “Một A có thể/phải R bao nhiêu B?” và “Một B có thể/phải R bao nhiêu A?”. Đây là cách nhanh nhất để xác định đúng cardinality và optionality.</div>
+</section>
+
+<section id="example1">
+<h2>16. Ví dụ tổng hợp 1: Hệ thống đăng ký học phần</h2>
+<h3>16.1 Yêu cầu</h3>
+<p>Mỗi sinh viên có mã duy nhất và có thể đăng ký nhiều lớp học phần. Mỗi lớp học phần thuộc đúng một môn học và được mở trong một học kỳ. Một lớp học phần có nhiều sinh viên. Với mỗi lần đăng ký, hệ thống lưu ngày đăng ký và điểm cuối kỳ. Mỗi lớp học phần phải thuộc một môn học; một môn có thể chưa được mở lớp trong học kỳ hiện tại.</p>
+
+<h3>16.2 Phân tích</h3>
+<table>
+<thead><tr><th>Thành phần</th><th>Kết quả</th></tr></thead>
+<tbody>
+<tr><td>Entities</td><td>STUDENT, COURSE, SECTION</td></tr>
+<tr><td>Associative entity</td><td>ENROLLMENT</td></tr>
+<tr><td>COURSE–SECTION</td><td>COURSE (0,N) — has — SECTION (1,1)</td></tr>
+<tr><td>STUDENT–SECTION</td><td>M:N, được tách bằng ENROLLMENT</td></tr>
+<tr><td>Relationship attributes</td><td>EnrollmentDate, FinalGrade → ENROLLMENT</td></tr>
+</tbody>
+</table>
+
+<svg class="diagram" viewBox="0 0 1040 430">
+  <style>.h{font:700 21px system-ui;fill:#182033}.s{font:15px system-ui;fill:#475569}.box{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.assoc{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.line{stroke:#475569;stroke-width:3}</style>
+  <rect class="box" x="50" y="160" width="210" height="110" rx="9"/>
+  <text class="h" x="155" y="195" text-anchor="middle">STUDENT</text>
+  <text class="s" x="75" y="225">PK StudentID</text><text class="s" x="75" y="250">FullName, DOB</text>
+
+  <rect class="assoc" x="415" y="130" width="220" height="170" rx="9"/>
+  <text class="h" x="525" y="168" text-anchor="middle">ENROLLMENT</text>
+  <text class="s" x="438" y="202">PK/FK StudentID</text><text class="s" x="438" y="227">PK/FK SectionID</text>
+  <text class="s" x="438" y="252">EnrollmentDate</text><text class="s" x="438" y="277">FinalGrade</text>
+
+  <rect class="box" x="790" y="160" width="210" height="110" rx="9"/>
+  <text class="h" x="895" y="195" text-anchor="middle">SECTION</text>
+  <text class="s" x="814" y="225">PK SectionID</text><text class="s" x="814" y="250">Semester, Year</text>
+
+  <line class="line" x1="260" y1="215" x2="415" y2="215"/><line class="line" x1="635" y1="215" x2="790" y2="215"/>
+  <text class="s" x="330" y="202">1</text><text class="s" x="390" y="202">N</text><text class="s" x="655" y="202">N</text><text class="s" x="765" y="202">1</text>
+
+  <rect class="box" x="790" y="340" width="210" height="70" rx="9"/>
+  <text class="h" x="895" y="382" text-anchor="middle">COURSE</text>
+  <line class="line" x1="895" y1="270" x2="895" y2="340"/>
+  <text class="s" x="910" y="300">N</text><text class="s" x="910" y="334">1</text>
+</svg>
+
+<h3>16.3 Lược đồ quan hệ sơ bộ</h3>
+<pre><code>STUDENT(
+    StudentID PK,
+    FullName,
+    DOB
+)
+
+COURSE(
+    CourseID PK,
+    CourseName,
+    Credits
+)
+
+SECTION(
+    SectionID PK,
+    CourseID FK -> COURSE.CourseID,
+    Semester,
+    AcademicYear
+)
+
+ENROLLMENT(
+    StudentID PK/FK -> STUDENT.StudentID,
+    SectionID PK/FK -> SECTION.SectionID,
+    EnrollmentDate,
+    FinalGrade
+)</code></pre>
+</section>
+
+<section id="example2">
+<h2>17. Ví dụ tổng hợp 2: Công ty – Phòng ban – Dự án</h2>
+<p>Xét các business rules:</p>
+<ul>
+  <li>Một division vận hành nhiều department; mỗi department thuộc đúng một division.</li>
+  <li>Một department có nhiều employee; mỗi employee có thể thuộc tối đa một department; có employee “rover” chưa thuộc department.</li>
+  <li>Một employee có thể tham gia nhiều project và một project có nhiều employee.</li>
+  <li>Mỗi project phải có ít nhất một employee.</li>
+  <li>Mỗi department được quản lý bởi đúng một employee.</li>
+  <li>Mỗi division được điều hành bởi đúng một employee.</li>
+</ul>
+
+<table>
+<thead><tr><th>Relationship</th><th>Phía A</th><th>Phía B</th><th>Diễn giải</th></tr></thead>
+<tbody>
+<tr><td>DIVISION operates DEPARTMENT</td><td>DIVISION: (1,N)</td><td>DEPARTMENT: (1,1)</td><td>Division có ≥1 department; department thuộc đúng 1 division.</td></tr>
+<tr><td>DEPARTMENT employs EMPLOYEE</td><td>DEPARTMENT: (0,N)</td><td>EMPLOYEE: (0,1)</td><td>Cho phép rover.</td></tr>
+<tr><td>EMPLOYEE assigned PROJECT</td><td>EMPLOYEE: (0,N)</td><td>PROJECT: (1,N)</td><td>Project bắt buộc có ≥1 employee.</td></tr>
+<tr><td>EMPLOYEE manages DEPARTMENT</td><td>EMPLOYEE: tùy rule bổ sung</td><td>DEPARTMENT: (1,1)</td><td>Mỗi department phải có đúng 1 manager.</td></tr>
+<tr><td>EMPLOYEE runs DIVISION</td><td>EMPLOYEE: tùy rule bổ sung</td><td>DIVISION: (1,1)</td><td>Mỗi division phải có đúng 1 người điều hành.</td></tr>
+</tbody>
+</table>
+<div class="warn"><strong>Điểm tinh tế:</strong> câu “mỗi department được quản lý bởi đúng một employee” chưa nói một employee có thể quản lý bao nhiêu department. Không nên tự suy ra (0,1) nếu đề không cung cấp. Đây là ví dụ điển hình về việc phân biệt <em>thông tin được nêu</em> và <em>giả định của người thiết kế</em>.</div>
+</section>
+
+<section id="mapping">
+<h2>18. Chuyển ER Model sang Relational Model</h2>
+<p>Đây là cầu nối từ conceptual design sang logical design. Các quy tắc dưới đây là cách làm phổ biến; thiết kế thực tế có thể thay đổi tùy constraints.</p>
+
+<h3>18.1 Strong entity</h3>
+<p>Mỗi strong entity → một relation. Simple attributes → columns. Key attribute → PK.</p>
+
+<h3>18.2 Composite attribute</h3>
+<p>Thường lưu các thành phần nguyên tử, ví dụ Address → Street, City, Province; không nhất thiết tạo một cột Address tổng hợp.</p>
+
+<h3>18.3 Multivalued attribute</h3>
+<p>Tạo relation riêng gồm PK của owner + multivalued attribute.</p>
+<pre><code>STUDENT(StudentID PK, FullName)
+STUDENT_PHONE(StudentID PK/FK, PhoneNumber PK)</code></pre>
+
+<h3>18.4 Weak entity</h3>
+<p>Tạo relation cho weak entity; đưa PK của owner vào làm FK và thường là một phần PK của weak entity.</p>
+<pre><code>EMPLOYEE(EmployeeID PK, ...)
+DEPENDENT(
+    EmployeeID PK/FK,
+    DependentName PK,
+    RelationshipType,
+    DOB
+)</code></pre>
+
+<h3>18.5 Binary 1:N</h3>
+<p>Đưa PK của phía “1” sang phía “N” làm FK.</p>
+<pre><code>DEPARTMENT(DepartmentID PK, ...)
+EMPLOYEE(EmployeeID PK, DepartmentID FK, ...)</code></pre>
+
+<h3>18.6 Binary 1:1</h3>
+<p>Đặt FK ở một trong hai phía; ưu tiên phía có <strong>total participation</strong> để giảm NULL và phản ánh dependency. Có thể dùng UNIQUE để giữ ràng buộc 1:1.</p>
+
+<h3>18.7 Binary M:N</h3>
+<p>Tạo relation trung gian chứa PK của hai phía làm FK; thường PK là tổ hợp hai khóa (hoặc thêm thuộc tính phân biệt như Semester).</p>
+<pre><code>EMPLOYEE_PROJECT(
+    EmployeeID PK/FK,
+    ProjectID  PK/FK,
+    AssignedDate,
+    Role
+)</code></pre>
+
+<h3>18.8 N-ary relationship</h3>
+<p>Tạo một relation mới chứa các PK của entity tham gia dưới dạng FK cùng các relationship attributes. PK phải được xác định dựa trên semantics, không máy móc luôn lấy toàn bộ FK.</p>
+
+<h3>18.9 Derived attribute</h3>
+<p>Thường không lưu nếu tính được ổn định và chi phí tính chấp nhận được; có thể lưu/cached nếu có lý do hiệu năng và cơ chế đồng bộ rõ ràng.</p>
+
+<table>
+<thead><tr><th>ER construct</th><th>Relational mapping thường dùng</th></tr></thead>
+<tbody>
+<tr><td>Strong entity</td><td>Table</td></tr>
+<tr><td>1:N relationship</td><td>FK ở phía N</td></tr>
+<tr><td>1:1 relationship</td><td>FK + UNIQUE, chọn phía phù hợp</td></tr>
+<tr><td>M:N relationship</td><td>Junction/associative table</td></tr>
+<tr><td>Weak entity</td><td>Table với owner PK + partial key</td></tr>
+<tr><td>Multivalued attribute</td><td>Table riêng</td></tr>
+<tr><td>Relationship attribute</td><td>Cột ở relation đại diện relationship</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="mistakes">
+<h2>19. Các lỗi thường gặp khi thiết kế ERD</h2>
+<div class="grid2">
+  <div class="card"><h3>1. Biến mọi danh từ thành entity</h3><p>“Tên”, “địa chỉ”, “trạng thái” thường là attribute, không phải entity độc lập.</p></div>
+  <div class="card"><h3>2. Chỉ ghi 1:N mà bỏ minimum</h3><p>1:N không cho biết participation là bắt buộc hay tùy chọn.</p></div>
+  <div class="card"><h3>3. Đọc Crow’s Foot ngược</h3><p>Hãy dịch relationship thành hai câu nghiệp vụ để kiểm tra.</p></div>
+  <div class="card"><h3>4. Đặt relationship attribute sai chỗ</h3><p>Grade thuộc ENROLLMENT, không thuộc STUDENT hay COURSE.</p></div>
+  <div class="card"><h3>5. Giữ M:N khi đã sang schema quan hệ</h3><p>RDBMS cần bảng nối để cài đặt M:N.</p></div>
+  <div class="card"><h3>6. Dùng age thay DOB</h3><p>Age thay đổi theo thời gian và thường là derived attribute.</p></div>
+  <div class="card"><h3>7. Tạo surrogate key rồi bỏ business uniqueness</h3><p>Có ID tự tăng không có nghĩa là không cần UNIQUE cho khóa nghiệp vụ.</p></div>
+  <div class="card"><h3>8. Tự thêm ràng buộc không có trong yêu cầu</h3><p>Nếu business rule chưa rõ, đánh dấu giả định hoặc hỏi stakeholder.</p></div>
+</div>
+</section>
+
+<section id="exercises">
+<h2>20. Bài tập luyện tập</h2>
+
+<h3>Bài 1 – Thư viện</h3>
+<p>Một thư viện quản lý MEMBER, BOOK và COPY. Một BOOK có thể có nhiều COPY; mỗi COPY thuộc đúng một BOOK. MEMBER có thể mượn nhiều COPY theo thời gian, nhưng một COPY tại một thời điểm chỉ có thể được một MEMBER mượn. Mỗi lần mượn lưu BorrowDate, DueDate, ReturnDate.</p>
+<p><strong>Yêu cầu:</strong> xác định entity, relationship, cardinality, participation, relationship attributes; đề xuất associative entity nếu cần.</p>
+
+<h3>Bài 2 – Bán hàng</h3>
+<p>CUSTOMER đặt ORDER. Mỗi ORDER phải thuộc đúng một CUSTOMER; một CUSTOMER có thể chưa đặt order nào. ORDER chứa ít nhất một PRODUCT; PRODUCT có thể xuất hiện trong nhiều ORDER. Mỗi dòng order có Quantity và UnitPriceAtOrder.</p>
+<p><strong>Yêu cầu:</strong> dựng Crow’s Foot ERD và chỉ ra khóa của ORDER_ITEM.</p>
+
+<h3>Bài 3 – Bệnh viện</h3>
+<p>PATIENT được DOCTOR khám trong APPOINTMENT. Một appointment xảy ra tại một ROOM và có ScheduledTime, Status. Một doctor có thể có nhiều appointment; một patient có thể có nhiều appointment; một room có thể được dùng cho nhiều appointment ở các thời điểm khác nhau.</p>
+<p><strong>Yêu cầu:</strong> quyết định APPOINTMENT nên là relationship hay associative entity và giải thích.</p>
+
+<h3>Bài 4 – Nhân sự</h3>
+<p>EMPLOYEE có thể là FULL_TIME_EMPLOYEE, PART_TIME_EMPLOYEE hoặc CONTRACTOR. Full-time có AnnualSalary; part-time có HourlyRate; contractor có ContractEndDate. Doanh nghiệp cho phép một employee chỉ thuộc đúng một trong ba nhóm.</p>
+<p><strong>Yêu cầu:</strong> mô hình bằng EER; xác định disjoint/overlapping và total/partial specialization.</p>
+
+<h3>Bài 5 – Phân tích business rules</h3>
+<p>“Mỗi khoa có một trưởng khoa. Một giảng viên có thể chưa làm trưởng khoa hoặc có thể làm trưởng của tối đa một khoa. Mỗi khoa có ít nhất ba giảng viên; mỗi giảng viên thuộc đúng một khoa.”</p>
+<p><strong>Yêu cầu:</strong> viết min–max ở cả hai phía cho hai relationships: WORKS_FOR và HEADS.</p>
+</section>
+
+<section id="quiz">
+<h2>21. Quiz tự kiểm tra</h2>
+<p class="lead">Chọn đáp án rồi bấm “Kiểm tra”. Điểm được tính ngay trên trình duyệt; không gửi dữ liệu ra ngoài.</p>
+
+<div class="quiz-item" data-answer="b">
+  <strong>Câu 1.</strong> Thành phần nào mô tả liên hệ giữa các entity?
+  <label><input type="radio" name="q1" value="a"> Attribute</label>
+  <label><input type="radio" name="q1" value="b"> Relationship</label>
+  <label><input type="radio" name="q1" value="c"> Candidate key</label>
+  <div class="answer">Đáp án: <strong>B</strong>. Relationship mô tả sự liên hệ có ý nghĩa nghiệp vụ giữa các entity.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+  <strong>Câu 2.</strong> Trong Chen notation, multivalued attribute thường được vẽ bằng:
+  <label><input type="radio" name="q2" value="a"> Double rectangle</label>
+  <label><input type="radio" name="q2" value="b"> Dashed oval</label>
+  <label><input type="radio" name="q2" value="c"> Double oval</label>
+  <div class="answer">Đáp án: <strong>C</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+  <strong>Câu 3.</strong> Một DEPARTMENT có nhiều EMPLOYEE, mỗi EMPLOYEE thuộc đúng một DEPARTMENT. Đây là:
+  <label><input type="radio" name="q3" value="a"> 1:N</label>
+  <label><input type="radio" name="q3" value="b"> M:N</label>
+  <label><input type="radio" name="q3" value="c"> 1:1</label>
+  <div class="answer">Đáp án: <strong>A</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+  <strong>Câu 4.</strong> STUDENT và COURSE có M:N; relationship có Grade. Khi chuyển sang relational model, cách phù hợp nhất là:
+  <label><input type="radio" name="q4" value="a"> Đặt Grade trong STUDENT</label>
+  <label><input type="radio" name="q4" value="b"> Đặt Grade trong COURSE</label>
+  <label><input type="radio" name="q4" value="c"> Tạo ENROLLMENT(StudentID, CourseID, Grade)</label>
+  <div class="answer">Đáp án: <strong>C</strong>. Grade phụ thuộc vào cặp Student–Course.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+  <strong>Câu 5.</strong> Ký hiệu min–max (0,1) có nghĩa:
+  <label><input type="radio" name="q5" value="a"> Bắt buộc đúng một</label>
+  <label><input type="radio" name="q5" value="b"> Không bắt buộc, tối đa một</label>
+  <label><input type="radio" name="q5" value="c"> Không bắt buộc, có thể nhiều</label>
+  <div class="answer">Đáp án: <strong>B</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="a">
+  <strong>Câu 6.</strong> Weak entity thường:
+  <label><input type="radio" name="q6" value="a"> Phụ thuộc owner entity để được nhận diện</label>
+  <label><input type="radio" name="q6" value="b"> Luôn có surrogate key độc lập</label>
+  <label><input type="radio" name="q6" value="c"> Không được phép có attribute</label>
+  <div class="answer">Đáp án: <strong>A</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="c">
+  <strong>Câu 7.</strong> Specialization là:
+  <label><input type="radio" name="q7" value="a"> Gom nhiều subtype thành supertype theo hướng bottom-up</label>
+  <label><input type="radio" name="q7" value="b"> Chuyển M:N thành hai quan hệ 1:N</label>
+  <label><input type="radio" name="q7" value="c"> Chia một supertype thành các subtype theo hướng top-down</label>
+  <div class="answer">Đáp án: <strong>C</strong>.</div>
+</div>
+
+<div class="quiz-item" data-answer="b">
+  <strong>Câu 8.</strong> Với relationship 1:N, FK thường được đặt:
+  <label><input type="radio" name="q8" value="a"> Ở phía 1</label>
+  <label><input type="radio" name="q8" value="b"> Ở phía N</label>
+  <label><input type="radio" name="q8" value="c"> Luôn cần bảng nối riêng</label>
+  <div class="answer">Đáp án: <strong>B</strong>.</div>
+</div>
+
+<button onclick="gradeQuiz()">Kiểm tra kết quả</button>
+<button onclick="resetQuiz()">Làm lại</button>
+<p id="score" style="font-weight:800;margin-top:1rem"></p>
+</section>
+
+<section id="glossary">
+<h2>22. Thuật ngữ Anh–Việt</h2>
+<table>
+<thead><tr><th>English</th><th>Tiếng Việt gợi ý</th></tr></thead>
+<tbody>
+<tr><td>Entity</td><td>Thực thể</td></tr>
+<tr><td>Entity type</td><td>Kiểu thực thể</td></tr>
+<tr><td>Entity set</td><td>Tập thực thể</td></tr>
+<tr><td>Attribute</td><td>Thuộc tính</td></tr>
+<tr><td>Relationship</td><td>Mối quan hệ / liên kết</td></tr>
+<tr><td>Cardinality</td><td>Lực lượng / số lượng liên kết tối đa; thường giữ từ “cardinality” khi giảng</td></tr>
+<tr><td>Participation constraint</td><td>Ràng buộc tham gia</td></tr>
+<tr><td>Total participation</td><td>Tham gia toàn phần / bắt buộc</td></tr>
+<tr><td>Partial participation</td><td>Tham gia bộ phận / tùy chọn</td></tr>
+<tr><td>Weak entity</td><td>Thực thể yếu</td></tr>
+<tr><td>Identifying relationship</td><td>Quan hệ định danh</td></tr>
+<tr><td>Associative entity</td><td>Thực thể kết hợp / thực thể liên kết</td></tr>
+<tr><td>Generalization</td><td>Khái quát hóa</td></tr>
+<tr><td>Specialization</td><td>Chuyên biệt hóa</td></tr>
+<tr><td>Aggregation</td><td>Kết tập</td></tr>
+<tr><td>Superclass / Supertype</td><td>Lớp cha / kiểu tổng quát</td></tr>
+<tr><td>Subclass / Subtype</td><td>Lớp con / kiểu chuyên biệt</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="sources">
+<h2>23. Tài liệu tham khảo và đọc thêm</h2>
+<p>Bài giảng được biên soạn lại theo hướng giảng dạy, có mở rộng và ví dụ mới. Các nguồn web chính đã tham khảo:</p>
+<ul>
+  <li><a href="https://www.geeksforgeeks.org/dbms/introduction-of-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Introduction of ER Model</a> (truy cập 29/09/2026).</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/structural-constraints-of-relationships-in-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Structural Constraints of Relationships in ER Model</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/weak-entity-set-in-er-diagrams/" target="_blank" rel="noopener">GeeksforGeeks — Weak Entity Set in ER Diagrams</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/generalization-specialization-and-aggregation-in-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Generalization, Specialization and Aggregation in ER Model</a>.</li>
+  <li><a href="https://www.geeksforgeeks.org/dbms/mapping-from-er-model-to-relational-model/" target="_blank" rel="noopener">GeeksforGeeks — Mapping from ER Model to Relational Model</a>.</li>
+</ul>
+<p class="small">Gợi ý giảng dạy: có thể tách nội dung này thành 2 buổi: (1) ER cơ bản + constraints + notation; (2) weak entity + EER + mapping + bài tập thiết kế.</p>
+</section>
+</main>
+</div>
+
+<footer>
+  <hr>
+  <p><strong>ER Model Lecture Notes</strong> · Tệp HTML độc lập. Dùng nút <kbd>In/PDF</kbd> để tạo bản in, hoặc mở trực tiếp trong Chrome/Edge/Firefox.</p>
+</footer>
+
+<script>
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('er-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+if(localStorage.getItem('er-theme') === 'dark'){ document.body.classList.add('dark'); }
+
+function updateProgress(){
+  const doc = document.documentElement;
+  const h = doc.scrollHeight - doc.clientHeight;
+  const p = h > 0 ? (doc.scrollTop / h) * 100 : 0;
+  document.getElementById('progress').style.width = p + '%';
+}
+window.addEventListener('scroll', updateProgress, {passive:true});
+updateProgress();
+
+const sections = [...document.querySelectorAll('main section')];
+const tocLinks = [...document.querySelectorAll('#toc a')];
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id));
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px',threshold:0});
+sections.forEach(s => observer.observe(s));
+
+function gradeQuiz(){
+  const items = [...document.querySelectorAll('.quiz-item')];
+  let score = 0, answered = 0;
+  items.forEach((item, i) => {
+    const selected = item.querySelector('input[type=radio]:checked');
+    const ans = item.querySelector('.answer');
+    ans.classList.add('show');
+    if(selected){
+      answered++;
+      if(selected.value === item.dataset.answer) score++;
+    }
+  });
+  document.getElementById('score').textContent =
+    `Kết quả: ${score}/${items.length} câu đúng · Đã trả lời ${answered}/${items.length} câu.`;
+}
+function resetQuiz(){
+  document.querySelectorAll('.quiz-item input').forEach(x => x.checked = false);
+  document.querySelectorAll('.answer').forEach(x => x.classList.remove('show'));
+  document.getElementById('score').textContent = '';
+}
+</script>
+</body>
+</html>
