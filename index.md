@@ -148,7 +148,7 @@ Phần này trình bày chuẩn hóa dữ liệu, các dạng chuẩn và cách 
 
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
-| Normal Forms trong DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | <span class="missing">—</span> | <span class="missing">—</span> | Tổng quan chuẩn hóa và các dạng chuẩn |
+| Normal Forms trong DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [HTML](lectures/normalization/normal-forms/dbms_normalization_interactive_v2_fd.html) | <span class="missing">—</span> | Tổng quan chuẩn hóa và các dạng chuẩn |
 | First Normal Form (1NF) trong DBMS | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Loại bỏ nhóm lặp và đảm bảo giá trị nguyên tử |
 | Second Normal Form (2NF) trong DBMS | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Phụ thuộc đầy đủ vào khóa chính |
 | Third Normal Form (3NF) trong DBMS | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Loại bỏ phụ thuộc bắc cầu |
@@ -333,7 +333,7 @@ Phần này trình bày chuẩn hóa dữ liệu, các dạng chuẩn và cách 
 
 | Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
-| Normal Forms in DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | <span class="missing">—</span> | <span class="missing">—</span> | Overview of normalization and normal forms |
+| Normal Forms in DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [HTML](lectures/normalization/normal-forms/dbms_normalization_interactive_v2_fd.html) | <span class="missing">—</span> | Overview of normalization and normal forms |
 | First Normal Form (1NF) in DBMS | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Removes repeating groups and keeps values atomic |
 | Second Normal Form (2NF) in DBMS | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Full dependency on the primary key |
 | Third Normal Form (3NF) in DBMS | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Removes transitive dependencies |
