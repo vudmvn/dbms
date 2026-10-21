@@ -66,7 +66,7 @@ FD quan trọng vì nó giúp:
 
 > **Ý chính:** FD là ràng buộc về ngữ nghĩa dữ liệu. Nó không phải chỉ là một mẫu trùng hợp trong vài rows hiện có.
 
-![Functional dependency overview](image.png)
+![Functional dependency overview](images/image.png)
 
 *Hình 1. Functional dependency mô tả quan hệ xác định giữa các thuộc tính.*
 
@@ -132,7 +132,7 @@ StudentID → StudentName, DateOfBirth
 | `StudentID` | Determinant |
 | `StudentName`, `DateOfBirth` | Dependent attributes |
 
-![Determinant and dependent attributes](images\image-1.png)
+![Determinant and dependent attributes](images/image-1.png)
 
 *Hình 2. Determinant xác định các thuộc tính phụ thuộc.*
 
@@ -266,7 +266,7 @@ StudentName → StudentAge   bị vi phạm
 
 Với `StudentName = Ankit`, có hai độ tuổi khác nhau: 22 và 23.
 
-![Checking an FD](images\image-2.png)
+![Checking an FD](images/image-2.png)
 
 *Hình 3. Một FD bị vi phạm khi cùng vế trái nhưng khác vế phải.*
 
@@ -411,7 +411,7 @@ Trong bài này, dependencies được phân tích theo bốn góc nhìn:
 | Chuỗi xác định | Transitive | Có attribute trung gian không? |
 | Tập giá trị độc lập | MVD | Có các tập giá trị độc lập tạo tổ hợp dư thừa không? |
 
-![Dependency types overview](images\3.png)
+![Dependency types overview](images/image-3.png)
 
 *Hình 4. Phân nhóm các dependency trong bài học.*
 
@@ -529,7 +529,7 @@ StudentID, CourseID → CourseID
 
 là trivial, không phải semi-non-trivial.
 
-![Trivial vs non-trivial vs semi-non-trivial](images\image-4.png)
+![Trivial vs non-trivial vs semi-non-trivial](images/image-4.png)
 
 *Hình 5. Ba trường hợp FD theo quan hệ giữa vế trái và vế phải.*
 
@@ -637,7 +637,7 @@ Courses(CourseID, CourseName)
 Enrollments(StudentID, CourseID, Grade)
 ```
 
-![Full and partial dependency](images\image-5.png)
+![Full and partial dependency](images/image-5.png)
 
 *Hình 6. Full dependency và partial dependency trong relation có khóa ghép.*
 
@@ -690,7 +690,7 @@ Departments(DepartmentID, DepartmentName)
 
 giúp thay đổi tên department ở đúng một nơi.
 
-![Transitive dependency](images\image-6.png)
+![Transitive dependency](images/image-6.png)
 
 *Hình 7. Transitive dependency và tách relation để giảm redundancy.*
 
@@ -774,7 +774,7 @@ BikeColors(bike_model, color)
 BikeAccessories(bike_model, accessory)
 ```
 
-![Multivalued dependency](images\image-7.png)
+![Multivalued dependency](images/image-7.png)
 
 *Hình 8. Multivalued dependency tạo tổ hợp dư thừa giữa các tập giá trị độc lập.*
 
@@ -819,7 +819,7 @@ Khi phân tích một dependency, nên đi theo thứ tự:
 6. **Tìm tập giá trị độc lập:** có MVD và redundancy do tổ hợp không?
 7. **Đánh giá decomposition:** có giảm redundancy mà vẫn giữ semantics cần thiết không?
 
-![Dependency classification flow](images\image-8.png)
+![Dependency classification flow](images/image-8.png)
 
 *Hình 9. Quy trình nhận diện các loại dependency.*
 
@@ -874,7 +874,7 @@ Không tạo chi phí join bất hợp lý
 
 Trong thực tế, có những trường hợp denormalization có chủ đích cho đọc dữ liệu, reporting hoặc performance; nhưng cần dựa trên workload và cơ chế duy trì consistency rõ ràng.
 
-![Dependency and normalization](images\image-9.png)
+![Dependency and normalization](images/image-9.png)
 
 *Hình 10. Liên hệ giữa dependency và các dạng chuẩn.*
 
