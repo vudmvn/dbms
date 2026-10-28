@@ -1,32 +1,218 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SQL SELECT 7 — EXISTS, ALL &amp; ANY — Interactive Lab</title><meta name="description" content="Lab SQL tương tác tự chấm trên classicmodels"><style>
-:root{--bg:#f6f8fc;--white:#fff;--ink:#192537;--sub:#526179;--blue:#235bba;--green:#087859;--red:#ba272c;--border:#dae3f0;--soft:#eef4ff;--sh:0 4px 16px rgba(17,35,67,.055)}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.58 system-ui,-apple-system,'Segoe UI',sans-serif}button,input,textarea,select{font:inherit}a{color:var(--blue)}.wrap{max-width:1160px;margin:auto;padding:0 18px}.hero{background:linear-gradient(115deg,#102c59,#235cba);padding:28px 0;color:white}.hero small{font-weight:760;letter-spacing:.07em;text-transform:uppercase;opacity:.85}.hero h1{font-size:clamp(26px,4vw,41px);margin:5px 0 8px;line-height:1.16}.hero p{max-width:880px;opacity:.93;margin:0}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.chips span{border-radius:99px;background:#ffffff23;padding:3px 10px;font-size:12px}nav{position:sticky;top:0;z-index:10;background:#fffffff0;border-bottom:1px solid var(--border);backdrop-filter:blur(8px)}nav .wrap{display:flex;gap:10px;overflow-x:auto;padding-top:10px;padding-bottom:10px}nav a{padding:6px 11px;border-radius:99px;background:#f1f5fb;text-decoration:none;color:var(--ink);white-space:nowrap;font-size:13px;border:1px solid var(--border)}main.wrap{padding-top:20px;padding-bottom:26px}section{margin:0 0 28px}h2{font-size:23px;margin:0 0 11px}h3{font-size:17px;margin:0 0 9px}p{margin:7px 0}.muted{color:var(--sub)}.small{font-size:13px}.card{background:white;border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--sh);min-width:0}.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.lesson-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.lesson-grid .card{box-shadow:none}.lesson-grid .card p{font-size:13px}.code{padding:11px 13px;background:#fff;border:1px solid var(--border);color:#233147;border-radius:10px;white-space:pre;overflow:auto;font:13px/1.55 ui-monospace,Consolas,Menlo,monospace;tab-size:2}.kw{color:#125cb2;font-weight:720}.str{color:#077b4f}.num{color:#af5804}.cm{color:#66758e}.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:5px 0 10px}button{border-radius:9px;padding:9px 13px;border:1px solid var(--border);background:#f1f5fa;color:#162a4a;cursor:pointer;font-weight:680}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button.good{background:#e7f8f0;color:#096648;border-color:#a9dfc7}button:disabled{opacity:.53;cursor:not-allowed}button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #8cb0ff;outline-offset:2px}select,input[type=text]{padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#fff;max-width:100%}textarea{background:white;color:#1d2a3d;border:1px solid #cbd9eb;border-radius:11px;width:100%;min-height:187px;padding:13px;font:14px/1.55 ui-monospace,Consolas,Menlo,monospace;resize:vertical;tab-size:2}.status{min-height:22px;margin:9px 0 1px;color:var(--sub)}.status.ok{color:var(--green)}.status.bad{color:var(--red)}.results{max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:#fff;margin-top:8px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:8px 10px;border-bottom:1px solid #e7ecf4;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#edf2f9;color:#29425f}.results .empty{padding:11px;color:var(--sub)}.example{display:grid;grid-template-columns:minmax(150px,1fr) minmax(0,2.8fr) auto;gap:12px;align-items:center;background:white;border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin:10px 0}.example .code{margin:0}.box-note{border-left:4px solid #477bcc;padding:11px 14px;background:var(--soft);border-radius:9px;font-size:13px}.box-note.warn{border-color:#cb8b24;background:#fff8e9}.scoreline{display:flex;justify-content:space-between;gap:12px;align-items:center}.progress{background:#e4eaf3;height:10px;border-radius:99px;overflow:hidden}.progress div{width:0;height:100%;background:var(--green);transition:width .2s}.groups details{background:white;border:1px solid var(--border);border-radius:12px;margin:10px 0;overflow:hidden}.groups details>summary{padding:12px 15px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-weight:730}.groups details>summary:focus-visible{outline:3px solid #a3c2ff}.task{border-top:1px solid var(--border);padding:11px 14px}.task .tt{display:flex;justify-content:space-between;gap:10px}.task .tt span{font-size:12px;border:1px solid var(--border);padding:2px 7px;border-radius:99px;color:var(--sub);white-space:nowrap}.task .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.task details{border:0!important;margin:8px 0!important}.task details summary{cursor:pointer;font-size:13px}.task details .code{margin-top:8px}.quiz-options{display:grid;gap:9px;margin:12px 0}.quiz-option{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--border);border-radius:9px;padding:10px;cursor:pointer}.quiz-option:has(input:checked){background:#edf4ff;border-color:#477bcc}.quiz-option.correct{border-color:#28a06e;background:#ecfff4}.quiz-option.wrong{border-color:#e27676;background:#fff1f1}.quiz-option input{margin-top:5px}#prPrev,#prNext,#exPrev,#exNext{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:9px 10px;font-size:16px}.pill{font-size:12px;color:var(--sub);border-radius:6px;background:#f1f4f8;padding:3px 7px}.pill.ok{color:var(--green);font-weight:700;background:#e7f8f0}.mini-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.mini-flow>div{padding:9px;border:1px solid var(--border);background:white;border-radius:8px;font-size:12px}.mini-flow strong{display:block;color:var(--blue)}.demo-controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.value{font:700 20px ui-monospace,monospace;color:var(--blue)}.foot{padding:18px 0 36px;border-top:1px solid var(--border);color:var(--sub);font-size:12px}.wide{grid-column:1/-1}
-@media(max-width:800px){.grid,.lesson-grid{grid-template-columns:1fr}.example{grid-template-columns:1fr auto}.example .code{grid-column:1/-1;grid-row:2}.mini-flow{grid-template-columns:1fr 1fr}}@media(max-width:480px){.wrap{padding:0 11px}.card{padding:12px}.example{grid-template-columns:1fr}.example .code{grid-column:1;grid-row:auto}.example button{justify-self:start}.mini-flow{grid-template-columns:1fr}h2{font-size:21px}}
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQL SELECT 7 — EXISTS, ALL &amp; ANY Lab | DBMS</title>
+<meta name="description" content="Lab SQL tương tác tự chấm trên classicmodels — EXISTS, NOT EXISTS, ALL, ANY / SOME.">
+<style>
+:root{--bg:#f5f8fc;--panel:#fff;--line:#dce4f0;--ink:#17263c;--muted:#627289;--blue:#1c52b8;--blue-sub:#edf3fe;--green:#0f845a;--green-sub:#e9f7f1;--red:#c02b2b;--shadow:0 8px 24px rgba(18,38,63,.06);--pale:#f0f5fc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--bg);font:15px/1.56 system-ui,-apple-system,Segoe UI,Arial,sans-serif}button,input,select,textarea{font:inherit}a{color:var(--blue)}button{cursor:pointer;border:1px solid transparent;border-radius:9px;padding:9px 13px;font-weight:650;min-height:41px}button:disabled{opacity:.42;cursor:not-allowed}button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #9db5ed;outline-offset:2px}.primary{background:var(--blue);color:white}.secondary{background:white;border-color:#cdd6e5;color:var(--ink)}.soft{background:#eaf0fa;color:#28446e}.green{background:var(--green);color:white}.danger{background:#fff4f2;color:var(--red);border-color:#f0c9c2}button:hover:not(:disabled){filter:brightness(.96)}
+.wrap{max-width:1180px;margin:auto;padding:0 20px}.hero{background:linear-gradient(112deg,#112b53,#245ac5);color:#fff;padding:31px 0}.eyebrow{font-size:12px;letter-spacing:.1em;font-weight:750;opacity:.85;text-transform:uppercase}.hero h1{font-size:clamp(29px,4.5vw,47px);line-height:1.12;margin:7px 0 10px}.hero p{margin:0;max-width:820px;color:#e9f1ff}.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}.tags span{padding:4px 10px;border:1px solid #ffffff45;background:#ffffff12;border-radius:25px;font-size:12px}
+nav{background:#ffffffea;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);backdrop-filter:blur(9px)}nav .wrap{display:flex;gap:9px;overflow:auto;padding-top:9px;padding-bottom:9px}nav a{text-decoration:none;color:var(--ink);white-space:nowrap;font-size:13px;border:1px solid var(--line);padding:6px 11px;border-radius:25px}
+main{padding-top:21px!important;padding-bottom:30px!important}section{margin:0 0 28px}h2{font-size:22px;margin:0 0 11px;letter-spacing:-.02em}h3{font-size:17px;margin:0 0 10px}.muted{color:var(--muted)}.tiny{font-size:13px}.card{border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);border-radius:15px;padding:18px;min-width:0}.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(265px,1fr);gap:14px}.stack{display:grid;gap:13px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.toolbar select,select,input[type=text]{border:1px solid #c9d3e2;border-radius:9px;background:#fff;color:var(--ink);padding:9px 10px;min-height:40px;min-width:0;max-width:100%}.toolbar select{flex:1;min-width:180px}.codeedit{width:100%;min-height:191px;resize:vertical;display:block;background:#fff;color:#152841;border:1px solid #cbd6e5;border-radius:11px;padding:14px;font:14px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:4}.codeedit:focus{outline:2px solid #b3c9ee}.codebox{background:#fff;border:1px solid var(--line);padding:12px 13px;border-radius:10px;overflow:auto;margin:7px 0 0;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre}.codebox code{font:inherit}.sqlkw{color:#1757be;font-weight:750}.sqlfn{color:#703ab8;font-weight:700}.sqlstr{color:#20724c}.sqlnum{color:#a1510d}.sqlcomm{color:#8993a2}.sqlop{color:#bd4d27}.notice{background:var(--pale);border-left:3px solid var(--blue);border-radius:9px;padding:11px 13px;font-size:13px}.error{color:var(--red)}.ok{color:var(--green)}.status{font-size:13px;min-height:24px;margin-top:7px}.scrolltable{border:1px solid var(--line);border-radius:10px;overflow:auto;max-width:100%}.scrolltable table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}th,td{padding:8px 11px;border-bottom:1px solid #e9eef5;text-align:left}th{background:#f0f4fa;color:#30445e}tr:last-child td{border-bottom:0}.hint{background:#f2f6fd;border-radius:11px;padding:12px 13px;font-size:13px;color:#3d536e}.score{display:flex;align-items:center;flex-wrap:wrap;gap:10px;justify-content:space-between;margin-bottom:10px}.score strong{font-size:22px}.progress{height:10px;background:#e8edf5;border-radius:20px;overflow:hidden}.progress span{display:block;background:var(--green);height:100%;width:0;transition:width .25s}.pill{font-size:12px;background:#edf1f8;border-radius:15px;padding:3px 8px;white-space:nowrap}.pill.ok{color:var(--green);font-weight:700;background:#e9f6ef}.info-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.lesson-row{border:1px solid var(--line);background:#fff;border-radius:13px;padding:14px;display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center}.groups details{border:1px solid var(--line);border-radius:12px;background:#fff;margin:9px 0;overflow:hidden}.groups summary{font-weight:730;cursor:pointer;padding:12px 15px;display:flex;justify-content:space-between;gap:12px;align-items:center}.groups summary:hover{background:#f6f9ff}.groupbody{padding:2px 14px 12px}.question{border-top:1px solid #e6ebf3;padding:11px 0}.question p{margin:0 0 8px}.question-actions{display:flex;gap:7px;flex-wrap:wrap}.question details{background:#fafcff;border:none;margin:8px 0 0;padding:8px;border-radius:8px}.question details summary{padding:0;font-size:13px}.question .codebox{max-height:200px;margin-top:7px}.groupname{min-width:0}.groupname small{font-weight:500;color:var(--muted)}.current{min-height:78px}.metric{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fieldlabel{display:block;font-weight:700;margin:7px 0}.hidden{display:none!important}.foot{border-top:1px solid var(--line);padding:18px 0 28px;color:var(--muted);font-size:12px}.helpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.helpgrid>div{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px}.helpgrid b{display:block;color:#27456c}.notice.warn{border-left-color:#d08d27;background:#fff9ea}.codeedit[hidden]{display:none}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.lesson-row{grid-template-columns:1fr auto}.lesson-row .codebox{grid-column:1/-1;grid-row:2}.helpgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.wrap{padding:0 12px}.hero{padding:22px 0}.card{padding:13px}.lesson-row{grid-template-columns:1fr}.lesson-row .codebox{grid-column:1;grid-row:auto}.lesson-row button{width:100%}.helpgrid{grid-template-columns:1fr}nav a{font-size:12px}.codeedit{font-size:14px;min-height:160px}.groupbody{padding:2px 10px 10px}}
+.concept-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.concept-grid .card{box-shadow:none}.concept-grid h3{margin:0 0 5px}.concept-grid p{font-size:13px;margin:0 0 9px}.concept-grid code{font:12px/1.65 ui-monospace,Consolas,monospace;color:#204e9e;overflow-wrap:anywhere;background:#eef3ff;padding:5px 6px;border-radius:6px;display:block}@media(max-width:650px){.concept-grid{grid-template-columns:1fr}}
+.quizbox{border:1px solid var(--line);padding:12px;margin:9px 0 12px;border-radius:12px}.quizbox legend{padding:0 5px}.quizoption{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid #d4dce8;border-radius:10px;padding:11px 12px;margin:8px 0;cursor:pointer}.quizoption input{margin-top:4px;accent-color:#245ac5}.quizoption.right{background:#e8f9f0;border-color:#55b58f}.quizoption.wrong{background:#fff0ed;border-color:#e18b79}
+.question-ref{margin:9px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#f7f9fc;color:var(--ink,#182533);font-size:12.5px;line-height:1.5;min-width:0}
+.question-ref .ref-row{display:flex;flex-wrap:wrap;gap:5px 9px;align-items:baseline;margin:3px 0}
+.question-ref .ref-label{font-weight:700;color:#23446d;min-width:138px}
+.question-ref .ref-items{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.question-ref .ref-col{display:inline-flex;gap:4px;align-items:baseline;background:#fff;border:1px solid #d8e2ef;border-radius:6px;padding:2px 6px}
+.question-ref .ref-col code{font-weight:700;color:#184a8c}
+.question-ref .ref-origin{font-size:11px;color:#5c708a}
+.question-ref .ref-source{display:inline-block;background:#fff;border:1px solid #d8e2ef;border-radius:6px;padding:2px 7px}
+.question-ref .ref-source b{color:#1f3b61}
+.question-ref .ref-source code{color:#4b607c}
+.question-ref .ref-intro{color:#576c86;font-style:italic}
+.schema-help{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.demo-controls{display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+.demo-controls label{font-weight:600;font-size:13px}
+.demo-controls input[type=range]{accent-color:var(--blue);cursor:pointer;width:180px}
+.demo-controls .value{font-weight:700;color:var(--blue);background:var(--pale);padding:2px 8px;border-radius:6px}
+</style>
+</head>
+<body>
+<header class="hero">
+<div class="wrap">
+<div class="eyebrow">DBMS · CLASSICMODELS INTERACTIVE LAB · BÀI TẬP TỰ CHẤM</div>
+<h1>SQL SELECT 7 — EXISTS, ALL &amp; ANY</h1>
+<p>Thực hành truy vấn con tương quan (Correlated Subqueries), toán tử kiểm tra tồn tại EXISTS / NOT EXISTS và các toán tử định lượng ALL, ANY / SOME trên classicmodels.</p>
+<div class="tags">
+<span>MySQL 8.0+</span><span>SQLite WASM</span><span>EXISTS</span><span>NOT EXISTS</span><span>ALL</span><span>ANY / SOME</span><span>Tự chấm điểm</span><span>Lưu tiến độ</span>
+</div>
+</div>
+</header>
 
-/* Compact per-exercise schema hints */
-.question-ref{margin:9px 0 11px;padding:9px 11px;background:#f7f9fc;border:1px solid var(--border);border-radius:9px;font-size:12px;line-height:1.5}
-.question-ref .refrow{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0}.question-ref b{min-width:125px;color:#3a5678}.question-ref span{flex:1;overflow-wrap:anywhere}.question-ref code{font-size:12px;color:#164f9a}
-@media(max-width:560px){.question-ref b{min-width:100%}.question-ref span{flex-basis:100%}}
-</style></head><body>
-<header class="hero"><div class="wrap"><small>DBMS · MySQL · Interactive Lab</small><h1>SQL SELECT 7 — EXISTS, ALL &amp; ANY</h1><p>Subquery tương quan, EXISTS/NOT EXISTS, ALL, ANY/SOME, NULL. Học lý thuyết, chạy truy vấn thật và tự chấm bài trên cơ sở dữ liệu <b>classicmodels</b> thu gọn, không cần database server.</p><div class="chips"><span>EXISTS</span><span>NOT EXISTS</span><span>ALL</span><span>ANY / SOME</span><span>NULL</span></div></div></header>
-<nav><div class="wrap"><a href="#concept">Lý thuyết</a><a href="#schema">Cấu trúc bảng</a><a href="#examples">Ví dụ</a><a href="#demo">Mô phỏng</a><a href="#playground">Playground</a><a href="#practice">Thực hành</a><a href="#tasks">Danh sách bài</a></div></nav>
+<nav>
+<div class="wrap">
+<a href="#concepts">Lý thuyết</a>
+<a href="#schemas">Cấu trúc bảng</a>
+<a href="#samples">Ví dụ SQL</a>
+<a href="#demo">Mô phỏng định lượng</a>
+<a href="#explorer">Playground ví dụ</a>
+<a href="#practice">Thực hành &amp; chấm điểm</a>
+<a href="#questions">Toàn bộ bài tập</a>
+</div>
+</nav>
+
 <main class="wrap">
-<section><div class="mini-flow"><div><strong>1. Đọc lý thuyết</strong>Cú pháp, trường hợp sử dụng và lỗi thường gặp</div><div><strong>2. Run ví dụ</strong>Nút Run nạp và chạy trên Playground ví dụ</div><div><strong>3. Chọn bài</strong>Bài SQL có editor; lý thuyết dùng quiz</div><div><strong>4. Check &amp; xuất điểm</strong>So kết quả và xuất CSV cho giảng viên</div></div></section>
-<section id="concept"><h2>Kiến thức trọng tâm</h2><div class="lesson-grid" id="conceptList"></div></section>
-<section id="schema"><h2>Tra cứu cấu trúc bảng</h2><div class="card"><div class="toolbar"><label for="schemaChoice"><b>Bảng:</b></label><select id="schemaChoice"></select><span class="muted small">Chỉ schema, không tải toàn bộ dữ liệu mẫu</span></div><div class="results" id="schemaOutput"><div class="empty">Đang tải SQL engine…</div></div></div></section>
-<section id="examples"><h2>Ví dụ SQL</h2><div id="exampleList"></div></section>
-<section id="demo"><h2>Mô phỏng trực quan</h2><div class="card"><p>Giả sử truy vấn con trả về <code>S = {10,20,30}</code>. Thay đổi <b>x</b> và quan sát sự khác nhau giữa ALL và ANY.</p><div class="demo-controls"><label for="xSlider">x:</label><input id="xSlider" type="range" min="0" max="45" value="25" step="1"><span id="xValue" class="value">25</span></div><div class="mini-flow" id="quantOutput" style="margin-top:12px"></div><div class="box-note" style="margin-top:12px">Với tập rỗng, <code>ALL</code> đúng nhưng <code>ANY</code> sai. Với <code>NULL</code>, cần phân biệt TRUE/FALSE/UNKNOWN.</div></div></section>
-<section id="playground"><h2>SQL Playground — Ví dụ</h2><div class="grid"><div class="card"><div class="toolbar"><button id="exRun" class="primary" disabled>▶ Run</button><button id="exClear">Xóa</button><button class="secondary" id="exPrev" type="button" title="Ví dụ trước" aria-label="Ví dụ trước" disabled>←</button><select id="exPreset" aria-label="Chọn ví dụ"><option value="">— Chọn ví dụ —</option></select><button class="secondary" id="exNext" type="button" title="Ví dụ tiếp theo" aria-label="Ví dụ tiếp theo">→</button><button id="reset">Reset DB</button></div><label for="exEditor"><b>Viết SQL / xem ví dụ:</b></label><textarea id="exEditor" spellcheck="false">SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber);</textarea><div class="status" id="exStatus">Đang khởi tạo SQLite WebAssembly…</div></div><div class="card"><h3>Kết quả ví dụ</h3><div class="small muted" id="exMeta">Chưa có kết quả</div><div class="results" id="exResult"><div class="empty">Nhấn Run để hiển thị.</div></div></div></div></section>
-<section id="practice"><h2>SQL Practice — Bài tập tự chấm</h2><div class="card"><div class="scoreline"><div><b>Tiến độ</b> <span class="muted small" id="progressText">0 / 59 bài đúng</span></div><div class="toolbar"><input id="studentId" type="text" placeholder="MSSV (tùy chọn)" maxlength="30" style="max-width:140px" aria-label="Mã số sinh viên"><input id="studentName" type="text" placeholder="Tên sinh viên" aria-label="Tên sinh viên"><button id="exportCsv">Xuất CSV</button><button id="exportPng">Xuất kết quả PNG</button></div></div><div class="progress"><div id="progressBar"></div></div></div>
-<div class="grid" style="margin-top:12px"><div class="card"><div class="toolbar"><button class="secondary" id="prPrev" type="button" title="Bài trước" aria-label="Bài trước" disabled>←</button><select id="taskChoice" aria-label="Chọn bài tập"><option value="">— Chọn bài tập —</option></select><button class="secondary" id="prNext" type="button" title="Bài tiếp theo" aria-label="Bài tiếp theo">→</button><button id="practiceRun" class="primary" disabled>▶ Run</button><button id="practiceCheck" class="good" disabled>✓ Check</button><button id="practiceClear">Xóa</button></div><div class="box-note" id="taskInfo">Chọn một bài tập từ menu hoặc các nhóm phía dưới.</div><div id="quizBox" hidden><div class="quiz-options" id="quizOptions" role="radiogroup" aria-label="Các phương án trả lời"></div></div><textarea id="practiceEditor" spellcheck="false" placeholder="-- Chọn bài tập và viết SQL ở đây"></textarea><div class="status" id="practiceStatus" aria-live="polite">Bài SQL dùng Run/Check; bài lý thuyết dùng quiz chọn đáp án.</div></div>
-<div class="card"><h3>Kết quả thực hành</h3><div class="small muted" id="practiceMeta">Chưa chạy.</div><div class="results" id="practiceResult"><div class="empty">Kết quả sẽ xuất hiện ở đây.</div></div><div class="box-note warn" style="margin-top:13px"><b>Cách chấm:</b> so sánh dữ liệu trả về với lời giải tham chiếu (không so nguyên văn SQL); các bài yêu cầu CTE, EXISTS, ALL/ANY sẽ kiểm tra thêm kỹ thuật. Dữ liệu là bộ thực hành thu gọn, không phải toàn bộ classicmodels gốc.</div></div></div></section>
-<section id="tasks"><h2>Danh sách bài tập (<span id="taskCount">59</span> bài)</h2><p class="small muted">Các phần có thể đóng/mở để tránh trang quá dài. Có đáp án tham khảo sau mỗi bài.</p><div class="groups" id="groups"></div></section>
-</main><footer class="foot"><div class="wrap">SQL SELECT 7 — EXISTS, ALL &amp; ANY · Lab SQL tự chấm · SQLite WASM trong trình duyệt. Cần Internet để tải sql.js lần đầu; tiến độ lưu cục bộ trên thiết bị.</div></footer>
+<section id="concepts">
+<h2>Kiến thức trọng tâm về EXISTS, ALL &amp; ANY</h2>
+<div class="concept-grid" id="conceptList"></div>
+</section>
+
+<section id="schemas">
+<h2>Cấu trúc bảng (Schema classicmodels)</h2>
+<div class="card">
+<div class="toolbar">
+<label for="schemaSelect"><b>Chọn bảng:</b></label>
+<select id="schemaSelect" aria-label="Xem cấu trúc bảng">
+<option value="employees" selected>employees</option>
+<option value="offices">offices</option>
+<option value="customers">customers</option>
+<option value="orders">orders</option>
+<option value="orderdetails">orderdetails</option>
+<option value="payments">payments</option>
+<option value="products">products</option>
+<option value="productlines">productlines</option>
+</select>
+</div>
+<div id="schemaTable" class="scrolltable"><div class="muted" style="padding:12px">Đang khởi tạo SQLite...</div></div>
+<p class="schema-help">Chỉ hiển thị tên cột, kiểu dữ liệu, khóa và NULL — không hiển thị toàn bộ dữ liệu mẫu.</p>
+</div>
+</section>
+
+<section id="samples">
+<h2>Ví dụ EXISTS, ALL &amp; ANY</h2>
+<div class="stack" id="examples"></div>
+</section>
+
+<section id="demo">
+<h2>Mô phỏng trực quan — Toán tử ALL &amp; ANY</h2>
+<div class="card">
+<p>Giả sử truy vấn con trả về tập giá trị <code>S = {10, 20, 30}</code>. Kéo thanh trượt để thay đổi giá trị <b>x</b> và quan sát kết quả logic của <code>ALL</code> và <code>ANY</code>.</p>
+<div class="demo-controls">
+<label for="xSlider">Giá trị x:</label>
+<input id="xSlider" type="range" min="0" max="45" value="25" step="1">
+<span id="xValue" class="value">25</span>
+</div>
+<div class="mini-flow" id="quantOutput" style="margin-top:12px"></div>
+<div class="notice" style="margin-top:12px"><b>Lưu ý:</b> Với tập rỗng, điều kiện <code>&gt; ALL(∅)</code> trả về <b>TRUE</b> (vacuous truth), trong khi <code>&gt; ANY(∅)</code> trả về <b>FALSE</b>.</div>
+</div>
+</section>
+
+<section id="explorer">
+<h2>SQL Playground — Ví dụ</h2>
+<div class="grid">
+<div class="card">
+<div class="toolbar">
+<button class="primary" id="exRun" disabled>▶ Run</button>
+<button class="secondary" id="exClear">Xóa</button>
+<button class="secondary" id="exPrev" type="button" title="Ví dụ trước" aria-label="Ví dụ trước" disabled>←</button>
+<select id="exPreset" aria-label="Chọn ví dụ"><option value="">— Chọn ví dụ —</option></select>
+<button class="secondary" id="exNext" type="button" title="Ví dụ tiếp theo" aria-label="Ví dụ tiếp theo">→</button>
+<button class="secondary" id="resetDB">Reset DB</button>
+</div>
+<label class="fieldlabel" for="exSQL">Câu SQL</label>
+<textarea class="codeedit" id="exSQL" spellcheck="false">SELECT c.customerNumber, c.customerName
+FROM customers c
+WHERE EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.customerNumber = c.customerNumber
+)
+LIMIT 8;</textarea>
+<div id="exStatus" class="status" role="status">Đang khởi tạo SQLite WebAssembly…</div>
+</div>
+<div class="card">
+<h3>Ghi nhớ cú pháp</h3>
+<pre class="codebox"><code>-- Kiểm tra tồn tại
+WHERE EXISTS (
+  SELECT 1 FROM tbl2 WHERE tbl2.id = tbl1.id
+)
+
+-- So sánh tập hợp
+WHERE col &gt; ALL (SELECT val FROM ...)
+WHERE col = ANY (SELECT val FROM ...)</code></pre>
+<div class="hint" style="margin-top:12px"><b>Phím tắt:</b> Ctrl+Enter (Windows) hoặc ⌘+Enter (macOS) trong editor để chạy SQL.</div>
+</div>
+<div class="card" style="grid-column:1/-1">
+<h3>Kết quả ví dụ</h3>
+<div id="exMeta" class="tiny muted">Chưa chạy truy vấn.</div>
+<div id="exResult" class="scrolltable"><div class="muted" style="padding:12px">Kết quả sẽ xuất hiện ở đây.</div></div>
+</div>
+</div>
+</section>
+
+<section id="practice">
+<h2>SQL Practice — Bài tập tự chấm</h2>
+<div class="card" style="margin-bottom:12px">
+<div class="score">
+<div>
+<div class="tiny muted">Điểm bài thực hành</div>
+<strong id="score">0 / 59</strong> <span class="pill" id="percent">0%</span>
+</div>
+<div class="toolbar" style="margin:0">
+<label for="studentId" class="tiny">Sinh viên:</label>
+<input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="max-width:140px" aria-label="Mã số sinh viên">
+<input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="100" aria-label="Họ và tên">
+<button class="secondary" id="exportScore">Xuất kết quả CSV</button>
+<button class="secondary" id="exportPng">Xuất kết quả PNG</button>
+<button class="danger" id="resetProgress">Xóa điểm</button>
+</div>
+</div>
+<div class="progress"><span id="bar"></span></div>
+<div class="tiny muted" style="margin-top:7px">Kết quả được lưu cục bộ ở trình duyệt này (nếu cho phép lưu trữ). Không đồng bộ giữa các thiết bị.</div>
+</div>
+
+<div class="grid">
+<div class="card">
+<div class="toolbar">
+<button class="secondary" id="prPrev" type="button" title="Bài trước" aria-label="Bài trước" disabled>←</button>
+<select id="taskSelect" aria-label="Chọn bài tập"><option value="">— Chọn bài tập —</option></select>
+<button class="secondary" id="prNext" type="button" title="Bài tiếp theo" aria-label="Bài tiếp theo">→</button>
+<button class="primary" id="prRun">▶ Run</button>
+<button class="green" id="prCheck">✓ Check</button>
+<button class="secondary" id="prClear">Xóa</button>
+</div>
+<div id="current" class="notice">Chưa chọn bài. Chọn một bài từ dropdown hoặc danh sách phía dưới.</div>
+<div id="quizBox" class="quizbox hidden"><fieldset><legend><b>Chọn đáp án trắc nghiệm:</b></legend><div id="quizChoices"></div></fieldset></div>
+<label class="fieldlabel" for="prSQL">Editor thực hành</label>
+<textarea class="codeedit" id="prSQL" spellcheck="false">-- Chọn một bài tập</textarea>
+<div id="prStatus" class="status">Chưa tải được SQL engine.</div>
+</div>
+
+<div class="stack">
+<div class="card">
+<h3>Kết quả thực hành</h3>
+<div id="prMeta" class="tiny muted">Chưa chạy truy vấn.</div>
+<div id="prResult" class="scrolltable"><div class="muted" style="padding:12px">Kết quả sẽ xuất hiện ở đây.</div></div>
+</div>
+<div class="card hint" id="hint">
+<h3>Gợi ý làm bài</h3>
+<p>Với <code>EXISTS</code>, truy vấn con luôn là subquery tương quan có liên kết khóa với bảng ngoài.</p>
+<p>Toán tử <code>= ANY</code> tương đương với <code>IN</code>. Toán tử <code>&lt;&gt; ALL</code> tương đương với <code>NOT IN</code> (lưu ý trường hợp NULL).</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="questions">
+<h2>Danh sách bài tập (59 bài)</h2>
+<p class="muted tiny">Các phần có thể đóng/mở. Nhấn Làm bài để nạp lên khung thực hành. Có đáp án tham khảo sau mỗi bài.</p>
+<div class="groups" id="groups"></div>
+</section>
+</main>
+
+<footer class="foot">
+<div class="wrap">SQL SELECT 7 — EXISTS, ALL &amp; ANY · Lab SQL tự chấm · SQLite WebAssembly (classicmodels database). Tiến độ và bài làm được lưu cục bộ trên trình duyệt.</div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
-<script>(()=>{'use strict';
+<script>
 const EXERCISES=[{"id":"2.1","q":"Viết các lệnh xem cấu trúc 5 bảng customers, orders, orderdetails, products, payments.","a":"DESC customers; DESC orders; DESC orderdetails; DESC products; DESC payments;","kind":"commands","multi":true},{"id":"2.2","q":"customers và orders liên kết với nhau bằng cặp cột nào?","a":"customers.customerNumber = orders.customerNumber","kind":"quiz","options":["customers.customerNumber = orders.customerNumber","customers.customerName = orders.orderNumber","customers.salesRepEmployeeNumber = orders.orderNumber","customers.customerNumber = orders.orderNumber"],"correct":0},{"id":"2.3","q":"Quan hệ đúng giữa orders, orderdetails và products?","a":"orders.orderNumber = orderdetails.orderNumber và orderdetails.productCode = products.productCode","kind":"quiz","options":["orders.customerNumber = orderdetails.orderNumber và products.MSRP = orderdetails.priceEach","orders.orderNumber = orderdetails.orderNumber và orderdetails.productCode = products.productCode","orders.orderNumber = products.productCode và products.productCode = orderdetails.orderNumber","orders.customerNumber = products.productCode và products.productLine = orderdetails.productCode"],"correct":1},{"id":"2.4","q":"Trong customers, cột nào chỉ nhân viên phụ trách?","a":"salesRepEmployeeNumber","kind":"quiz","options":["contactFirstName","customerNumber","salesRepEmployeeNumber","creditLimit"],"correct":2},{"id":"2.5","q":"Sơ đồ quan hệ nào đúng?","a":"customers→orders→orderdetails←products, đồng thời customers→payments","kind":"quiz","options":["customers→orders→orderdetails←products, đồng thời customers→payments","customers→products→orders→payments←employees","payments→products→offices→orders←customers","orders→customers→orderdetails→employees←products"],"correct":0},{"id":"3.1","q":"Chọn cơ sở dữ liệu classicmodels.","a":"USE classicmodels;","kind":"command"},{"id":"3.2","q":"Xem danh sách các bảng.","a":"SHOW TABLES;","kind":"command"},{"id":"3.3","q":"orders liên kết với customers bằng cột nào? (Có thể chạy DESC orders trong Playground)","a":"customerNumber","kind":"quiz","options":["orderNumber","orderDate","customerNumber","status"],"correct":2},{"id":"3.4","q":"Khóa chính ghép của orderdetails gồm những cột nào?","a":"orderNumber và productCode","kind":"quiz","options":["orderNumber và productCode","orderNumber và customerNumber","productCode và quantityOrdered","orderLineNumber và productCode"],"correct":0},{"id":"3.5","q":"Khóa ghép dùng để nhận diện mỗi payment?","a":"customerNumber và checkNumber","kind":"quiz","options":["customerNumber và paymentDate","customerNumber và checkNumber","checkNumber và amount","paymentDate và amount"],"correct":1},{"id":"4.1","q":"Trong ví dụ khách hàng có đơn hàng: bảng ngoài và bảng trong là?","a":"Ngoài: customers; trong: orders","kind":"quiz","options":["Ngoài: orders; trong: customers","Ngoài: customers; trong: orders","Ngoài: customers; trong: payments","Ngoài: products; trong: orders"],"correct":1},{"id":"4.2","q":"Tại sao EXISTS trong ví dụ khách hàng có đơn hàng là truy vấn tương quan?","a":"Subquery tham chiếu c.customerNumber của truy vấn ngoài","kind":"quiz","options":["Subquery không có WHERE","Subquery tham chiếu c.customerNumber của truy vấn ngoài","Subquery dùng SELECT 1 nên tự động là tương quan","Subquery có phép tính AVG"],"correct":1},{"id":"4.3","q":"SELECT ... WHERE MSRP < (SELECT AVG(MSRP) FROM products) là truy vấn con loại nào?","a":"Không tương quan","kind":"quiz","options":["Tương quan","Đệ quy","Không tương quan","Lateral derived table"],"correct":2},{"id":"4.4","q":"Dùng subquery tìm khách hàng có creditLimit > trung bình (bỏ NULL).","a":"SELECT c.customerNumber,c.customerName,c.creditLimit FROM customers c WHERE c.creditLimit>(SELECT AVG(c2.creditLimit) FROM customers c2 WHERE c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\(\\s*SELECT\\b"]},{"id":"4.5","q":"Dùng subquery tìm các payments có amount > trung bình.","a":"SELECT p.customerNumber,p.checkNumber,p.paymentDate,p.amount FROM payments p WHERE p.amount>(SELECT AVG(p2.amount) FROM payments p2);","kind":"sql","required":["\\(\\s*SELECT\\b"]},{"id":"5.1","q":"Khách hàng có ít nhất một đơn hàng bằng EXISTS.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.2","q":"Khách hàng có ít nhất một khoản thanh toán bằng EXISTS.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS (SELECT 1 FROM payments p WHERE p.customerNumber=c.customerNumber);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.3","q":"Các văn phòng có ít nhất một nhân viên.","a":"SELECT o.officeCode,o.city,o.country FROM offices o WHERE EXISTS (SELECT 1 FROM employees e WHERE e.officeCode=o.officeCode);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.4","q":"Sản phẩm đã từng được đặt trong orderdetails.","a":"SELECT p.productCode,p.productName,p.productLine FROM products p WHERE EXISTS (SELECT 1 FROM orderdetails od WHERE od.productCode=p.productCode);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.5","q":"Đơn hàng có ít nhất một dòng quantityOrdered > 80.","a":"SELECT o.orderNumber,o.orderDate,o.status FROM orders o WHERE EXISTS (SELECT 1 FROM orderdetails od WHERE od.orderNumber=o.orderNumber AND od.quantityOrdered>80);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.6","q":"Khách hàng có ít nhất một đơn hàng Shipped.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber AND o.status='Shipped');","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"5.7","q":"Sản phẩm đã xuất hiện trong ít nhất một đơn On Hold.","a":"SELECT p.productCode,p.productName,p.productLine FROM products p WHERE EXISTS (SELECT 1 FROM orderdetails od JOIN orders o ON o.orderNumber=od.orderNumber WHERE od.productCode=p.productCode AND o.status='On Hold');","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.1","q":"Khách hàng chưa từng đặt hàng.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.2","q":"Khách hàng chưa từng thanh toán.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE NOT EXISTS (SELECT 1 FROM payments p WHERE p.customerNumber=c.customerNumber);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.3","q":"Sản phẩm chưa từng xuất hiện trong orderdetails.","a":"SELECT p.productCode,p.productName,p.productLine FROM products p WHERE NOT EXISTS (SELECT 1 FROM orderdetails od WHERE od.productCode=p.productCode);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.4","q":"Nhân viên chưa phụ trách khách hàng nào.","a":"SELECT e.employeeNumber,e.lastName,e.firstName,e.jobTitle FROM employees e WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.salesRepEmployeeNumber=e.employeeNumber);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.5","q":"Văn phòng chưa có nhân viên.","a":"SELECT o.officeCode,o.city,o.country FROM offices o WHERE NOT EXISTS (SELECT 1 FROM employees e WHERE e.officeCode=o.officeCode);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.6","q":"Khách hàng chưa có đơn hàng Shipped.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber AND o.status='Shipped');","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"6.7","q":"Sản phẩm chưa từng xuất hiện trong đơn Shipped.","a":"SELECT p.productCode,p.productName,p.productLine FROM products p WHERE NOT EXISTS (SELECT 1 FROM orderdetails od JOIN orders o ON o.orderNumber=od.orderNumber WHERE od.productCode=p.productCode AND o.status='Shipped');","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"7.1","q":"Sản phẩm MSRP lớn hơn mọi sản phẩm thuộc dòng Motorcycles.","a":"SELECT p.productCode,p.productName,p.productLine,p.MSRP FROM products p WHERE p.MSRP>ALL(SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Motorcycles');","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"7.2","q":"Sản phẩm có buyPrice thấp nhất trong mỗi productLine (giữ đồng hạng).","a":"SELECT p.productCode,p.productName,p.productLine,p.buyPrice FROM products p WHERE p.buyPrice<=ALL(SELECT p2.buyPrice FROM products p2 WHERE p2.productLine=p.productLine);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"7.3","q":"Sản phẩm có MSRP cao nhất trong mỗi productLine (giữ đồng hạng).","a":"SELECT p.productCode,p.productName,p.productLine,p.MSRP FROM products p WHERE p.MSRP>=ALL(SELECT p2.MSRP FROM products p2 WHERE p2.productLine=p.productLine);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"7.4","q":"Khoản payment lớn nhất mỗi khách hàng (giữ đồng hạng).","a":"SELECT p.customerNumber,p.checkNumber,p.paymentDate,p.amount FROM payments p WHERE p.amount>=ALL(SELECT p2.amount FROM payments p2 WHERE p2.customerNumber=p.customerNumber);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"7.5","q":"Khách hàng có creditLimit thấp nhất mỗi quốc gia, bỏ NULL.","a":"SELECT c.customerNumber,c.customerName,c.country,c.creditLimit FROM customers c WHERE c.creditLimit IS NOT NULL AND c.creditLimit<=ALL(SELECT c2.creditLimit FROM customers c2 WHERE c2.country=c.country AND c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"7.6","q":"Nhân viên có employeeNumber nhỏ hơn mọi Sales Rep.","a":"SELECT e.employeeNumber,e.firstName,e.lastName,e.jobTitle FROM employees e WHERE e.employeeNumber<ALL(SELECT s.employeeNumber FROM employees s WHERE s.jobTitle='Sales Rep');","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"8.1","q":"Sản phẩm MSRP cao hơn ít nhất một sản phẩm Motorcycles.","a":"SELECT p.productCode,p.productName,p.productLine,p.MSRP FROM products p WHERE p.MSRP>ANY(SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Motorcycles');","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"]},{"id":"8.2","q":"Sản phẩm buyPrice lớn hơn ít nhất một sản phẩm cùng dòng.","a":"SELECT p.productCode,p.productName,p.productLine,p.buyPrice FROM products p WHERE p.buyPrice>ANY(SELECT p2.buyPrice FROM products p2 WHERE p2.productLine=p.productLine);","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"]},{"id":"8.3","q":"Sản phẩm tồn kho thấp hơn ít nhất một sản phẩm cùng dòng.","a":"SELECT p.productCode,p.productName,p.productLine,p.quantityInStock FROM products p WHERE p.quantityInStock<ANY(SELECT p2.quantityInStock FROM products p2 WHERE p2.productLine=p.productLine);","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"]},{"id":"8.4","q":"Khoản thanh toán lớn hơn ít nhất một khoản khác của cùng khách hàng.","a":"SELECT p.customerNumber,p.checkNumber,p.paymentDate,p.amount FROM payments p WHERE p.amount>ANY(SELECT p2.amount FROM payments p2 WHERE p2.customerNumber=p.customerNumber);","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"]},{"id":"8.5","q":"Dùng = ANY lấy khách hàng có đơn Disputed.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE c.customerNumber=ANY(SELECT o.customerNumber FROM orders o WHERE o.status='Disputed');","kind":"sql","required":["=\\s*ANY\\s*\\(\\s*SELECT\\b"]},{"id":"8.6","q":"Dùng SOME lấy khách hàng creditLimit cao hơn ít nhất một khách France, bỏ NULL.","a":"SELECT c.customerNumber,c.customerName,c.creditLimit FROM customers c WHERE c.creditLimit IS NOT NULL AND c.creditLimit>SOME(SELECT c2.creditLimit FROM customers c2 WHERE c2.country='France' AND c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\bSOME\\s*\\(\\s*SELECT\\b"]},{"id":"10.1","q":"Với tập con rỗng, tại sao x > ALL đúng còn x > ANY sai?","a":"ALL đúng vì không có phản ví dụ; ANY sai vì không tồn tại phần tử thỏa","kind":"quiz","options":["Cả hai đều đúng do tập rỗng","ALL đúng vì không có phản ví dụ; ANY sai vì không tồn tại phần tử thỏa","ALL sai còn ANY đúng vì tập rỗng","Hai biểu thức trả về NULL"],"correct":1},{"id":"10.2","q":"Sửa truy vấn creditLimit > ALL(creditLimit của USA) để bỏ NULL ở cả hai phía.","a":"SELECT c.customerNumber,c.customerName,c.creditLimit FROM customers c WHERE c.creditLimit IS NOT NULL AND c.creditLimit>ALL(SELECT c2.creditLimit FROM customers c2 WHERE c2.country='USA' AND c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b","\\bIS\\s+NOT\\s+NULL\\b"]},{"id":"10.3","q":"Dùng NOT EXISTS thay NOT IN để tìm khách hàng chưa có đơn hàng.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"10.4","q":"So sánh mục đích của EXISTS và IN?","a":"EXISTS kiểm tra có dòng thỏa điều kiện; IN kiểm tra giá trị có thuộc tập kết quả","kind":"quiz","options":["EXISTS để sắp xếp; IN để nhóm dữ liệu","EXISTS kiểm tra có dòng thỏa điều kiện; IN kiểm tra giá trị có thuộc tập kết quả","Hai mệnh đề chỉ hoạt động trong SELECT","IN chỉ dùng với số, EXISTS chỉ dùng với chuỗi"],"correct":1},{"id":"11.1","q":"Viết HAI câu SQL, cách nhau bằng dấu ;: (1) EXISTS và (2) JOIN + DISTINCT, cùng lấy sản phẩm đã được đặt.","a":"SELECT p.productCode,p.productName FROM products p WHERE EXISTS (SELECT 1 FROM orderdetails od WHERE od.productCode=p.productCode);\nSELECT DISTINCT p.productCode,p.productName FROM products p JOIN orderdetails od ON od.productCode=p.productCode;","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b","\\bJOIN\\b","\\bDISTINCT\\b"],"multi":true},{"id":"11.2","q":"Vì sao JOIN có thể trả về nhiều dòng cho cùng sản phẩm nếu bỏ DISTINCT?","a":"Vì một sản phẩm có thể xuất hiện trong nhiều dòng orderdetails","kind":"quiz","options":["Vì JOIN luôn loại các giá trị NULL","Vì một sản phẩm có thể xuất hiện trong nhiều dòng orderdetails","Vì EXISTS tự tạo các dòng lặp","Vì khóa chính của products không duy nhất"],"correct":1},{"id":"11.3","q":"Viết NOT EXISTS tìm nhân viên chưa phụ trách khách hàng; INNER JOIN thường chỉ giữ dòng có khớp.","a":"SELECT e.employeeNumber,e.lastName,e.firstName,e.jobTitle FROM employees e WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.salesRepEmployeeNumber=e.employeeNumber);","kind":"sql","required":["\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"12.1","q":"Sửa EXISTS thiếu điều kiện tương quan để chỉ lấy khách có đơn hàng.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"12.2","q":"Sửa > ANY thành > ALL để tìm sản phẩm MSRP lớn hơn mọi sản phẩm Planes.","a":"SELECT p.productCode,p.productName,p.MSRP FROM products p WHERE p.MSRP>ALL(SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Planes');","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"12.3","q":"Sửa < ANY với creditLimit của USA bằng cách lọc NULL ở cả hai phía.","a":"SELECT c.customerNumber,c.customerName,c.creditLimit FROM customers c WHERE c.creditLimit IS NOT NULL AND c.creditLimit<ANY(SELECT c2.creditLimit FROM customers c2 WHERE c2.country='USA' AND c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b","\\bIS\\s+NOT\\s+NULL\\b"]},{"id":"13.1","q":"Khách có đơn hàng nhưng chưa có khoản thanh toán (cả EXISTS và NOT EXISTS).","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS(SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber) AND NOT EXISTS(SELECT 1 FROM payments p WHERE p.customerNumber=c.customerNumber);","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b","\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"13.2","q":"Sản phẩm đã xuất hiện trong ít nhất một đơn Shipped.","a":"SELECT p.productCode,p.productName,p.productLine FROM products p WHERE EXISTS(SELECT 1 FROM orderdetails od JOIN orders o ON o.orderNumber=od.orderNumber WHERE od.productCode=p.productCode AND o.status='Shipped');","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"13.3","q":"Khách có đơn và TẤT CẢ đơn đều Shipped (EXISTS + NOT EXISTS).","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS(SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber) AND NOT EXISTS(SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber AND o.status<>'Shipped');","kind":"sql","required":["\\bEXISTS\\s*\\(\\s*SELECT\\b","\\bNOT\\s+EXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"13.4","q":"Payment lớn nhất theo từng khách hàng bằng ALL, giữ đồng hạng.","a":"SELECT p.customerNumber,p.checkNumber,p.paymentDate,p.amount FROM payments p WHERE p.amount>=ALL(SELECT p2.amount FROM payments p2 WHERE p2.customerNumber=p.customerNumber);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"13.5","q":"Sản phẩm không có tồn kho cao nhất cùng dòng, dùng ANY hoặc SOME.","a":"SELECT p.productCode,p.productName,p.productLine,p.quantityInStock FROM products p WHERE p.quantityInStock<ANY(SELECT p2.quantityInStock FROM products p2 WHERE p2.productLine=p.productLine);","kind":"sql","required":["\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"]},{"id":"13.6","q":"Khách có creditLimit cao nhất từng quốc gia (bỏ NULL), dùng ALL.","a":"SELECT c.customerNumber,c.customerName,c.country,c.creditLimit FROM customers c WHERE c.creditLimit IS NOT NULL AND c.creditLimit>=ALL(SELECT c2.creditLimit FROM customers c2 WHERE c2.country=c.country AND c2.creditLimit IS NOT NULL);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b"]},{"id":"13.7","q":"Dùng = ALL tìm khách có ít nhất một đơn và mọi đơn đều Shipped.","a":"SELECT c.customerNumber,c.customerName FROM customers c WHERE EXISTS(SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber) AND 'Shipped'=ALL(SELECT o.status FROM orders o WHERE o.customerNumber=c.customerNumber);","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b","\\bEXISTS\\s*\\(\\s*SELECT\\b"]},{"id":"13.8","q":"Viết HAI truy vấn, cách nhau ;: (1) MSRP > ALL giá Ships; (2) MSRP > ANY giá Ships.","a":"SELECT p.productCode,p.productName,p.MSRP FROM products p WHERE p.MSRP>ALL(SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Ships');\nSELECT p.productCode,p.productName,p.MSRP FROM products p WHERE p.MSRP>ANY(SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Ships');","kind":"sql","required":["\\bALL\\s*\\(\\s*SELECT\\b","\\b(?:ANY|SOME)\\s*\\(\\s*SELECT\\b"],"multi":true}];
 const EXERCISE_REFS={"2.1":{"outputs":[],"tables":{"customers":["customerNumber","customerName","contactLastName","contactFirstName","phone","addressLine1","addressLine2","city","state","postalCode","country","salesRepEmployeeNumber","creditLimit"],"orders":["orderNumber","orderDate","requiredDate","shippedDate","status","comments","customerNumber"],"orderdetails":["orderNumber","productCode","quantityOrdered","priceEach","orderLineNumber"],"products":["productCode","productName","productLine","productScale","productVendor","productDescription","quantityInStock","buyPrice","MSRP"],"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"2.2":{"outputs":[],"tables":{"customers":["customerNumber"],"orders":["customerNumber"]}},"2.3":{"outputs":[],"tables":{"products":["productCode"],"orders":["orderNumber"],"orderdetails":["orderNumber","productCode"]}},"2.4":{"outputs":[],"tables":{"customers":["salesRepEmployeeNumber"]}},"2.5":{"outputs":[],"tables":{"products":["productCode","productName","productLine","productScale"],"customers":["customerNumber","customerName","contactLastName","contactFirstName"],"orders":["orderNumber","orderDate","requiredDate","shippedDate"],"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"3.1":{"outputs":[],"tables":{}},"3.2":{"outputs":[],"tables":{}},"3.3":{"outputs":[],"tables":{"customers":["customerNumber"],"orders":["customerNumber"]}},"3.4":{"outputs":[],"tables":{"orderdetails":["orderNumber","productCode"]}},"3.5":{"outputs":[],"tables":{}},"4.1":{"outputs":[],"tables":{"customers":["customerNumber","customerName","contactLastName","contactFirstName"],"orders":["orderNumber","orderDate","requiredDate","shippedDate"]}},"4.2":{"outputs":[],"tables":{}},"4.3":{"outputs":[],"tables":{"products":["MSRP"]}},"4.4":{"outputs":[["customerNumber","customerName","creditLimit"]],"tables":{"customers":["customerNumber","customerName","creditLimit"]}},"4.5":{"outputs":[["customerNumber","checkNumber","paymentDate","amount"]],"tables":{"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"5.1":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["customerNumber"]}},"5.2":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"payments":["customerNumber"]}},"5.3":{"outputs":[["officeCode","city","country"]],"tables":{"offices":["officeCode","city","country"],"employees":["officeCode"]}},"5.4":{"outputs":[["productCode","productName","productLine"]],"tables":{"products":["productCode","productName","productLine"],"orderdetails":["productCode"]}},"5.5":{"outputs":[["orderNumber","orderDate","status"]],"tables":{"orders":["orderNumber","orderDate","status"],"orderdetails":["orderNumber","quantityOrdered"]}},"5.6":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["status","customerNumber"]}},"5.7":{"outputs":[["productCode","productName","productLine"]],"tables":{"products":["productCode","productName","productLine"],"orders":["orderNumber","status"],"orderdetails":["orderNumber","productCode"]}},"6.1":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["customerNumber"]}},"6.2":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"payments":["customerNumber"]}},"6.3":{"outputs":[["productCode","productName","productLine"]],"tables":{"products":["productCode","productName","productLine"],"orderdetails":["productCode"]}},"6.4":{"outputs":[["employeeNumber","lastName","firstName","jobTitle"]],"tables":{"employees":["employeeNumber","lastName","firstName","jobTitle"],"customers":["salesRepEmployeeNumber"]}},"6.5":{"outputs":[["officeCode","city","country"]],"tables":{"offices":["officeCode","city","country"],"employees":["officeCode"]}},"6.6":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["status","customerNumber"]}},"6.7":{"outputs":[["productCode","productName","productLine"]],"tables":{"products":["productCode","productName","productLine"],"orders":["orderNumber","status"],"orderdetails":["orderNumber","productCode"]}},"7.1":{"outputs":[["productCode","productName","productLine","MSRP"]],"tables":{"products":["productCode","productName","productLine","MSRP"]}},"7.2":{"outputs":[["productCode","productName","productLine","buyPrice"]],"tables":{"products":["productCode","productName","productLine","buyPrice"]}},"7.3":{"outputs":[["productCode","productName","productLine","MSRP"]],"tables":{"products":["productCode","productName","productLine","MSRP"]}},"7.4":{"outputs":[["customerNumber","checkNumber","paymentDate","amount"]],"tables":{"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"7.5":{"outputs":[["customerNumber","customerName","country","creditLimit"]],"tables":{"customers":["customerNumber","customerName","country","creditLimit"]}},"7.6":{"outputs":[["employeeNumber","firstName","lastName","jobTitle"]],"tables":{"employees":["employeeNumber","lastName","firstName","jobTitle"]}},"8.1":{"outputs":[["productCode","productName","productLine","MSRP"]],"tables":{"products":["productCode","productName","productLine","MSRP"]}},"8.2":{"outputs":[["productCode","productName","productLine","buyPrice"]],"tables":{"products":["productCode","productName","productLine","buyPrice"]}},"8.3":{"outputs":[["productCode","productName","productLine","quantityInStock"]],"tables":{"products":["productCode","productName","productLine","quantityInStock"]}},"8.4":{"outputs":[["customerNumber","checkNumber","paymentDate","amount"]],"tables":{"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"8.5":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["status","customerNumber"]}},"8.6":{"outputs":[["customerNumber","customerName","creditLimit"]],"tables":{"customers":["customerNumber","customerName","country","creditLimit"]}},"10.1":{"outputs":[],"tables":{}},"10.2":{"outputs":[["customerNumber","customerName","creditLimit"]],"tables":{"customers":["customerNumber","customerName","country","creditLimit"]}},"10.3":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["customerNumber"]}},"10.4":{"outputs":[],"tables":{}},"11.1":{"outputs":[["productCode","productName"],["productCode","productName"]],"tables":{"products":["productCode","productName"],"orderdetails":["productCode"]}},"11.2":{"outputs":[],"tables":{"orderdetails":["orderNumber","productCode","quantityOrdered","priceEach"]}},"11.3":{"outputs":[["employeeNumber","lastName","firstName","jobTitle"]],"tables":{"employees":["employeeNumber","lastName","firstName","jobTitle"],"customers":["salesRepEmployeeNumber"]}},"12.1":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["customerNumber"]}},"12.2":{"outputs":[["productCode","productName","MSRP"]],"tables":{"products":["productCode","productName","productLine","MSRP"]}},"12.3":{"outputs":[["customerNumber","customerName","creditLimit"]],"tables":{"customers":["customerNumber","customerName","country","creditLimit"]}},"13.1":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["customerNumber"],"payments":["customerNumber"]}},"13.2":{"outputs":[["productCode","productName","productLine"]],"tables":{"products":["productCode","productName","productLine"],"orders":["orderNumber","status"],"orderdetails":["orderNumber","productCode"]}},"13.3":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["status","customerNumber"]}},"13.4":{"outputs":[["customerNumber","checkNumber","paymentDate","amount"]],"tables":{"payments":["customerNumber","checkNumber","paymentDate","amount"]}},"13.5":{"outputs":[["productCode","productName","productLine","quantityInStock"]],"tables":{"products":["productCode","productName","productLine","quantityInStock"]}},"13.6":{"outputs":[["customerNumber","customerName","country","creditLimit"]],"tables":{"customers":["customerNumber","customerName","country","creditLimit"]}},"13.7":{"outputs":[["customerNumber","customerName"]],"tables":{"customers":["customerNumber","customerName"],"orders":["status","customerNumber"]}},"13.8":{"outputs":[["productCode","productName","MSRP"],["productCode","productName","MSRP"]],"tables":{"products":["productCode","productName","productLine","MSRP"]}}};
-
 const TOPICS={"2":"Bảng & quan hệ classicmodels","3":"Môi trường thực hành","4":"Subquery tương quan và không tương quan","5":"EXISTS","6":"NOT EXISTS","7":"ALL","8":"ANY / SOME","10":"NULL và tập rỗng","11":"EXISTS so với JOIN","12":"Sửa lỗi thường gặp","13":"Bài tập tổng hợp"};
 const CONCEPTS=[["Subquery tương quan","Subquery tham chiếu giá trị của dòng bên ngoài. `EXISTS` rất phù hợp với câu hỏi có ít nhất một bản ghi liên quan.","SELECT c.customerNumber,c.customerName\nFROM customers c WHERE EXISTS (\n SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber\n);"],["EXISTS / NOT EXISTS","`EXISTS` đúng nếu truy vấn con có ≥1 dòng; `NOT EXISTS` đúng nếu không có dòng nào.","SELECT c.customerNumber,c.customerName\nFROM customers c WHERE NOT EXISTS (\n SELECT 1 FROM payments p WHERE p.customerNumber=c.customerNumber\n);"],["ALL: đúng với mọi phần tử","`x > ALL(S)` cần lớn hơn mọi phần tử. Nếu S rỗng, điều kiện đúng; nếu S có NULL, cần xem xét UNKNOWN.","SELECT p.productCode,p.MSRP\nFROM products p WHERE p.MSRP > ALL (\n SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Motorcycles'\n);"],["ANY / SOME: có ít nhất một","`x > ANY(S)` chỉ cần một giá trị nhỏ hơn x. SOME và ANY tương đương theo cú pháp MySQL.","SELECT p.productCode,p.MSRP\nFROM products p WHERE p.MSRP > ANY (\n SELECT p2.MSRP FROM products p2 WHERE p2.productLine='Motorcycles'\n);"],["NULL và tập rỗng","Trong SQL, NULL gây kết quả UNKNOWN; `NOT IN` có NULL dễ cho kết quả bất ngờ. `NOT EXISTS` thường diễn đạt “không liên hệ” tốt hơn.","SELECT c.customerNumber,c.customerName\nFROM customers c WHERE NOT EXISTS (\n SELECT 1 FROM orders o WHERE o.customerNumber=c.customerNumber\n);"],["JOIN vs EXISTS","JOIN có thể tăng số dòng vì quan hệ 1:n; EXISTS chỉ xác định tồn tại. So sánh JOIN + DISTINCT với EXISTS.","SELECT DISTINCT p.productCode,p.productName\nFROM products p JOIN orderdetails od ON p.productCode=od.productCode;"]];
 const EXAMPLES=[["Scalar subquery","4.4"],["Có đơn hàng","5.1"],["Đơn hàng nhiều sản phẩm","5.5"],["Không có thanh toán","6.2"],["MSRP > ALL","7.1"],["MIN trong mỗi dòng","7.2"],["MSRP > ANY","8.1"],["= ANY","8.5"],["SOME","8.6"],["Hai điều kiện tồn tại","13.1"],["= ALL","13.7"]];
@@ -34,17 +220,27 @@ const SEED="\nCREATE TABLE productlines(\n  productLine TEXT PRIMARY KEY,\n  tex
 const SECTION=7;
 const $=s=>document.getElementById(s);
 const state={SQL:null,db:null,current:-1,solved:new Set(),answers:{}};
-const storeKey='dbms-select-'+SECTION+'-lab-'+EXERCISES.length+'-2026';
+const storeKey='dbms-select-7-lab-59-v2';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stripComments=s=>String(s).replace(/\/\*[\s\S]*?\*\//g,' ').replace(/--[^\r\n]*/g,' ').replace(/#[^\r\n]*/g,' ');
 const normCmd=s=>stripComments(s).trim().replace(/;+\s*$/,'').replace(/`/g,'').replace(/\s+/g,' ').toLowerCase().replace(/^describe\s+/,'desc ').replace(/^show\s+(?:columns|fields)\s+from\s+/,'desc ').replace(/\s+from\s+classicmodels$/,'');
-function formatCode(raw){let s=esc(raw);return s.replace(/\b(SELECT|FROM|WHERE|WITH|RECURSIVE|UNION|ALL|ANY|SOME|EXISTS|NOT|IN|JOIN|ON|GROUP|BY|ORDER|LIMIT|AS|LEFT|RIGHT|INNER|OUTER|DISTINCT|HAVING|IS|NULL|AND|OR|COUNT|SUM|AVG|DESC|ASC|USE|SHOW|TABLES)\b/gi,'<span class="kw">$1</span>');}
-function save(){try{localStorage.setItem(storeKey,JSON.stringify({solved:[...state.solved],answers:state.answers,name:$('studentName').value,studentId:$('studentId').value}))}catch(e){}}
+
+function exerciseReferences(t){
+ const r=EXERCISE_REFS[t.id];if(!r)return '';
+ const out=(r.outputs&&r.outputs.length)?r.outputs.map((cols,i)=>'<span class="ref-col"><code>'+cols.map(esc).join(', ')+'</code></span>').join(''):'<span class="ref-intro">Không yêu cầu SELECT (quiz hoặc lệnh tra cứu).</span>';
+ const tables=r.tables?Object.entries(r.tables).map(([tb,cols])=>'<span class="ref-source"><b>'+esc(tb)+'</b> <code>('+cols.map(esc).join(', ')+')</code></span>').join(''):'';
+ return '<div class="question-ref" aria-label="Cột đầu ra và bảng nguồn">'+
+  '<div class="ref-row"><span class="ref-label">Cột SELECT cần trả:</span><span class="ref-items">'+out+'</span></div>'+
+  (tables?'<div class="ref-row"><span class="ref-label">Bảng / cột liên quan:</span><span class="ref-items">'+tables+'</span></div>':'')+'</div>';
+}
+
+function formatCode(raw){let s=esc(raw);return s.replace(/\b(SELECT|FROM|WHERE|WITH|RECURSIVE|UNION|ALL|ANY|SOME|EXISTS|NOT|IN|JOIN|ON|GROUP|BY|ORDER|LIMIT|AS|LEFT|RIGHT|INNER|OUTER|DISTINCT|HAVING|IS|NULL|AND|OR|COUNT|SUM|AVG|DESC|ASC|USE|SHOW|TABLES)\b/gi,'<span class="sqlkw">$1</span>');}
+
+function save(){try{if(state.current>=0&&EXERCISES[state.current].kind!=='quiz')state.answers[EXERCISES[state.current].id]=$('prSQL').value;localStorage.setItem(storeKey,JSON.stringify({solved:[...state.solved],answers:state.answers,name:$('studentName').value,studentId:$('studentId').value}))}catch(e){}}
 function load(){try{let s=JSON.parse(localStorage.getItem(storeKey)||'{}');state.solved=new Set((s.solved||[]).filter(x=>EXERCISES.some(t=>t.id===x)));state.answers=s.answers||{};$('studentName').value=s.name||'';$('studentId').value=s.studentId||s.id||'';}catch(e){}}
+
 function splitStatements(s){let out=[],cur='',single=false,double=false,backtick=false;for(let i=0;i<s.length;i++){let c=s[i];if(c==="'"&&!double&&!backtick){if(single&&s[i+1]==="'"){cur+="''";i++;continue}single=!single}else if(c==='"'&&!single&&!backtick){double=!double}else if(c==='`'&&!single&&!double){backtick=!backtick}if(c===';'&&!single&&!double&&!backtick){if(cur.trim())out.push(cur.trim());cur='';}else cur+=c}if(cur.trim())out.push(cur.trim());return out;}
-// For simple scalar quantified subqueries, rewrite MySQL ALL/ANY/SOME into
-// correlated EXISTS/NOT EXISTS so that sqlite can execute the real query.
-// In a WHERE filter, (comparison IS NOT TRUE) handles NULL and empty-set cases.
+
 function translateQuantified(sql){
  const rx=/([A-Za-z_][\w.]*(?:\s*\|\|\s*'[A-Za-z ]*')?|'(?:''|[^'])*'|\d+(?:\.\d+)?)\s*(<=|>=|<>|!=|=|<|>)\s*(ALL|ANY|SOME)\s*\(/ig;
  let out='',index=0,m;
@@ -60,52 +256,236 @@ function translateQuantified(sql){
   const exp=(m[3].toUpperCase()==='ALL'?'NOT EXISTS':'EXISTS')+' (SELECT 1 FROM '+from+' WHERE '+where+'('+condition+'))';
   out+=sql.slice(index,m.index)+exp;index=end+1;rx.lastIndex=index;
  }
- return out+sql.slice(index)
+ return out+sql.slice(index);
 }
+
 function runOne(sql){
  if(!state.db)throw Error('SQLite chưa được tải. Hãy kiểm tra kết nối Internet.');
  const t=stripComments(sql).trim().replace(/;+\s*$/,'').trim();
  if(!t)throw Error('Cần nhập SQL trước khi Run.');
- if(/^USE\s+classicmodels$/i.test(t))return {columns:['Thông báo'],values:[['Đã chọn classicmodels (mô phỏng).']]};
- if(/^SHOW\s+TABLES(?:\s+FROM\s+classicmodels)?$/i.test(t)){const x=state.db.exec("SELECT name AS Tables_in_classicmodels FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");return x[0]||{columns:[],values:[]}}
- const d=t.match(/^(?:DESC|DESCRIBE|SHOW\s+(?:FIELDS|COLUMNS)\s+FROM)\s+`?(\w+)`?(?:\s+FROM\s+classicmodels)?$/i);
- if(d){const x=state.db.exec("PRAGMA table_info('"+d[1]+"')")[0];return{columns:['Field','Type','Null','Key','Default'],values:(x?.values||[]).map(r=>[r[1],r[2],r[3]===0?'YES':'NO',r[5]?'PRI':'',r[4]])}}
- if(!/^(SELECT|WITH)\b/i.test(t))throw Error('Chỉ được chạy SELECT/WITH và các lệnh tra cứu schema; không sửa dữ liệu.');
- const forbidden=stripComments(t).replace(/'(?:''|[^'])*'/g,"''");
- if(/\b(?:INSERT|DELETE|UPDATE|DROP|ALTER|CREATE|ATTACH|DETACH|REPLACE|PRAGMA)\b/i.test(forbidden))throw Error('Lab chỉ cho phép truy vấn đọc dữ liệu.');
- const query=SECTION===7?translateQuantified(t):t;
- const all=state.db.exec(query);return all[all.length-1]||{columns:[],values:[]};
-}
-function runAll(source,allowMulti=false){let chunks=splitStatements(stripComments(source));if(chunks.length<1)throw Error('Chưa có câu SQL.');if(chunks.length>(allowMulti?6:1))throw Error(allowMulti?'Bài cho phép tối đa 6 lệnh SQL.':'Mỗi lần Run một câu SQL; chỉ bài yêu cầu nhiều lệnh mới chạy nhiều câu.');return chunks.map(runOne)}
-function tableToHTML(r){if(!r.columns.length)return '<div class="empty">Lệnh chạy thành công nhưng không có cột kết quả.</div>';let rows=r.values.slice(0,200);let a='<table><thead><tr>'+r.columns.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';for(const row of rows)a+='<tr>'+row.map(v=>'<td>'+(v===null?'<span class="muted">NULL</span>':esc(v))+'</td>').join('')+'</tr>';a+='</tbody></table>';if(r.values.length>200)a+='<div class="empty">Chỉ hiển thị 200 dòng đầu tiên.</div>';return a}
-function display(results,output,meta){const r=results[results.length-1];$(output).innerHTML=tableToHTML(r);$(meta).textContent=results.length+' truy vấn • '+r.values.length+' dòng • '+r.columns.length+' cột';}
-function normal(v){return v===null?'__NULL__':typeof v==='number'?Number(v.toFixed(7)):String(v)}
-function rowSignature(r,ordered){const rows=r.values.map(v=>JSON.stringify(v.map(normal)));if(!ordered)rows.sort();return JSON.stringify(rows)}
-function sameResult(user,expected,ordered){if(user.values.length!==expected.values.length)return false;const uc=user.columns.map(x=>String(x).toLowerCase());let pos=expected.columns.map(x=>uc.indexOf(String(x).toLowerCase()));if(pos.some(n=>n<0)){if(user.columns.length!==expected.columns.length)return false;pos=expected.columns.map((_,j)=>j)}const projected={values:user.values.map(row=>pos.map(i=>row[i]))};return rowSignature(projected,ordered)===rowSignature(expected,ordered)}
-function updateNavButtons(){$('prPrev').disabled=state.current<=0;$('prNext').disabled=state.current>=EXERCISES.length-1;}
-function renderProgress(){$('progressText').textContent=state.solved.size+' / '+EXERCISES.length+' bài đúng';$('progressBar').style.width=(100*state.solved.size/EXERCISES.length)+'%';document.querySelectorAll('.group').forEach(group=>{let items=EXERCISES.filter(t=>t.id.split('.')[0]===group.dataset.group),n=items.filter(t=>state.solved.has(t.id)).length;group.querySelector('.groupScore').textContent=n+' / '+items.length+' đúng';});document.querySelectorAll('.task').forEach(t=>{const b=t.querySelector('.pill');if(b){const ok=state.solved.has(t.dataset.id);b.textContent=ok?'✓ Đã đúng':(t.dataset.kind==='quiz'?'Quiz':t.dataset.kind==='command'||t.dataset.kind==='commands'?'Lệnh MySQL':'SQL');b.className=ok?'pill ok':'pill';}});if(state.current>=0){const curPill=$('taskInfo').querySelector('.pill');if(curPill){const yes=state.solved.has(EXERCISES[state.current].id);curPill.textContent=yes?'✓ Đã đúng':'Chưa làm';curPill.className=yes?'pill ok':'pill';}}}
-function quizFor(t){$('quizOptions').innerHTML='';for(let i=0;i<t.options.length;i++){const l=document.createElement('label');l.className='quiz-option';l.innerHTML='<input type="radio" name="quizAnswer" value="'+i+'"><b>'+String.fromCharCode(65+i)+'.</b><span>'+esc(t.options[i])+'</span>';$('quizOptions').appendChild(l)}}
-function questionReference(t){
- const r=EXERCISE_REFS[t.id];if(!r)return '';
- const out=r.outputs.length?r.outputs.map((cols,i)=>'<div class="refrow"><b>SELECT '+(r.outputs.length>1?'#'+(i+1):'')+':</b><span>'+cols.map(c=>'<code>'+esc(c)+'</code>').join(', ')+'</span></div>').join(''):'<div class="refrow"><b>Đầu ra:</b><span>Không yêu cầu SELECT (quiz/lệnh tra cứu)</span></div>';
- const tables=Object.entries(r.tables).map(([tb,cols])=>'<div class="refrow"><b>'+esc(tb)+':</b><span>'+cols.map(c=>'<code>'+esc(c)+'</code>').join(', ')+'</span></div>').join('');
- return '<div class="question-ref">'+out+(tables||'<div class="refrow"><b>Schema:</b><span>classicmodels · xem bảng cấu trúc phía trên</span></div>')+'</div>';
+ if(/^USE\s+classicmodels$/i.test(t))return {columns:['result'],values:[['Database changed to classicmodels']]};
+ if(/^SHOW\s+TABLES$/i.test(t)){const r=state.db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name;")[0];return {columns:['Tables_in_classicmodels'],values:r?r.values:[]}}
+ const desc=t.match(/^(?:DESC|DESCRIBE)\s+([a-zA-Z0-9_]+)$/i)||t.match(/^SHOW\s+(?:COLUMNS|FIELDS)\s+FROM\s+([a-zA-Z0-9_]+)$/i);
+ if(desc){const table=desc[1];const r=state.db.exec("PRAGMA table_info('"+table+"');")[0];if(!r)throw Error("Table '"+table+"' does not exist");const rows=r.values.map(v=>[v[1],v[2],v[3]===0?'YES':'NO',v[5]?'PRI':'',v[4]===null?null:String(v[4]),'']);return {columns:['Field','Type','Null','Key','Default','Extra'],values:rows}}
+ const translated=translateQuantified(t);
+ const res=state.db.exec(translated)[0];
+ if(!res)return {columns:['Rows Affected'],values:[[0]]};
+ return {columns:res.columns,values:res.values};
 }
 
-function selectTask(i,clear=true){if(i<0||i>=EXERCISES.length)return;const t=EXERCISES[i];if(state.current>=0)state.answers[EXERCISES[state.current].id]=$('practiceEditor').value;state.current=i;$('taskChoice').value=String(i);const yes=state.solved.has(t.id);$('taskInfo').innerHTML='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><b>Bài '+esc(t.id)+'.</b><span class="pill'+(yes?' ok':'')+'">'+(yes?'✓ Đã đúng':'Chưa làm')+'</span></div>'+esc(t.q)+questionReference(t)+(t.multi?'<p class="small muted">Có nhiều lệnh, ngăn bằng dấu chấm phẩy (;).</p>':'');const isQuiz=t.kind==='quiz';$('quizBox').hidden=!isQuiz;$('practiceEditor').hidden=isQuiz;$('practiceRun').hidden=isQuiz;$('practiceClear').hidden=isQuiz;$('practiceCheck').disabled=false;$('practiceEditor').value=state.answers[t.id]||'-- Bài '+t.id+'\n';if(isQuiz)quizFor(t);$('practiceStatus').textContent=isQuiz?'Chọn phương án rồi nhấn Check.':'Viết SQL, Run thử, sau đó Check để chấm.';$('practiceStatus').className='status';$('practiceResult').innerHTML='<div class="empty">Chưa chấm bài mới.</div>';$('practiceMeta').textContent='Bài '+t.id;updateNavButtons();save();}
-function check(){const i=state.current;if(i<0)return;const t=EXERCISES[i];try{let ok=false;if(t.kind==='quiz'){const selected=$('quizOptions').querySelector('input:checked');if(!selected)throw Error('Hãy chọn một đáp án.');const answer=Number(selected.value);ok=answer===t.correct;$('quizOptions').querySelectorAll('.quiz-option').forEach((l,j)=>{l.classList.toggle('correct',j===t.correct);l.classList.toggle('wrong',j===answer&&!ok)});$('practiceResult').innerHTML='<div class="empty">'+(ok?'✓ Đáp án đúng.':'Chưa đúng. Đáp án đúng được đánh dấu xanh.')+'</div>';$('practiceMeta').textContent='Kiểm tra quiz';}
- else if(t.kind==='command'||t.kind==='commands'){const u=splitStatements(stripComments($('practiceEditor').value)).map(normCmd);const e=splitStatements(t.a).map(normCmd);ok=u.length===e.length&&e.every((x,j)=>x===u[j]);if(ok)display(runAll($('practiceEditor').value,true),'practiceResult','practiceMeta');}
- else {const source=$('practiceEditor').value;const user=runAll(source,!!t.multi);const expected=runAll(t.a,!!t.multi);ok=user.length===expected.length && user.every((res,j)=>sameResult(res,expected[j],!!t.ordered));if(ok&&t.required){const clean=stripComments(source);ok=t.required.every(p=>new RegExp(p,'i').test(clean));}display(user,'practiceResult','practiceMeta');}
- if(ok){state.solved.add(t.id);$('practiceStatus').textContent='✓ Chính xác — Bài '+t.id+' (+1 điểm)';$('practiceStatus').className='status ok'}else{$('practiceStatus').textContent='Chưa đúng — Bài '+t.id+'. Kiểm tra cú pháp yêu cầu, cột, điều kiện và dữ liệu kết quả.';$('practiceStatus').className='status bad'}renderProgress();save();}catch(e){$('practiceStatus').textContent='✗ '+e.message;$('practiceStatus').className='status bad'}}
+function runAll(sql,allowMulti=false){
+ const stmts=splitStatements(sql);
+ if(!stmts.length)throw Error('Cần nhập ít nhất một câu lệnh SQL.');
+ if(stmts.length>1&&!allowMulti)throw Error('Chỉ được chạy 1 câu lệnh cho bài này (tìm thấy '+stmts.length+' lệnh).');
+ return stmts.map(s=>runOne(s));
+}
+
+function tableToHTML(res){
+ if(!res||!res.columns||!res.columns.length)return '<div class="muted" style="padding:12px">Không có dữ liệu.</div>';
+ let html='<table><thead><tr>'+res.columns.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';
+ for(const r of res.values){
+  html+='<tr>'+r.map(v=>'<td>'+(v===null?'<i class="muted">NULL</i>':esc(v))+'</td>').join('')+'</tr>';
+ }
+ return html+'</tbody></table>';
+}
+
+function display(resList,outId,metaId){
+ const arr=Array.isArray(resList)?resList:[resList];
+ $(metaId).textContent='Trả về '+arr.length+' kết quả truy vấn · '+(arr[arr.length-1]?.values?.length||0)+' dòng cuối';
+ $(outId).innerHTML=arr.map(r=>'<div class="scrolltable">'+tableToHTML(r)+'</div>').join('');
+}
+
+function normal(v){if(v===null||v===undefined)return 'NULL';if(typeof v==='number'){return Math.abs(v-Math.round(v))<1e-6?String(Math.round(v)):v.toFixed(2)}return String(v).trim().toLowerCase()}
+function rowSignature(r){return r.map(normal).join('|--|')}
+function sameResult(a,b,ordered=false){
+ if(!a||!b)return false;if(a.columns.length!==b.columns.length)return false;
+ if(a.values.length!==b.values.length)return false;
+ if(ordered){return a.values.every((row,i)=>rowSignature(row)===rowSignature(b.values[i]))}
+ const countMap=arr=>{const m=new Map();for(const r of arr){const s=rowSignature(r);m.set(s,(m.get(s)||0)+1)}return m;};
+ const ma=countMap(a.values),mb=countMap(b.values);
+ if(ma.size!==mb.size)return false;
+ for(const [k,v] of ma.entries()){if(mb.get(k)!==v)return false}
+ return true;
+}
+
+function updateNavButtons(){
+ $('prPrev').disabled=state.current<=0;
+ $('prNext').disabled=state.current>=EXERCISES.length-1;
+}
+
+function updateScore(){
+ const count=state.solved.size,total=EXERCISES.length;
+ $('score').textContent=count+' / '+total;
+ const pct=total?Math.round((count/total)*100):0;
+ $('percent').textContent=pct+'%';
+ $('bar').style.width=pct+'%';
+ document.querySelectorAll('#groups details').forEach(d=>{
+  const sec=d.dataset.section;
+  const inSec=EXERCISES.filter(t=>t.id.split('.')[0]===sec);
+  const okSec=inSec.filter(t=>state.solved.has(t.id)).length;
+  const sp=d.querySelector('.pill-group');
+  if(sp){sp.textContent=okSec+' / '+inSec.length;sp.className='pill'+(okSec===inSec.length&&inSec.length>0?' ok':'')}
+ });
+ document.querySelectorAll('.task-item').forEach(el=>{
+  const id=el.dataset.id;const yes=state.solved.has(id);
+  const pill=el.querySelector('.pill');if(pill){pill.textContent=yes?'✓ Đã đúng':'Chưa làm';pill.className='pill'+(yes?' ok':'')}
+ });
+}
+
+function quizFor(t){
+ const box=$('quizBox');
+ box.classList.remove('hidden');
+ $('prSQL').classList.add('hidden');
+ $('prRun').classList.add('hidden');
+ $('prClear').classList.add('hidden');
+ $('quizChoices').innerHTML=t.options.map((opt,idx)=>'<label class="quizoption"><input type="radio" name="quizChoice" value="'+idx+'"> <b>'+String.fromCharCode(65+idx)+'.</b> <span>'+esc(opt)+'</span></label>').join('');
+}
+
+function setTask(i,focus=true){
+ if(i<0||i>=EXERCISES.length)return;
+ save();
+ state.current=i;
+ const t=EXERCISES[i],yes=state.solved.has(t.id);
+ $('taskSelect').value=String(i);
+ $('current').innerHTML='<div class="info-row"><b>Bài '+esc(t.id)+'</b><span class="pill'+(yes?' ok':'')+'">'+(yes?'✓ Đã đúng':'Chưa làm')+'</span></div><p style="margin:7px 0 0">'+esc(t.q)+'</p>'+exerciseReferences(t);
+ const isQuiz=t.kind==='quiz';
+ if(isQuiz){
+  quizFor(t);
+  $('prMeta').textContent='Trắc nghiệm lý thuyết';
+  $('prResult').innerHTML='<div class="muted" style="padding:12px">Chọn một phương án rồi nhấn Check.</div>';
+ }else{
+  $('quizBox').classList.add('hidden');
+  $('prSQL').classList.remove('hidden');
+  $('prRun').classList.remove('hidden');
+  $('prClear').classList.remove('hidden');
+  $('prSQL').value=state.answers[t.id]||('-- Bài '+t.id+'\n');
+ }
+ $('prStatus').textContent=isQuiz?'Chọn đáp án và nhấn Check.':'Viết SQL rồi nhấn Run hoặc Check.';
+ $('prStatus').className='status';
+ updateNavButtons();
+ if(focus&&!isQuiz)$('prSQL').focus();
+}
+
+function check(){
+ const i=state.current;if(i<0)return;const t=EXERCISES[i];
+ try{
+  let ok=false;
+  if(t.kind==='quiz'){
+   const sel=$('quizChoices').querySelector('input:checked');
+   if(!sel)throw Error('Hãy chọn một đáp án.');
+   const ans=Number(sel.value);ok=ans===t.correct;
+   $('quizChoices').querySelectorAll('.quizoption').forEach((l,j)=>{l.classList.toggle('right',j===t.correct);l.classList.toggle('wrong',j===ans&&!ok)});
+   $('prResult').innerHTML='<div style="padding:12px" class="'+(ok?'ok':'error')+'">'+(ok?'✓ Đáp án chính xác!':'Chưa đúng. Đáp án đúng được tô viền xanh lá.')+'</div>';
+   $('prMeta').textContent='Kiểm tra quiz';
+  }else if(t.kind==='command'||t.kind==='commands'){
+   const u=splitStatements(stripComments($('prSQL').value)).map(normCmd);
+   const e=splitStatements(t.a).map(normCmd);
+   ok=u.length===e.length&&e.every((x,j)=>x===u[j]);
+   if(ok)display(runAll($('prSQL').value,true),'prResult','prMeta');
+  }else{
+   const source=$('prSQL').value;const user=runAll(source,!!t.multi);const expected=runAll(t.a,!!t.multi);
+   ok=user.length===expected.length&&user.every((res,j)=>sameResult(res,expected[j],!!t.ordered));
+   if(ok&&t.required){const clean=stripComments(source);ok=t.required.every(p=>new RegExp(p,'i').test(clean));}
+   display(user,'prResult','prMeta');
+  }
+  if(ok){
+   state.solved.add(t.id);$('prStatus').textContent='✓ Chính xác — Bài '+t.id+' (+1 điểm)';$('prStatus').className='status ok';
+  }else{
+   $('prStatus').textContent='Chưa đúng — Bài '+t.id+'. Hãy đối chiếu yêu cầu, cột và điều kiện lọc.';$('prStatus').className='status error';
+  }
+  updateScore();save();
+  const yes=state.solved.has(t.id);
+  $('current').innerHTML='<div class="info-row"><b>Bài '+esc(t.id)+'</b><span class="pill'+(yes?' ok':'')+'">'+(yes?'✓ Đã đúng':'Chưa làm')+'</span></div><p style="margin:7px 0 0">'+esc(t.q)+'</p>'+exerciseReferences(t);
+ }catch(e){
+  $('prStatus').textContent='✗ '+e.message;$('prStatus').className='status error';
+ }
+}
+
 let currentExample=-1;
-function updateExNav(){$('exPrev').disabled=currentExample<=0;$('exNext').disabled=currentExample>=EXAMPLES.length-1;}
-function setExample(i,autoRun=false){if(i<0||i>=EXAMPLES.length)return;currentExample=i;$('exPreset').value=String(i);const [name,id]=EXAMPLES[i],t=EXERCISES.find(x=>x.id===id);if(t){$('exEditor').value=t.a;$('exStatus').textContent='Đã nạp ví dụ "'+name+'" (Bài '+id+'). Nhấn Run hoặc Ctrl+Enter.';$('exStatus').className='status';if(autoRun&&state.db)runEditor('exEditor','exStatus','exResult','exMeta',!!t.multi);}updateExNav();}
-function runEditor(ed,status,out,meta,multi){try{const t0=performance.now();const r=runAll($(ed).value,multi);display(r,out,meta);$(status).textContent='✓ Chạy thành công · '+(performance.now()-t0).toFixed(1)+' ms';$(status).className='status ok';return r}catch(e){$(status).textContent='✗ '+e.message;$(status).className='status bad';$(out).innerHTML='<div class="empty">Không thể chạy câu lệnh SQL.</div>';return null}}
-function schema(name){if(!state.db)return;const r=state.db.exec("PRAGMA table_info('"+name+"')")[0];const rows=(r?.values||[]).map(v=>[v[1],v[2],v[3]===0?'YES':'NO',v[5]?'PRIMARY KEY':'',v[4]]);$('schemaOutput').innerHTML=tableToHTML({columns:['Column','Type','Nullable','Key','Default'],values:rows});}
-function resetDB(){if(!state.SQL)return;state.db?.close();state.db=new state.SQL.Database();state.db.exec(SEED);state.db.exec('PRAGMA query_only=ON');schema($('schemaChoice').value);if(SECTION===6)tree();$('exStatus').textContent='✓ Database đã được khôi phục.';$('exStatus').className='status ok';}
-function tree(){if(!state.db)return;const limit=+$('levelSlider').value;$('levelValue').textContent=limit;const h=runOne('WITH RECURSIVE h AS (SELECT employeeNumber,firstName,lastName,reportsTo,jobTitle,0 AS level FROM employees WHERE reportsTo IS NULL UNION ALL SELECT e.employeeNumber,e.firstName,e.lastName,e.reportsTo,e.jobTitle,h.level+1 FROM employees e JOIN h ON e.reportsTo=h.employeeNumber) SELECT employeeNumber,firstName,lastName,jobTitle,level FROM h WHERE level<='+limit+' ORDER BY level,employeeNumber');$('treeOutput').innerHTML=tableToHTML(h);}
-function quant(){const x=+$('xSlider').value,S=[10,20,30];$('xValue').textContent=x;const modes=[['x > ALL(S)',S.every(v=>x>v)],['x > ANY(S)',S.some(v=>x>v)],['x < ALL(S)',S.every(v=>x<v)],['x < ANY(S)',S.some(v=>x<v)]];$('quantOutput').innerHTML=modes.map(([name,ok])=>'<div><strong>'+esc(name)+'</strong><span style="color:'+(ok?'var(--green)':'var(--red)')+'">'+(ok?'TRUE':'FALSE')+'</span></div>').join('')}
-function getGroupsSummary(){const map={};for(const t of EXERCISES){const sec=t.id.split('.')[0];if(!map[sec])map[sec]={name:'Phần '+sec+(TOPICS[sec]?': '+TOPICS[sec]:''),correct:0,total:0};map[sec].total++;if(state.solved.has(t.id))map[sec].correct++;}return Object.values(map);}
+function updateExNav(){
+ $('exPrev').disabled=currentExample<=0;
+ $('exNext').disabled=currentExample>=EXAMPLES.length-1;
+}
+
+function setExample(i,autoRun=false){
+ if(i<0||i>=EXAMPLES.length)return;
+ currentExample=i;
+ $('exPreset').value=String(i);
+ const [name,id]=EXAMPLES[i],t=EXERCISES.find(x=>x.id===id);
+ if(t){
+  $('exSQL').value=t.a;
+  $('exStatus').textContent='Đã nạp ví dụ "'+name+'" (Bài '+id+'). Nhấn Run hoặc Ctrl+Enter.';
+  $('exStatus').className='status';
+  if(autoRun&&state.db)runExample();
+ }
+ updateExNav();
+}
+
+function runExample(){
+ try{
+  const t0=performance.now();
+  const r=runAll($('exSQL').value,true);
+  display(r,'exResult','exMeta');
+  $('exStatus').textContent='✓ Chạy thành công · '+(performance.now()-t0).toFixed(1)+' ms';
+  $('exStatus').className='status ok';
+ }catch(e){
+  $('exStatus').textContent='✗ '+e.message;$('exStatus').className='status error';
+  $('exResult').innerHTML='<div class="muted" style="padding:12px">Không thể chạy câu lệnh SQL.</div>';
+ }
+}
+
+function runPractice(){
+ try{
+  const t=EXERCISES[state.current];
+  const r=runAll($('prSQL').value,t?!!t.multi:false);
+  display(r,'prResult','prMeta');
+  $('prStatus').textContent='✓ Đã chạy SQL.';$('prStatus').className='status ok';
+ }catch(e){
+  $('prStatus').textContent='✗ '+e.message;$('prStatus').className='status error';
+ }
+}
+
+function schema(){
+ if(!state.db)return;
+ const tbl=$('schemaSelect').value;
+ try{
+  const r=state.db.exec("PRAGMA table_info('"+tbl+"');")[0];
+  const rows=(r?.values||[]).map(v=>[v[1],v[2],v[3]===0?'YES':'NO',v[5]?'PRIMARY KEY':'',v[4]===null?null:String(v[4])]);
+  $('schemaTable').innerHTML=tableToHTML({columns:['Column','Type','Nullable','Key','Default'],values:rows});
+ }catch(e){
+  $('schemaTable').innerHTML='<div class="error" style="padding:12px">'+esc(e.message)+'</div>';
+ }
+}
+
+function resetDatabase(){
+ if(!state.SQL)return;
+ if(state.db)state.db.close();
+ state.db=new state.SQL.Database();
+ state.db.exec(SEED);
+ state.db.exec('PRAGMA query_only=ON');
+ schema();
+ quant();
+ $('exStatus').textContent='✓ Database đã được khôi phục.';
+ $('exStatus').className='status ok';
+}
+
+function quant(){
+ const x=+$('xSlider').value,S=[10,20,30];$('xValue').textContent=x;
+ const modes=[['x > ALL(S)',S.every(v=>x>v)],['x > ANY(S)',S.some(v=>x>v)],['x < ALL(S)',S.every(v=>x<v)],['x < ANY(S)',S.some(v=>x<v)]];
+ $('quantOutput').innerHTML=modes.map(([name,ok])=>'<div><strong>'+esc(name)+'</strong><span style="color:'+(ok?'var(--green)':'var(--red)')+';font-weight:700">'+(ok?'TRUE':'FALSE')+'</span></div>').join('');
+}
+
+function getGroupsSummary(){
+ const map={};
+ for(const t of EXERCISES){
+  const sec=t.id.split('.')[0];
+  if(!map[sec])map[sec]={name:'Phần '+sec+(TOPICS[sec]?': '+TOPICS[sec]:''),correct:0,total:0};
+  map[sec].total++;
+  if(state.solved.has(t.id))map[sec].correct++;
+ }
+ return Object.values(map);
+}
+
 function exportScoreCardPNG(title,totalCount,groupsSummary,filenamePrefix){
   const mssv=($('studentId')?$('studentId').value.trim():''),name=($('studentName')?$('studentName').value.trim():'');
   const now=new Date(),dateStr=now.toLocaleDateString('vi-VN')+' '+now.toLocaleTimeString('vi-VN');
@@ -161,34 +541,97 @@ function exportScoreCardPNG(title,totalCount,groupsSummary,filenamePrefix){
   a.download=filenamePrefix+'_'+tag+'.png';
   document.body.appendChild(a);a.click();a.remove();
 }
-function render(){
- $('conceptList').innerHTML=CONCEPTS.map(([title,desc,code])=>'<article class="card"><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p><pre class="code">'+formatCode(code)+'</pre></article>').join('');
- $('exampleList').innerHTML='';EXAMPLES.forEach(([name,id],i)=>{const t=EXERCISES.find(t=>t.id===id);const div=document.createElement('div');div.className='example';div.innerHTML='<div><b>'+esc(name)+'</b><div class="small muted">Ví dụ bài '+esc(id)+'</div></div><pre class="code">'+formatCode(t.a)+'</pre><button type="button" class="primary">▶ Run</button>';div.querySelector('button').onclick=()=>{setExample(i,true);location.hash='playground';};$('exampleList').appendChild(div);const opt=document.createElement('option');opt.value=String(i);opt.textContent='Ví dụ '+(i+1)+': '+name+' (Bài '+id+')';$('exPreset').appendChild(opt);});
- const tables=['products','customers','employees','orders','offices','payments','orderdetails','productlines'];tables.forEach(n=>{let o=document.createElement('option');o.textContent=n;o.value=n;$('schemaChoice').appendChild(o)});
- const groups={};for(let i=0;i<EXERCISES.length;i++){const t=EXERCISES[i],sec=t.id.split('.')[0];const opt=document.createElement('option');opt.value=String(i);opt.textContent='Bài '+t.id+' — '+TOPICS[sec];$('taskChoice').appendChild(opt);if(!groups[sec]){const group=document.createElement('details');group.className='group';group.dataset.group=sec;if(Object.keys(groups).length===0)group.open=true;group.innerHTML='<summary><span>Phần '+sec+' · '+esc(TOPICS[sec])+'</span><span class="groupScore">0 đúng</span></summary><div class="taskList"></div>';$('groups').appendChild(group);groups[sec]=group.querySelector('.taskList')}
- const d=document.createElement('div');d.className='task';d.dataset.id=t.id;d.dataset.kind=t.kind;d.innerHTML='<div class="tt"><span style="font-weight:650;color:var(--ink);font-size:14px;border:0;padding:0">Bài '+t.id+'. '+esc(t.q)+'</span><span class="pill"></span></div>'+questionReference(t)+'<div class="actions"><button type="button" class="primary work">Làm bài</button><button type="button" class="good check">Check</button></div><details><summary>Xem đáp án gợi ý</summary><pre class="code">'+(t.kind==='quiz'?esc(t.a):formatCode(t.a))+'</pre></details>';d.querySelector('.work').onclick=()=>{selectTask(i);location.hash='practice'};d.querySelector('.check').onclick=()=>{if(state.current!==i)selectTask(i);location.hash='practice';check()};groups[sec].appendChild(d)}
- load();renderProgress();updateNavButtons();updateExNav();
+
+function initUI(){
+ $('conceptList').innerHTML=CONCEPTS.map(([title,desc,code])=>'<article class="card"><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p><pre class="codebox"><code>'+formatCode(code)+'</code></pre></article>').join('');
+
+ for(const [i,e] of EXAMPLES.entries()){
+  const t=EXERCISES.find(x=>x.id===e[1]);
+  const row=document.createElement('div');row.className='lesson-row';
+  row.innerHTML='<div><h3>'+esc(e[0])+'</h3><p class="muted tiny">Ví dụ minh họa cú pháp EXISTS, ALL/ANY (Bài '+e[1]+')</p></div><pre class="codebox"><code>'+(t?formatCode(t.a):'')+'</code></pre><button class="primary">Run</button>';
+  row.querySelector('button').addEventListener('click',()=>{setExample(i,true);$('explorer').scrollIntoView({behavior:'smooth'})});
+  $('examples').appendChild(row);
+  const opt=document.createElement('option');opt.value=i;opt.textContent=e[0];$('exPreset').appendChild(opt);
+ }
+
+ for(const [i,e] of EXERCISES.entries()){
+  const o=document.createElement('option');o.value=i;o.textContent='Bài '+e.id+' · '+(TOPICS[e.id.split('.')[0]]||'');
+  $('taskSelect').appendChild(o);
+ }
+
+ const groupsMap={};
+ EXERCISES.forEach((t,i)=>{
+  const sec=t.id.split('.')[0];
+  if(!groupsMap[sec]){
+   const d=document.createElement('details');d.dataset.section=sec;d.open=(sec==='4');
+   d.innerHTML='<summary class="groupname"><span>Phần '+sec+': '+esc(TOPICS[sec]||'')+'</span><span class="pill pill-group"></span></summary><div class="groupbody"></div>';
+   $('groups').appendChild(d);
+   groupsMap[sec]=d.querySelector('.groupbody');
+  }
+  const qDiv=document.createElement('div');qDiv.className='question task-item';qDiv.dataset.id=t.id;
+  const isQuiz=t.kind==='quiz';
+  qDiv.innerHTML='<div class="info-row"><b>Bài '+esc(t.id)+'</b><span class="pill">Chưa làm</span></div><p style="margin:7px 0">'+esc(t.q)+'</p>'+exerciseReferences(t)+'<div class="question-actions"><button class="primary start-btn">Làm bài</button><button class="green check-btn">Check</button></div><details style="margin-top:8px"><summary>Đáp án tham khảo</summary><pre class="codebox"><code>'+(isQuiz?esc(t.options[t.correct]):formatCode(t.a))+'</code></pre></details>';
+  qDiv.querySelector('.start-btn').onclick=()=>{setTask(i,true);$('practice').scrollIntoView({behavior:'smooth'})};
+  qDiv.querySelector('.check-btn').onclick=()=>{setTask(i,false);$('practice').scrollIntoView({behavior:'smooth'});check()};
+  groupsMap[sec].appendChild(qDiv);
+ });
+
+ $('prPrev').onclick=()=>{if(state.current>0)setTask(state.current-1,false)};
+ $('prNext').onclick=()=>{const next=state.current<0?0:state.current+1;if(next<EXERCISES.length)setTask(next,false)};
+ $('exPrev').onclick=()=>{if(currentExample>0)setExample(currentExample-1,false)};
+ $('exNext').onclick=()=>{const next=currentExample<0?0:currentExample+1;if(next<EXAMPLES.length)setExample(next,false)};
+ $('exRun').onclick=runExample;
+ $('prRun').onclick=runPractice;
+ $('prCheck').onclick=check;
+ $('exClear').onclick=()=>{$('exSQL').value='';currentExample=-1;$('exPreset').value='';updateExNav();$('exSQL').focus()};
+ $('prClear').onclick=()=>{$('prSQL').value='';$('prSQL').focus();save()};
+ $('exPreset').onchange=e=>{if(e.target.value!=='')setExample(+e.target.value,false);else{currentExample=-1;updateExNav()}};
+ $('taskSelect').onchange=e=>{if(e.target.value!=='')setTask(+e.target.value)};
+ $('schemaSelect').onchange=schema;
+ $('xSlider').oninput=quant;
+
+ $('studentName').oninput=save;
+ $('studentId').oninput=save;
+
+ $('exSQL').onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runExample()}};
+ $('prSQL').onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runPractice()}};
+ $('prSQL').oninput=()=>{if(state.current>=0&&EXERCISES[state.current].kind!=='quiz'){state.answers[EXERCISES[state.current].id]=$('prSQL').value;save()}};
+
+ $('resetDB').onclick=()=>{try{resetDatabase();$('prStatus').textContent='✓ Đã khôi phục database mẫu. Điểm bài tập được giữ nguyên.';$('prStatus').className='status ok'}catch(err){$('prStatus').textContent=err.message;$('prStatus').className='status error'}};
+ $('resetProgress').onclick=()=>{if(!confirm('Xóa toàn bộ điểm và bài làm đã lưu trên trình duyệt này?'))return;state.solved.clear();state.answers={};state.current=-1;$('taskSelect').value='';$('prSQL').value='-- Chọn một bài tập';$('current').textContent='Chưa chọn bài.';$('quizBox').classList.add('hidden');$('prSQL').classList.remove('hidden');$('prRun').classList.remove('hidden');$('prClear').classList.remove('hidden');if($('studentId'))$('studentId').value='';updateScore();updateNavButtons();save()};
+
+ $('exportScore').onclick=()=>{
+  save();
+  const mssv=$('studentId')?$('studentId').value.trim():'',name=$('studentName').value.trim()||'Sinh viên';
+  const csv=[['MSSV','Sinh vien','Lab','Bai','Chu de','Trang thai','Diem'],...EXERCISES.map(t=>[mssv,name,'SELECT 7',t.id,TOPICS[t.id.split('.')[0]],state.solved.has(t.id)?'Dat':'Chua dat',state.solved.has(t.id)?'1':'0'])].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');const url=URL.createObjectURL(new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'}));
+  a.href=url;const tag=(mssv||name?(mssv+(name?'_'+name:'')):'sv').replace(/[^a-zA-Z0-9\u00C0-\u1EF9_-]+/g,'_').slice(0,40);
+  a.download='select-7-diem-'+tag+'.csv';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+ };
+
+ $('exportPng').onclick=()=>exportScoreCardPNG('SQL SELECT 7 — EXISTS, ALL & ANY',EXERCISES.length,getGroupsSummary(),'select_7_diem');
+
+ load();updateScore();updateNavButtons();updateExNav();
 }
-$('schemaChoice').onchange=e=>schema(e.target.value);
-$('exRun').onclick=()=>runEditor('exEditor','exStatus','exResult','exMeta',false);
-$('exClear').onclick=()=>{$('exEditor').value='';currentExample=-1;$('exPreset').value='';updateExNav();$('exEditor').focus()};$('reset').onclick=resetDB;
-$('exPrev').onclick=()=>{if(currentExample>0)setExample(currentExample-1,false)};
-$('exNext').onclick=()=>{const next=currentExample<0?0:currentExample+1;if(next<EXAMPLES.length)setExample(next,false)};
-$('exPreset').onchange=e=>{if(e.target.value!=='')setExample(+e.target.value,false);else{currentExample=-1;updateExNav()}};
-$('practiceRun').onclick=()=>{if(state.current<0)throw Error('Chọn bài tập trước.');runEditor('practiceEditor','practiceStatus','practiceResult','practiceMeta',!!EXERCISES[state.current].multi)};
-$('practiceCheck').onclick=check;
-$('practiceClear').onclick=()=>{$('practiceEditor').value='';$('practiceEditor').focus()};
-$('practiceEditor').oninput=()=>{if(state.current>=0){state.answers[EXERCISES[state.current].id]=$('practiceEditor').value;save()}};
-$('studentName').oninput=save;
-$('studentId').oninput=save;
-$('exportPng').onclick=()=>exportScoreCardPNG('SQL SELECT 7 — EXISTS, ALL & ANY',EXERCISES.length,getGroupsSummary(),'select_7_diem');
-$('prPrev').onclick=()=>{if(state.current>0)selectTask(state.current-1,false)};
-$('prNext').onclick=()=>{const next=state.current<0?0:state.current+1;if(next<EXERCISES.length)selectTask(next,false)};
-$('taskChoice').onchange=e=>{if(e.target.value!=='')selectTask(+e.target.value)};
-for(const id of ['exEditor','practiceEditor'])$(id).addEventListener('keydown',ev=>{if((ev.ctrlKey||ev.metaKey)&&ev.key==='Enter'){ev.preventDefault();(id==='exEditor'?$('exRun'):$('practiceRun')).click()}});
-$('exportCsv').onclick=()=>{const mssv=$('studentId')?$('studentId').value.trim():'',name=$('studentName').value.trim()||'Sinh viên';const csv=[['MSSV','Sinh vien','Lab','Bai','Chu de','Trang thai','Diem'],...EXERCISES.map(t=>[mssv,name,'SELECT '+SECTION,t.id,TOPICS[t.id.split('.')[0]],state.solved.has(t.id)?'Dat':'Chua dat',state.solved.has(t.id)?'1':'0'])].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');const url=URL.createObjectURL(new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'}));a.href=url;const tag=(mssv||name?(mssv+(name?'_'+name:'')):'sv').replace(/[^a-zA-Z0-9\u00C0-\u1EF9_-]+/g,'_').slice(0,40);a.download='select-'+SECTION+'-diem-'+tag+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
-if(SECTION===6){$('levelSlider').oninput=tree;}else{$('xSlider').oninput=quant;quant()}
-render();
-if(typeof initSqlJs!=='function'){$('exStatus').textContent='✗ Không tải được sql.js. Cần Internet để tải từ CDN.';$('exStatus').className='status bad';return}
-initSqlJs({locateFile:f=>'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/'+f}).then(SQL=>{state.SQL=SQL;resetDB();$('exRun').disabled=false;$('practiceRun').disabled=false;$('practiceCheck').disabled=state.current<0;$('exStatus').textContent='✓ SQL engine đã sẵn sàng. Chọn ví dụ để Run.';$('exStatus').className='status ok';$('practiceStatus').textContent='✓ SQL engine đã sẵn sàng. Chọn bài rồi Run/Check.';$('practiceStatus').className='status ok';}).catch(e=>{$('exStatus').textContent='✗ Không khởi tạo được SQLite: '+e.message;$('exStatus').className='status bad';});
-})();</script></body></html>
+
+initUI();
+if(typeof initSqlJs!=='function'){$('exStatus').textContent='Không thể tải sql.js từ CDN. Hãy kiểm tra kết nối mạng.';$('exStatus').className='status error';$('prStatus').textContent='Chưa tải được SQL engine.';}
+else{
+ initSqlJs({locateFile:f=>'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/'+f}).then(SQL=>{
+  state.SQL=SQL;
+  resetDatabase();
+  $('exRun').disabled=false;
+  $('exStatus').textContent='✓ SQL engine đã sẵn sàng. Chọn ví dụ rồi nhấn Run.';
+  $('exStatus').className='status ok';
+  $('prStatus').textContent='✓ SQL engine đã sẵn sàng. Chọn bài tập rồi Run hoặc Check.';
+  $('prStatus').className='status ok';
+ }).catch(e=>{
+  $('exStatus').textContent='✗ Không khởi tạo được SQLite: '+e.message;
+  $('exStatus').className='status error';
+ });
+}
+</script>
+</body>
+</html>
