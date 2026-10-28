@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 3: Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships) | DBMS Interactive</title>
+<meta name="description" content="Thấu hiểu bản chất quan hệ tự tham chiếu (Unary Relationship) trong cùng một tập thực thể: Định danh vai trò (Role Names), phân loại theo bội số 1:1, 1:N (Quản lý - Cấp dưới) và M:N (Môn học tiên quyết, Bill of Materials - Cây linh kiện), cùng chiến lược ánh xạ khóa ngoại tự tham chiếu trong SQL.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Enhanced Media & Figures */
+.stage-figure {
+  margin: 18px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 30, 60, 0.05);
+  text-align: center;
+}
+.stage-img {
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+figcaption::before {
+  content: "📊 ";
+}
+
+/* Callouts */
+.callout {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.callout-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.callout.tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  color: #14532d;
+}
+.callout.warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 5px solid #d97706;
+  color: #78350f;
+}
+.callout.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+}
+
+/* Comparison Table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.compare-table th {
+  background: #1e3a6e;
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 650;
+}
+.compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+.compare-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+.compare-table tr:hover td {
+  background: #f1f5f9;
+}
+
+/* Codebox */
+.codebox {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid #334155;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+.codebox-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 650;
+}
+.codebox-code, .codebox pre {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+.codebox-code code, .codebox pre code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+.codebox .kw { color: #38bdf8; font-weight: bold; }
+.codebox .tbl { color: #f472b6; }
+.codebox .str { color: #a3e635; }
+.codebox .cm { color: #64748b; font-style: italic; }
+.codebox .fn { color: #fbbf24; }
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../entity-relationship-model.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Trung tâm Mô hình Thực thể - Liên kết (ER & EER)</a>
+    <div class="eyebrow">DBMS · MÔ HÌNH THỰC THỂ - LIÊN KẾT (ER & EER) · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 3: Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships)</h1>
+    <p>Thấu hiểu bản chất quan hệ tự tham chiếu (Unary Relationship) trong cùng một tập thực thể: Định danh vai trò (Role Names), phân loại theo bội số 1:1, 1:N (Quản lý - Cấp dưới) và M:N (Môn học tiên quyết, Bill of Materials - Cây linh kiện), cùng chiến lược ánh xạ khóa ngoại tự tham chiếu trong SQL.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất báo cáo kết quả PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 4</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 8</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 03-recursive-relationship. Bài 3: Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Bản chất Quan hệ Đệ quy & Tầm quan trọng", "takeaway": "Quan hệ đệ quy (Unary Relationship) xảy ra khi cùng một tập thực thể tham gia vào mối quan hệ với chính nó, là công cụ then chốt mô hình hóa phân cấp và mạng lưới.", "summary": "\n        <h4>1.1. Quan hệ Đệ quy (Recursive / Unary Relationship) là gì?</h4>\n        <p>Trong thiết kế CSDL thông thường, một mối liên kết (Relationship) thường gắn kết hai hoặc nhiều tập thực thể hoàn toàn khác nhau (ví dụ: <code>SinhVien</code> học <code>MonHoc</code>; <code>KhachHang</code> đặt <code>DonHang</code>).</p>\n        <p>Tuy nhiên, trong thực tế có rất nhiều tình huống mà <b>các thực thể trong cùng một tập thực thể lại có mối quan hệ trực tiếp với nhau</b>. Tình huống này được gọi là <b>Quan hệ đệ quy (Recursive Relationship)</b> hay <b>Mối liên kết bậc 1 (Unary Relationship)</b>.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/recursive-relationship-1.png\" alt=\"Quan hệ đệ quy trong ERD\">\n            <figcaption>Hình 3.1: Minh họa sơ đồ quan hệ đệ quy nơi tập thực thể Employee tự liên kết với chính nó qua hình thoi quan hệ</figcaption>\n        </figure>\n\n        <h4>1.2. Các Tình huống Kinh điển Cần Dùng Quan hệ Đệ quy</h4>\n        <ul>\n            <li><b>Phân cấp Quản trị Nhân sự:</b> Một nhân viên là nhân viên cấp dưới, báo cáo công việc cho một nhân viên khác là sếp/quản lý (cả hai đều là <code>Employee</code>).</li>\n            <li><b>Cấu trúc Thư mục Tệp tin:</b> Một thư mục lớn chứa các thư mục con; mỗi thư mục con lại có thể chứa tiếp các thư mục cháu (tất cả đều là <code>Folder</code>).</li>\n            <li><b>Môn học Tiên quyết trong Đào tạo:</b> Muốn học môn <i>Cơ sở dữ liệu nâng cao</i>, sinh viên bắt buộc phải học trước môn <i>Cơ sở dữ liệu căn bản</i> (cả hai đều là <code>Course</code>).</li>\n            <li><b>Mạng xã hội & Tương tác:</b> Người dùng kết bạn hoặc theo dõi người dùng khác (cả hai đều là <code>User</code>).</li>\n            <li><b>Cấu trúc Sản xuất (Bill of Materials - BOM):</b> Một sản phẩm hoàn chỉnh (xe máy) gồm các cụm linh kiện (động cơ, khung xe); cụm linh kiện lại gồm các chi tiết nhỏ hơn (bu lông, ốc vít). Tất cả đều là <code>Part</code>.</li>\n        </ul>\n        ", "questions": [{"qid": "q1_1", "text": "Định nghĩa chuẩn xác nhất về Quan hệ đệ quy (Unary / Recursive Relationship) trong ER Model là gì?", "options": ["Quan hệ giữa 2 bảng hoàn toàn không có thuộc tính chung nào.", "Quan hệ trong đó cùng một tập thực thể tham gia vào mối quan hệ với chính các thực thể trong tập đó.", "Một vòng lặp vô hạn làm tràn bộ nhớ máy chủ cơ sở dữ liệu.", "Mối quan hệ bắt buộc phải có từ 3 thực thể trở lên tham gia đồng thời."], "correct": 1, "explanation": "Chính xác! Quan hệ đệ quy là quan hệ tự tham chiếu (Unary), nơi một tập thực thể liên kết với chính nó."}, {"qid": "q1_2", "text": "Mối quan hệ nào sau đây KHÔNG PHẢI là một quan hệ đệ quy?", "options": ["Nhân viên quản lý nhân viên khác trong cùng công ty.", "Môn học là điều kiện tiên quyết của một môn học khác.", "Khách hàng thực hiện thanh toán cho một Đơn hàng.", "Thư mục chứa các thư mục con trong hệ điều hành."], "correct": 2, "explanation": "Chính xác! 'Khách hàng thanh toán Đơn hàng' là mối quan hệ nhị phân (Binary) giữa 2 tập thực thể hoàn toàn khác nhau (Khách hàng và Đơn hàng), không phải đệ quy."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Định danh Vai trò (Role Names) trên Sơ đồ ERD", "takeaway": "Role Name là nhãn bắt buộc phải ghi trên các nhánh của quan hệ đệ quy nhằm phân định rõ ràng vai trò của mỗi bên khi cùng thuộc một tập thực thể.", "summary": "\n        <h4>2.1. Vì sao Quan hệ Đệ quy Bắt buộc Phải có Role Names?</h4>\n        <p>Trong quan hệ nhị phân thông thường (ví dụ: <code>NhanVien</code> <i>LAM_VIEC_TAI</i> <code>PhongBan</code>), tên của hai tập thực thể đã đủ để hiểu rõ vai trò của từng bên. Nhưng trong quan hệ đệ quy:</p>\n        <div style=\"background:#f1f5f9;padding:12px 16px;border-radius:8px;margin:12px 0;border-left:4px solid #0284c7\">\n            <i>Nếu chỉ vẽ đường nối từ <code>Employee</code> vào <code>SUPERVISES</code> rồi nối lại về <code>Employee</code>, ta sẽ không thể biết được đầu nào là <b>Người quản lý</b> và đầu nào là <b>Nhân viên cấp dưới</b>!</i>\n        </div>\n        <p>Do đó, chuẩn thiết kế ERD quy định phải gán <b>Tên vai trò (Role Name)</b> rõ ràng tại mỗi đầu đường nối của mối liên kết đệ quy.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/recursive-relationship-2.png\" alt=\"Định danh vai trò trong sơ đồ ER\">\n            <figcaption>Hình 3.2: Ghi rõ Role Names trên từng nhánh: Supervisor (Người quản lý) và Subordinate (Cấp dưới) để làm rõ ngữ nghĩa</figcaption>\n        </figure>\n\n        <h4>2.2. Các Cặp Role Names Phổ biến trong Thực tế</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Bài toán nghiệp vụ</th>\n                    <th>Tên Mối quan hệ</th>\n                    <th>Role 1 (Vai trò bên 1)</th>\n                    <th>Role 2 (Vai trò bên 2)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Quản lý nhân sự</b></td>\n                    <td><code>REPORTS_TO / SUPERVISES</code></td>\n                    <td><code>Supervisor</code> (Cấp trên / Quản lý)</td>\n                    <td><code>Subordinate</code> (Cấp dưới / Nhân viên)</td>\n                </tr>\n                <tr>\n                    <td><b>Điều kiện môn học</b></td>\n                    <td><code>PREREQUISITE</code></td>\n                    <td><code>Prerequisite_Course</code> (Môn tiên quyết)</td>\n                    <td><code>Subsequent_Course</code> (Môn học tiếp theo)</td>\n                </tr>\n                <tr>\n                    <td><b>Cây linh kiện (BOM)</b></td>\n                    <td><code>CONTAINS_PART</code></td>\n                    <td><code>Assembly_Part</code> (Cụm linh kiện lắp ráp)</td>\n                    <td><code>Component_Part</code> (Chi tiết linh kiện thành phần)</td>\n                </tr>\n                <tr>\n                    <td><b>Hôn nhân gia đình</b></td>\n                    <td><code>MARRIED_TO</code></td>\n                    <td><code>Husband</code> (Chồng)</td>\n                    <td><code>Wife</code> (Vợ)</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q2_1", "text": "Vì sao việc chỉ định Role Name (Tên vai trò) lại đặc biệt quan trọng trong các mối quan hệ đệ quy?", "options": ["Vì hệ quản trị CSDL sẽ tự động tạo bảng nếu có Role Name.", "Vì cùng một tập thực thể xuất hiện ở cả hai đầu của mối liên kết, cần Role Name để phân biệt rõ ngữ nghĩa của từng bên tham gia.", "Vì Role Name thay thế hoàn toàn cho khóa chính của bảng.", "Để làm tăng tốc độ đường truyền mạng giữa client và server."], "correct": 1, "explanation": "Chính xác! Do cả hai bên tham gia đều thuộc cùng một entity set, Role Name là công cụ duy nhất giúp xác định chính xác ngữ nghĩa của từng vai trò (ví dụ: ai quản lý ai)."}, {"qid": "q2_2", "text": "Trong quan hệ đệ quy 'Môn học tiên quyết', hai Role Name nào sau đây thể hiện rõ ràng và chính xác nhất ngữ nghĩa của mối liên kết?", "options": ["Buyer và Seller.", "Prerequisite_Course (Môn tiên quyết) và Subsequent_Course (Môn học sau).", "Parent_Table và Child_Column.", "Host và Client."], "correct": 1, "explanation": "Chính xác! Cặp Role Name Prerequisite_Course và Subsequent_Course phân định rõ môn nào là điều kiện bắt buộc trước và môn nào là môn học theo sau."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: 3 Dạng Bội số Đệ quy: 1:1, 1:N và M:N", "takeaway": "Nắm vững 3 dạng bản số đệ quy: 1:1 (Hôn nhân), 1:N (Cấu trúc Cây tổ chức - phổ biến nhất), và M:N (Đồ thị mạng lưới, Môn học, BOM).", "summary": "\n        <h4>3.1. Phân loại Quan hệ Đệ quy theo Bội số (Cardinality)</h4>\n        <p>Tùy theo quy tắc nghiệp vụ, quan hệ đệ quy có thể xuất hiện dưới 3 dạng bội số với bản chất cấu trúc dữ liệu hoàn toàn khác nhau:</p>\n\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Bản số</th>\n                    <th>Cấu trúc Dữ liệu</th>\n                    <th>Quy tắc Nghiệp vụ</th>\n                    <th>Ví dụ Thực tiễn</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Đệ quy 1:1</b></td>\n                    <td>Cặp thực thể đối xứng hoặc một-đối-một.</td>\n                    <td>Mỗi thực thể chỉ liên kết với tối đa 1 thực thể khác cùng loại theo chiều ngược lại.</td>\n                    <td><code>Nguoi HÔN_NHÂN Nguoi</code>: Tại một thời điểm, mỗi người chỉ kết hôn với tối đa 1 người hợp pháp.</td>\n                </tr>\n                <tr>\n                    <td><b>Đệ quy 1:N</b><br><i>(Phổ biến nhất)</i></td>\n                    <td><b>Cấu trúc Cây (Tree Hierarchy)</b>: 1 Gốc (Root), nhiều Nhánh (Branches) và Lá (Leaves).</td>\n                    <td>Mỗi thực thể con chỉ có <b>tối đa 1 cấp trên trực tiếp</b>, nhưng một cấp trên có thể quản lý <b>nhiều cấp dưới</b>.</td>\n                    <td><code>NhanVien BAO_CAO NhanVien</code>: Mỗi nhân viên có đúng 1 sếp trực tiếp, sếp quản lý nhiều nhân viên. Hoặc Cây thư mục máy tính.</td>\n                </tr>\n                <tr>\n                    <td><b>Đệ quy M:N</b></td>\n                    <td><b>Cấu trúc Đồ thị (Graph / Network)</b>: Mạng lưới chằng chịt, có thể có chu trình (Cycles).</td>\n                    <td>Một thực thể liên kết với nhiều thực thể khác, và ngược lại.</td>\n                    <td><code>MonHoc TIEN_QUYET MonHoc</code>: 1 môn có nhiều môn tiên quyết, và là tiên quyết cho nhiều môn khác. Hoặc Mạng bạn bè Facebook.</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q3_1", "text": "Cơ cấu tổ chức nhân sự hình kim tự tháp (mỗi nhân viên có 1 sếp trực tiếp, sếp quản lý nhiều nhân viên) thuộc dạng quan hệ đệ quy nào?", "options": ["Đệ quy 1:1.", "Đệ quy 1:N (Cấu trúc Cây).", "Đệ quy M:N.", "Không thể mô hình hóa được bằng ERD."], "correct": 1, "explanation": "Chính xác! Đây là cấu trúc cây kinh điển 1:N: mỗi nhân viên có tối đa 1 người quản lý trực tiếp, nhưng 1 người quản lý có thể có N nhân viên cấp dưới."}, {"qid": "q3_2", "text": "Bài toán quản lý linh kiện Bill of Materials (BOM) - một cụm máy bay gồm nhiều chi tiết máy, và một chi tiết ốc vít được dùng trong nhiều cụm máy bay khác nhau - thuộc loại đệ quy nào?", "options": ["Đệ quy 1:1.", "Đệ quy 1:N.", "Đệ quy M:N (Đồ thị mạng lưới đa chiều).", "Quan hệ bậc 3."], "correct": 2, "explanation": "Chính xác! Vì một cụm linh kiện chứa nhiều linh kiện con, và một linh kiện con lại thuộc về nhiều cụm linh kiện khác nhau, nên đây là quan hệ đệ quy Nhiều - Nhiều (M:N)."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Ánh xạ Lược đồ Quan hệ SQL & Kỹ thuật Truy vấn Đệ quy", "takeaway": "Đệ quy 1:N được cài đặt bằng Foreign Key tự tham chiếu (Self-referencing FK); đệ quy M:N bắt buộc tạo bảng trung gian; truy vấn cây dùng Recursive CTE.", "summary": "\n        <h4>4.1. Ánh xạ Quan hệ Đệ quy sang Lược đồ Quan hệ SQL</h4>\n        <ul>\n            <li><b>Với quan hệ đệ quy 1:N:</b> Ta không cần tạo thêm bảng mới! Chỉ cần thêm một cột <b>Khóa ngoại tự tham chiếu (Self-referencing Foreign Key)</b> ngay trong bảng đó, trỏ ngược về khóa chính của chính bảng đó.\n                <ul>\n                    <li><i>Lưu ý quan trọng:</i> Cột khóa ngoại này <b>bắt buộc phải cho phép <code>NULL</code></b> để lưu trữ nút gốc (Root) của cây phân cấp (ví dụ: Tổng giám đốc/CEO không có cấp trên nào, nên <code>manager_id = NULL</code>).</li>\n                </ul>\n            </li>\n            <li><b>Với quan hệ đệ quy M:N:</b> Bắt buộc phải tạo một <b>Bảng trung gian (Junction Table)</b> độc lập với khóa chính phức hợp gồm 2 khóa ngoại đều tham chiếu về cùng bảng thực thể gốc.</li>\n        </ul>\n\n        <h4>4.2. Mã nguồn SQL DDL & Kỹ thuật Truy vấn Đệ quy (WITH RECURSIVE)</h4>\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Self-referencing Table &amp; Recursive CTE</span>\n                <span>Production SQL Implementation</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- 1. Bảng nhân viên có Foreign Key tự tham chiếu (Đệ quy 1:N)</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">employee</span> (\n    emp_id <span class=\"kw\">INT</span> <span class=\"kw\">PRIMARY KEY</span>,\n    full_name <span class=\"kw\">VARCHAR</span>(100) <span class=\"kw\">NOT NULL</span>,\n    job_title <span class=\"kw\">VARCHAR</span>(50) <span class=\"kw\">NOT NULL</span>,\n    manager_id <span class=\"kw\">INT</span> <span class=\"kw\">NULL</span>, <span class=\"cm\">-- Cho phép NULL đối với CEO</span>\n    <span class=\"kw\">FOREIGN KEY</span> (manager_id) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">employee</span>(emp_id) <span class=\"kw\">ON DELETE SET NULL</span>\n);\n\n<span class=\"cm\">-- 2. Bảng trung gian cho đệ quy M:N môn học tiên quyết</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">course_prerequisite</span> (\n    course_id <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    prereq_id <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    <span class=\"kw\">PRIMARY KEY</span> (course_id, prereq_id),\n    <span class=\"kw\">FOREIGN KEY</span> (course_id) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">course</span>(course_id) <span class=\"kw\">ON DELETE CASCADE</span>,\n    <span class=\"kw\">FOREIGN KEY</span> (prereq_id) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">course</span>(course_id) <span class=\"kw\">ON DELETE CASCADE</span>\n);\n\n<span class=\"cm\">-- 3. Kỹ thuật Recursive CTE duyệt toàn bộ chuỗi nhân viên cấp dưới của CEO</span>\n<span class=\"kw\">WITH RECURSIVE</span> <span class=\"tbl\">org_chart</span> <span class=\"kw\">AS</span> (\n    <span class=\"cm\">-- Base case: Tìm nút gốc CEO (manager_id IS NULL)</span>\n    <span class=\"kw\">SELECT</span> emp_id, full_name, job_title, manager_id, 1 <span class=\"kw\">AS</span> level\n    <span class=\"kw\">FROM</span> <span class=\"tbl\">employee</span>\n    <span class=\"kw\">WHERE</span> manager_id <span class=\"kw\">IS NULL</span>\n    <span class=\"kw\">UNION ALL</span>\n    <span class=\"cm\">-- Recursive step: Tìm tất cả nhân viên báo cáo cho cấp trước</span>\n    <span class=\"kw\">SELECT</span> e.emp_id, e.full_name, e.job_title, e.manager_id, o.level + 1\n    <span class=\"kw\">FROM</span> <span class=\"tbl\">employee</span> e\n    <span class=\"kw\">INNER JOIN</span> <span class=\"tbl\">org_chart</span> o <span class=\"kw\">ON</span> e.manager_id = o.emp_id\n)\n<span class=\"kw\">SELECT</span> * <span class=\"kw\">FROM</span> <span class=\"tbl\">org_chart</span> <span class=\"kw\">ORDER BY</span> level, emp_id;</code></pre>\n        </div>\n        ", "questions": [{"qid": "q4_1", "text": "Vì sao cột khóa ngoại manager_id trong bảng nhân sự tự tham chiếu (employee) bắt buộc phải cho phép chứa giá trị NULL?", "options": ["Vì chuẩn SQL không cho phép đặt khóa ngoại trên kiểu dữ liệu số nguyên.", "Để người đứng đầu cao nhất của tổ chức (CEO/Giám đốc) có thể tồn tại trong CSDL mà không bị lỗi ràng buộc toàn vẹn.", "Để hệ thống tự động xóa toàn bộ bảng khi có nhân viên nghỉ việc.", "Để tăng tốc độ tính toán của mệnh đề GROUP BY."], "correct": 1, "explanation": "Chính xác! Vị trí cao nhất của cây phân cấp tổ chức (như Tổng giám đốc/CEO) không có người quản lý cấp trên, do đó manager_id bắt buộc phải là NULL để không vi phạm khóa ngoại."}, {"qid": "q4_2", "text": "Để truy vấn đệ quy duyệt qua nhiều tầng phân cấp từ cây thư mục hoặc sơ đồ tổ chức nhân sự trong chuẩn SQL:1999 trở lên, cú pháp nào được sử dụng?", "options": ["Sử dụng mệnh đề SELECT DISTINCT lặp 100 lần.", "Sử dụng cú pháp Common Table Expression đệ quy: WITH RECURSIVE.", "Sử dụng lệnh DROP TABLE IF EXISTS.", "Sử dụng hàm băm MD5()."], "correct": 1, "explanation": "Chính xác! Mệnh đề WITH RECURSIVE là chuẩn mực của SQL hiện đại để giải quyết bài toán duyệt đồ thị và cây phân cấp đệ quy."}]}];
+const STORAGE_KEY = 'dbms_erd_l3_v1';
+const LESSON_TITLE = 'Bài 3: Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships)';
+const LESSON_CODE = '03-recursive-relationship';
+const TOTAL_QUESTIONS = 8;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
+    if (isUnlocked) {
+      pill.onclick = () => scrollToStage(s.num);
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
+
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIdx) => {
+      let optionsHtml = '';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
+        }
+
+        optionsHtml += `
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
+        </div>
+      `;
+    });
+
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
+
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
+        </div>
+
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
+          </div>
+          ${questionsHtml}
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(stageEl);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
+      allAnswered = false;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
+    }
+
+    // Render feedback
+    const fb = document.getElementById(`fb_${q.qid}`);
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
+    }
+  });
+
+  if (!allAnswered) {
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
+    return;
+  }
+
+  saveState();
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
+    }
+    saveState();
+    updateScorecard();
+
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
+
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
+    if (stageNum < STAGES.length) {
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
+        if (nextBadge) {
+          nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
+        }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+      }
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
+      setTimeout(() => {
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
+    }
+  } else {
+    updateScorecard();
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById(`stage-${stageNum}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const rows = [
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const isCor = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        String(s.num),
+        s.title,
+        q.qid,
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  // Kích thước chuẩn: Rộng 880px, chiều cao tính theo số chặng
+  const W = 880;
+  const rowH = 46;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Thẻ chứa viền bo góc
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
+
+  // Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
+
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
+
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
+
+  ctx.save();
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
+
+  // Thanh tiến độ đồ họa
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
+  if (completedParts > 0 && totalParts > 0) {
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.save();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
+  y += 18;
+
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '…' : s.title;
+    ctx.fillText(label, 56, y + 28);
+
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    }
+    ctx.restore();
+
+    y += rowH + rowGap;
+  });
+
+  // Footer ghi chú
+  y += 14;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
+  ctx.restore();
+
+  // Kích hoạt tải ảnh PNG
+  const a = document.createElement('a');
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+</body>
+</html>

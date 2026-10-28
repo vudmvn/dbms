@@ -97,7 +97,7 @@ Tài liệu học tập về hệ quản trị cơ sở dữ liệu và MySQL.
 
 ## Introduction
 
-Phần này trình bày các khái niệm nền tảng của DBMS, nhu cầu sử dụng DBMS và các kiến trúc cơ sở dữ liệu thường gặp trong hệ thống thực tế.
+Phần này trình bày các khái niệm nền tảng của DBMS, nhu cầu sử dụng DBMS và các kiến trúc cơ sở dữ liệu thường gặp trong hệ thống thực tế. Trải nghiệm hệ thống học tập có khóa chặng và tự chấm điểm tại [Trung tâm Bài học Tương tác Nhập môn DBMS](lectures/introduction/introduction.html).
 
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
@@ -109,15 +109,15 @@ Phần này trình bày các khái niệm nền tảng của DBMS, nhu cầu s�
 
 ## Entity Relationship Model
 
-Phần này trình bày mô hình ER ở mức khái niệm, dùng thực thể, thuộc tính và mối quan hệ để biểu diễn dữ liệu trong bài toán thực tế.
+Phần này trình bày mô hình ER ở mức khái niệm, dùng thực thể, thuộc tính và mối quan hệ để biểu diễn dữ liệu trong bài toán thực tế. Trải nghiệm hệ thống học tập có khóa chặng và tự chấm điểm tại [Trung tâm Bài học Tương tác ER & EER Model](lectures/entity-relationship-model/entity-relationship-model.html).
 
-| Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
+| Bài học | Bài giảng Markdown | Bản Web Tương tác (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
-| Mô hình hóa dữ liệu trong DBMS | [Markdown](lectures/entity-relationship-model/data-modeling/data-modeling.md) | <span class="missing">—</span> | <span class="missing">—</span> | Nền tảng trước khi thiết kế ERD |
-| Giới thiệu ER Model trong DBMS | [Markdown](lectures/entity-relationship-model/er-model/er-model.md) | [HTML](lectures/entity-relationship-model/er-model/er-model.html) | [VI](lectures/entity-relationship-model/er-model/er-model-vi.pdf) / [EN](lectures/entity-relationship-model/er-model/er-model-en.pdf) | Có slides song ngữ |
-| Mô hình Enhanced ER trong DBMS | [Markdown](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.md) | [HTML](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.html) | [VI](lectures/entity-relationship-model/enhanced-er-model/enhance-er-model-beamer-vi.pdf) |  |
-| Generalization, Specialization và Aggregation trong ER Model | [Markdown](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.md) | <span class="missing">—</span> | <span class="missing">—</span> | Có ví dụ và bài tập vận dụng |
-| Quan hệ đệ quy trong sơ đồ ER | [Markdown](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.md) | <span class="missing">—</span> | <span class="missing">—</span> |  |
+| 01. Mô hình hóa dữ liệu trong DBMS | [Markdown](lectures/entity-relationship-model/data-modeling/data-modeling.md) | [HTML Tương tác](lectures/entity-relationship-model/data-modeling/data-modeling.html) | <span class="missing">—</span> | 3 mức mô hình hóa, so sánh các mô hình logic, SDLC |
+| 02. Giới thiệu ER Model trong DBMS | [Markdown](lectures/entity-relationship-model/er-model/er-model.md) | [HTML Tương tác](lectures/entity-relationship-model/er-model/er-model.html) | [VI](lectures/entity-relationship-model/er-model/er-model-vi.pdf) / [EN](lectures/entity-relationship-model/er-model/er-model-en.pdf) | Thực thể mạnh/yếu, thuộc tính, liên kết, bội số, tham gia, ánh xạ SQL |
+| 03. Quan hệ đệ quy trong sơ đồ ER | [Markdown](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.md) | [HTML Tương tác](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.html) | <span class="missing">—</span> | Quan hệ Unary, Role Names, đệ quy 1:1, 1:N, M:N, Recursive CTE |
+| 04. Generalization, Specialization và Aggregation trong ER Model | [Markdown](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.md) | [HTML Tương tác](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.html) | <span class="missing">—</span> | Bottom-up Generalization, Top-down Specialization, IS-A, Aggregation |
+| 05. Mô hình Enhanced ER trong DBMS | [Markdown](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.md) | [HTML Tương tác](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.html) | [VI](lectures/entity-relationship-model/enhanced-er-model/enhance-er-model-beamer-vi.pdf) | 4 tổ hợp ràng buộc, Category/Union, Đa kế thừa Lattice, Ánh xạ EER |
 
 ### Labs ER Model
 
@@ -290,15 +290,15 @@ Phần này trình bày các khái niệm nền tảng của DBMS, nhu cầu s�
 
 ## Entity Relationship Model
 
-Phần này trình bày mô hình ER ở mức khái niệm, dùng thực thể, thuộc tính và mối quan hệ để biểu diễn dữ liệu trong bài toán thực tế.
+This section covers the conceptual ER model, using entities, attributes, and relationships to model real-world business data. Interactive stage-by-stage learning available at [ER & EER Interactive Learning Hub](lectures/entity-relationship-model/entity-relationship-model.html).
 
-| Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
+| Lesson | Markdown Lecture | Interactive Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
-| Data Modeling in DBMS | [Markdown](lectures/entity-relationship-model/data-modeling/data-modeling.md) | <span class="missing">—</span> | <span class="missing">—</span> | Foundation before ERD design |
-| Introduction to ER Model in DBMS | [Markdown](lectures/entity-relationship-model/er-model/er-model.md) | [HTML](lectures/entity-relationship-model/er-model/er-model.html) | [VI](lectures/entity-relationship-model/er-model/er-model-vi.pdf) / [EN](lectures/entity-relationship-model/er-model/er-model-en.pdf) | Bilingual slides |
-| Enhanced ER Model | [Markdown](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.md) | [HTML](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.html) | [VI](lectures/entity-relationship-model/enhanced-er-model/enhance-er-model-beamer-vi.pdf) |  |
-| Generalization, Specialization, and Aggregation in the ER Model | [Markdown](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.md) | <span class="missing">—</span> | <span class="missing">—</span> | Includes examples and exercises |
-| Recursive Relationships in ER Diagrams | [Markdown](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.md) | <span class="missing">—</span> | <span class="missing">—</span> |  |
+| 01. Data Modeling in DBMS | [Markdown](lectures/entity-relationship-model/data-modeling/data-modeling.md) | [Interactive HTML](lectures/entity-relationship-model/data-modeling/data-modeling.html) | <span class="missing">—</span> | 3 modeling levels, logical models comparison, SDLC |
+| 02. Introduction to ER Model in DBMS | [Markdown](lectures/entity-relationship-model/er-model/er-model.md) | [Interactive HTML](lectures/entity-relationship-model/er-model/er-model.html) | [VI](lectures/entity-relationship-model/er-model/er-model-vi.pdf) / [EN](lectures/entity-relationship-model/er-model/er-model-en.pdf) | Strong/weak entities, attributes, relationships, cardinalities, SQL mapping |
+| 03. Recursive Relationships in ER Diagrams | [Markdown](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.md) | [Interactive HTML](lectures/entity-relationship-model/recursive-relationship/recursive-relationship.html) | <span class="missing">—</span> | Unary relationships, Role Names, 1:1, 1:N, M:N, Recursive CTE |
+| 04. Generalization, Specialization, and Aggregation in the ER Model | [Markdown](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.md) | [Interactive HTML](lectures/entity-relationship-model/generalization-specialization-aggregation/generalization-specialization-aggregation.html) | <span class="missing">—</span> | Bottom-up Generalization, Top-down Specialization, IS-A, Aggregation |
+| 05. Enhanced ER Model in DBMS | [Markdown](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.md) | [Interactive HTML](lectures/entity-relationship-model/enhanced-er-model/enhanced-er-model.html) | [VI](lectures/entity-relationship-model/enhanced-er-model/enhance-er-model-beamer-vi.pdf) | 4 constraint combinations, Category/Union, Lattice, EER mapping |
 
 ### ER Model Labs
 

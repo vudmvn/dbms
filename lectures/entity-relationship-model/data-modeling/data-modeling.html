@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 1: Mô hình hóa Dữ liệu trong DBMS (Data Modeling) | DBMS Interactive</title>
+<meta name="description" content="Khám phá 3 cấp độ mô hình hóa dữ liệu (Conceptual, Logical/Representational, Physical), phân tích các mô hình dữ liệu kinh điển (Hierarchical, Network, Relational, Object-Oriented, NoSQL) và vai trò nền tảng của ERD trong vòng đời phát triển CSDL.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Enhanced Media & Figures */
+.stage-figure {
+  margin: 18px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 30, 60, 0.05);
+  text-align: center;
+}
+.stage-img {
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+figcaption::before {
+  content: "📊 ";
+}
+
+/* Callouts */
+.callout {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.callout-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.callout.tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  color: #14532d;
+}
+.callout.warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 5px solid #d97706;
+  color: #78350f;
+}
+.callout.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+}
+
+/* Comparison Table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.compare-table th {
+  background: #1e3a6e;
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 650;
+}
+.compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+.compare-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+.compare-table tr:hover td {
+  background: #f1f5f9;
+}
+
+/* Codebox */
+.codebox {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid #334155;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+.codebox-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 650;
+}
+.codebox-code, .codebox pre {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+.codebox-code code, .codebox pre code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+.codebox .kw { color: #38bdf8; font-weight: bold; }
+.codebox .tbl { color: #f472b6; }
+.codebox .str { color: #a3e635; }
+.codebox .cm { color: #64748b; font-style: italic; }
+.codebox .fn { color: #fbbf24; }
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../entity-relationship-model.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Trung tâm Mô hình Thực thể - Liên kết (ER & EER)</a>
+    <div class="eyebrow">DBMS · MÔ HÌNH THỰC THỂ - LIÊN KẾT (ER & EER) · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 1: Mô hình hóa Dữ liệu trong DBMS (Data Modeling)</h1>
+    <p>Khám phá 3 cấp độ mô hình hóa dữ liệu (Conceptual, Logical/Representational, Physical), phân tích các mô hình dữ liệu kinh điển (Hierarchical, Network, Relational, Object-Oriented, NoSQL) và vai trò nền tảng của ERD trong vòng đời phát triển CSDL.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất báo cáo kết quả PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 01-data-modeling. Bài 1: Mô hình hóa Dữ liệu trong DBMS (Data Modeling) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Khởi động & Bản chất Mô hình hóa Dữ liệu", "takeaway": "Mô hình dữ liệu (Data Model) là tập khái niệm và quy tắc mô tả cấu trúc, mối liên kết và ràng buộc dữ liệu, đóng vai trò bản vẽ thiết kế trước khi xây dựng CSDL.", "summary": "\n        <h4>1.1. Mô hình dữ liệu (Data Model) là gì?</h4>\n        <p>Trong kỹ thuật phần mềm và cơ sở dữ liệu, <b>mô hình dữ liệu (Data Model)</b> là một tập hợp trừu tượng các khái niệm, ký hiệu toán học và quy tắc dùng để định nghĩa và mô tả:</p>\n        <ul>\n            <li><b>Cấu trúc dữ liệu (Data Structure):</b> Các đối tượng thông tin mà hệ thống cần quản lý cùng các thuộc tính cấu thành.</li>\n            <li><b>Mối liên kết dữ liệu (Data Relationships):</b> Cách các đối tượng tương tác, gắn kết và phụ thuộc lẫn nhau.</li>\n            <li><b>Ràng buộc toàn vẹn (Integrity Constraints):</b> Các quy tắc nghiệp vụ mà dữ liệu bắt buộc phải tuân thủ (ví dụ: tuổi phải &gt; 0, email không được trùng lặp, mã sinh viên không được để trống).</li>\n        </ul>\n\n        <h4>1.2. Vai trò sống còn của Mô hình hóa Dữ liệu</h4>\n        <p>Tương tự như việc xây dựng một tòa nhà cao tầng luôn cần <i>bản vẽ thiết kế kiến trúc</i> trước khi đổ móng, việc xây dựng CSDL bắt buộc phải có mô hình dữ liệu. Mô hình dữ liệu đóng vai trò cầu nối 3 bên:</p>\n        <ol>\n            <li><b>Người dùng / Chuyên viên nghiệp vụ:</b> Cung cấp yêu cầu nghiệp vụ thực tế nhưng không hiểu sâu về kỹ thuật CSDL.</li>\n            <li><b>Kiến trúc sư dữ liệu / Nhà thiết kế:</b> Chuyển hóa yêu cầu nghiệp vụ thành sơ đồ trực quan, chuẩn hóa cấu trúc để tránh dư thừa.</li>\n            <li><b>Lập trình viên / Quản trị viên CSDL (DBA):</b> Dựa vào mô hình để viết lệnh DDL, tạo bảng, tạo khóa và tối ưu truy vấn vật lý.</li>\n        </ol>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/data_model.png\" alt=\"Tổng quan quy trình mô hình hóa dữ liệu\">\n            <figcaption>Hình 1.1: Quy trình mô hình hóa dữ liệu đóng vai trò cầu nối xuyên suốt từ nghiệp vụ đến triển khai vật lý</figcaption>\n        </figure>\n\n        <h4>1.3. Hậu quả nghiêm trọng nếu bỏ qua bước mô hình hóa dữ liệu</h4>\n        <ul>\n            <li><b>Dư thừa dữ liệu (Data Redundancy):</b> Cùng một thông tin (như địa chỉ khoa) bị lưu rải rác ở hàng chục bảng khác nhau, lãng phí tài nguyên.</li>\n            <li><b>Dị thường cập nhật (Modification Anomalies):</b> Sửa thông tin ở bảng này nhưng quên sửa ở bảng khác dẫn đến mâu thuẫn dữ liệu.</li>\n            <li><b>Khó khăn khi mở rộng và bảo trì:</b> Thay đổi một bảng khiến toàn bộ ứng dụng bị đổ vỡ vì không nắm rõ mối quan hệ ràng buộc.</li>\n        </ul>\n        ", "questions": [{"qid": "q1_1", "text": "Mục đích chính của việc xây dựng mô hình dữ liệu (Data Modeling) trong DBMS là gì?", "options": ["Chỉ để vẽ sơ đồ trang trí tài liệu báo cáo của dự án.", "Mô tả cấu trúc dữ liệu, mối quan hệ và các ràng buộc nghiệp vụ trước khi triển khai vật lý.", "Thay thế hoàn toàn mã lệnh SQL và phần mềm hệ quản trị CSDL.", "Tự động tăng dung lượng bộ nhớ RAM và CPU của máy chủ CSDL."], "correct": 1, "explanation": "Chính xác! Mô hình dữ liệu là bản thiết kế trừu tượng xác định cấu trúc, liên kết và quy tắc toàn vẹn dữ liệu trước khi viết lệnh tạo bảng vật lý."}, {"qid": "q1_2", "text": "Điều gì xảy ra nếu đội ngũ phát triển nhảy vào viết mã SQL tạo bảng ngay mà không qua bước mô hình hóa dữ liệu?", "options": ["Cơ sở dữ liệu sẽ tự động đạt chuẩn dạng chuẩn 3NF.", "Hiệu năng truy vấn của hệ thống chắc chắn sẽ tăng gấp đôi.", "Nguy cơ cao dữ liệu bị trùng lặp, thiếu quan hệ logic và phát sinh dị thường khi cập nhật.", "Không thể cài đặt phần mềm MySQL hay PostgreSQL lên máy tính."], "correct": 2, "explanation": "Chính xác! Bỏ qua mô hình hóa dữ liệu sẽ dẫn đến thiết kế chắp vá, trùng lặp thông tin và phát sinh dị thường nghiêm trọng khi hệ thống vận hành."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: 3 Cấp độ Trừu tượng của Mô hình Dữ liệu", "takeaway": "Mô hình hóa dữ liệu trải qua 3 cấp độ: Conceptual (độc lập hoàn toàn), Logical (độc lập phần cứng, theo mô hình quan hệ), và Physical (gắn liền với DBMS và phần cứng cụ thể).", "summary": "\n        <h4>2.1. Kiến trúc 3 Cấp độ Mô hình Dữ liệu (ANSI/SPARC)</h4>\n        <p>Để quản lý sự phức tạp, việc thiết kế cơ sở dữ liệu được chia thành 3 cấp độ trừu tượng kế tiếp nhau:</p>\n\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí</th>\n                    <th>1. Conceptual Data Model (Khái niệm)</th>\n                    <th>2. Logical Data Model (Logic / Biểu diễn)</th>\n                    <th>3. Physical Data Model (Vật lý)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Đối tượng sử dụng</b></td>\n                    <td>Chuyên viên phân tích, người dùng nghiệp vụ, stakeholder.</td>\n                    <td>Kiến trúc sư CSDL, nhà phân tích hệ thống, lập trình viên.</td>\n                    <td>Database Administrator (DBA), System Engineer.</td>\n                </tr>\n                <tr>\n                    <td><b>Độ độc lập</b></td>\n                    <td><b>Độc lập hoàn toàn</b> với phần mềm DBMS và phần cứng lưu trữ.</td>\n                    <td>Độc lập phần cứng, nhưng <b>phụ thuộc loại mô hình CSDL</b> (Quan hệ, NoSQL).</td>\n                    <td><b>Phụ thuộc hoàn toàn</b> vào DBMS cụ thể (MySQL, Oracle, PostgreSQL).</td>\n                </tr>\n                <tr>\n                    <td><b>Thành phần cốt lõi</b></td>\n                    <td>Thực thể (Entities), Thuộc tính chính (Attributes), Mối liên kết (Relationships).</td>\n                    <td>Bảng (Tables), Cột (Columns), Khóa chính (PK), Khóa ngoại (FK), Dạng chuẩn (3NF).</td>\n                    <td>Data types chi tiết (VARCHAR, INT), B-Tree Index, Partitioning, Tablespace, Storage Engine.</td>\n                </tr>\n                <tr>\n                    <td><b>Ví dụ công cụ</b></td>\n                    <td>Sơ đồ ERD (Entity-Relationship Diagram), UML Class Diagram.</td>\n                    <td>Relational Schema Diagram, DBML, Bảng quan hệ logic.</td>\n                    <td>SQL DDL Scripts (<code>CREATE TABLE ... ENGINE=InnoDB</code>), EXPLAIN Plan.</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <h4>2.2. Minh họa sự chuyển tiếp qua 3 cấp độ</h4>\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Data Modeling Evolution: SinhVien</span>\n                <span>Conceptual → Logical → Physical</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- 1. Conceptual Level: Thực thể SinhVien (MãSV, HọTên, NgàySinh, ĐiểmTB) có quan hệ với Khoa</span>\n<span class=\"cm\">-- 2. Logical Level: Table sinh_vien(ma_sv [PK], ho_ten, ngay_sinh, diem_tb, ma_khoa [FK -> khoa.ma_khoa])</span>\n<span class=\"cm\">-- 3. Physical Level (MySQL DDL cụ thể):</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">sinh_vien</span> (\n    ma_sv <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    ho_ten <span class=\"kw\">VARCHAR</span>(100) <span class=\"kw\">NOT NULL</span>,\n    ngay_sinh <span class=\"kw\">DATE</span> <span class=\"kw\">NULL</span>,\n    diem_tb <span class=\"kw\">DECIMAL</span>(4,2) <span class=\"kw\">DEFAULT</span> 0.00,\n    ma_khoa <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    <span class=\"kw\">PRIMARY KEY</span> (ma_sv),\n    <span class=\"kw\">INDEX</span> idx_khoa (ma_khoa),\n    <span class=\"kw\">CONSTRAINT</span> fk_sv_khoa <span class=\"kw\">FOREIGN KEY</span> (ma_khoa) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">khoa</span>(ma_khoa) <span class=\"kw\">ON DELETE RESTRICT</span>\n) <span class=\"kw\">ENGINE</span>=InnoDB <span class=\"kw\">DEFAULT CHARSET</span>=utf8mb4;</code></pre>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Cấp độ mô hình dữ liệu nào độc lập hoàn toàn với cả phần mềm DBMS lẫn phần cứng lưu trữ vật lý?", "options": ["Physical Data Model (Mô hình Dữ liệu Vật lý).", "Conceptual Data Model (Mô hình Dữ liệu Khái niệm).", "Internal Schema Level.", "Storage Engine Level."], "correct": 1, "explanation": "Chính xác! Mô hình Khái niệm (Conceptual Model) mô tả thế giới thực thuần túy theo ngôn ngữ nghiệp vụ, hoàn toàn không phụ thuộc vào hệ DBMS hay phần cứng nào."}, {"qid": "q2_2", "text": "Các khái niệm như 'Chỉ mục B-Tree (Index)', 'Không gian lưu trữ (Tablespace)' và 'Storage Engine InnoDB' được định nghĩa ở cấp độ mô hình nào?", "options": ["Conceptual Data Model.", "Logical Data Model.", "Physical Data Model.", "External View Model."], "correct": 2, "explanation": "Chính xác! Physical Data Model là mức thấp nhất, nơi các quyết định kỹ thuật cụ thể của DBMS như kiểu dữ liệu chi tiết, index và cơ chế lưu trữ được định hình."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Mô hình Thực thể - Liên kết (ER Model as Conceptual Standard)", "takeaway": "ER Model do Peter Chen đề xuất năm 1976 là chuẩn mực thiết kế mức khái niệm, mô tả thế giới thực thông qua 3 yếu tố: Thực thể (Entity), Thuộc tính (Attribute) và Mối liên kết (Relationship).", "summary": "\n        <h4>3.1. Peter Chen và Sự ra đời của ER Model</h4>\n        <p>Năm 1976, Tiến sĩ <b>Peter Pin-Shan Chen</b> công bố bài báo kinh điển <i>\"The Entity-Relationship Model—Toward a Unified View of Data\"</i>, đặt nền móng chuẩn mực cho việc thiết kế CSDL mức khái niệm suốt nửa thế kỷ qua.</p>\n\n        <h4>3.2. Ba Thành phần Cốt lõi của ER Model</h4>\n        <ul>\n            <li><b>Entity (Thực thể):</b> Là một đối tượng trong thế giới thực có sự tồn tại độc lập và có thể phân biệt được với các đối tượng khác (ví dụ: một sinh viên cụ thể, một môn học, một phòng học, một đơn hàng). Tập hợp các thực thể cùng loại tạo thành <i>Entity Set / Entity Type</i>.</li>\n            <li><b>Attribute (Thuộc tính):</b> Các tính chất, đặc điểm mô tả thông tin của thực thể (ví dụ: Sinh viên có <code>Mã sinh viên</code>, <code>Họ tên</code>, <code>Ngày sinh</code>, <code>Email</code>).</li>\n            <li><b>Relationship (Mối liên kết):</b> Sự kết hợp hoặc mối tương tác có ý nghĩa logic giữa hai hay nhiều thực thể (ví dụ: Sinh viên <i>ĐĂNG_KÝ</i> Môn học; Giảng viên <i>HƯỚNG_DẪN</i> Đồ án).</li>\n        </ul>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/college.png\" alt=\"Sơ đồ ER Quản lý Trường Đại học\">\n            <figcaption>Hình 1.2: Mô hình ERD tiêu chuẩn của Peter Chen biểu diễn hệ thống quản lý đào tạo với các thực thể Student, Faculty, Department và Course</figcaption>\n        </figure>\n\n        <h4>3.3. Bội số liên kết (Cardinality Ratio)</h4>\n        <p>Bội số thể hiện số lượng thực thể của tập này có thể liên kết với bao nhiêu thực thể của tập kia:</p>\n        <ul>\n            <li><b>Một - Một (1:1):</b> Mỗi Trưởng khoa quản lý duy nhất 1 Khoa; mỗi Khoa có đúng 1 Trưởng khoa.</li>\n            <li><b>Một - Nhiều (1:N):</b> Một Khoa có nhiều Giảng viên; mỗi Giảng viên thuộc duy nhất 1 Khoa.</li>\n            <li><b>Nhiều - Nhiều (M:N):</b> Một Sinh viên học nhiều Môn học; một Môn học được học bởi nhiều Sinh viên.</li>\n        </ul>\n        ", "questions": [{"qid": "q3_1", "text": "Theo định nghĩa của Peter Chen (1976), ba thành phần nền tảng cấu thành nên mô hình ER là gì?", "options": ["Bảng (Table), Khóa ngoại (Foreign Key) và Trigger.", "Thực thể (Entity), Thuộc tính (Attribute) và Mối liên kết (Relationship).", "Chỉ mục (Index), Khung nhìn (View) và Stored Procedure.", "Tệp tin (File), Thư mục (Directory) và Phân vùng (Partition)."], "correct": 1, "explanation": "Chính xác! Entity, Attribute và Relationship là bộ ba khái niệm nền tảng của mô hình ER."}, {"qid": "q3_2", "text": "Trong một trường đại học thông thường, mối liên kết giữa 'Sinh viên' và 'Môn học' thuộc loại bản số (cardinality) nào?", "options": ["Một - Một (1:1).", "Một - Nhiều (1:N).", "Nhiều - Một (N:1).", "Nhiều - Nhiều (M:N)."], "correct": 3, "explanation": "Chính xác! Một sinh viên có thể đăng ký nhiều môn học, và một môn học có nhiều sinh viên tham gia học tập, do đó đây là mối quan hệ Nhiều - Nhiều (M:N)."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Các Mô hình Dữ liệu Logic Kinh điển & Hiện đại", "takeaway": "Tiến trình lịch sử của mô hình dữ liệu logic đi từ Phân cấp (Hierarchical) và Mạng (Network) đến Quan hệ (Relational - chuẩn mực thống trị) và NoSQL/Graph hiện đại.", "summary": "\n        <h4>4.1. Tiến trình Tiến hóa của các Mô hình Dữ liệu Logic</h4>\n        <p>Trước khi Mô hình Quan hệ (Relational Model) trở thành tiêu chuẩn thống trị toàn cầu, ngành khoa học máy tính đã trải qua nhiều thế hệ mô hình logic khác nhau:</p>\n\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Mô hình</th>\n                    <th>Cấu trúc dữ liệu</th>\n                    <th>Ưu điểm cốt lõi</th>\n                    <th>Hạn chế lớn nhất</th>\n                    <th>Hệ thống tiêu biểu</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Hierarchical Model (Phân cấp)</b></td>\n                    <td>Cấu trúc hình Cây (Tree), quan hệ Cha - Con (1:N). Nút con chỉ có 1 nút cha.</td>\n                    <td>Truy xuất nhanh theo đường dẫn cây cha con phân cấp cố định.</td>\n                    <td>Không hỗ trợ tự nhiên quan hệ M:N; thay đổi cấu trúc cây làm đổ vỡ chương trình.</td>\n                    <td>IBM IMS (thập niên 1960).</td>\n                </tr>\n                <tr>\n                    <td><b>Network Model (Mạng)</b></td>\n                    <td>Cấu trúc Đồ thị (Graph / CODASYL), một nút con có thể có nhiều nút cha.</td>\n                    <td>Biểu diễn được quan hệ M:N linh hoạt hơn mô hình phân cấp.</td>\n                    <td>Cấu trúc con trỏ (pointer) phức tạp; người dùng phải điều hướng thủ công (navigational).</td>\n                    <td>IDMS, IDS (thập niên 1970).</td>\n                </tr>\n                <tr>\n                    <td><b>Relational Model (Quan hệ)</b></td>\n                    <td>Bảng 2 chiều (Tables/Relations) gồm dòng (hàng) và cột (thuộc tính).</td>\n                    <td>Độc lập dữ liệu cao, dựa trên toán học (Đại số quan hệ), ngôn ngữ SQL chuẩn hóa.</td>\n                    <td>Khó biểu diễn dữ liệu lồng nhau phức tạp, hiệu năng giảm khi JOIN quá nhiều bảng lớn.</td>\n                    <td>MySQL, PostgreSQL, Oracle, SQL Server.</td>\n                </tr>\n                <tr>\n                    <td><b>Object-Oriented & ORDBMS</b></td>\n                    <td>Đối tượng (Objects), Lớp (Classes), Kế thừa (Inheritance), Đóng gói (Encapsulation).</td>\n                    <td>Tương thích tự nhiên với ngôn ngữ OOP (Java, C++, Python); hỗ trợ kiểu dữ liệu phức tạp.</td>\n                    <td>Truy vấn phức tạp, thiếu tính chuẩn hóa toàn cầu như SQL quan hệ.</td>\n                    <td>ObjectStore, db4o, PostgreSQL (hỗ trợ ORDBMS).</td>\n                </tr>\n                <tr>\n                    <td><b>NoSQL & Modern Data Models</b></td>\n                    <td>Document (JSON), Key-Value, Wide-Column, Graph Nodes & Edges.</td>\n                    <td>Mở rộng ngang cực tốt (Scale-out), schema linh hoạt, tối ưu cho Big Data & Web scale.</td>\n                    <td>Hi sinh tính toàn vẹn nghiêm ngặt (ACID) để đổi lấy tính sẵn sàng (CAP theorem).</td>\n                    <td>MongoDB, Redis, Apache Cassandra, Neo4j.</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q4_1", "text": "Điểm khác biệt cốt lõi giữa Mô hình Phân cấp (Hierarchical Model) và Mô hình Mạng (Network Model) là gì?", "options": ["Mô hình phân cấp dùng bảng SQL, còn mô hình mạng dùng JSON.", "Trong mô hình phân cấp, mỗi nút con chỉ có đúng 1 nút cha; còn trong mô hình mạng, một nút con có thể có nhiều nút cha.", "Mô hình mạng không hỗ trợ quan hệ giữa các bản ghi dữ liệu.", "Mô hình phân cấp được phát minh sau mô hình quan hệ của E.F. Codd."], "correct": 1, "explanation": "Chính xác! Mô hình phân cấp bị giới hạn bởi cấu trúc cây đơn (mỗi record con chỉ có 1 record cha), trong khi mô hình mạng mở rộng thành cấu trúc đồ thị cho phép nhiều nút cha."}, {"qid": "q4_2", "text": "Vì sao Mô hình Quan hệ (Relational Model) do E.F. Codd đề xuất lại thống trị ngành công nghiệp phần mềm từ thập niên 1980 đến nay?", "options": ["Vì nó bắt buộc lập trình viên phải quản lý từng con trỏ bộ nhớ vật lý.", "Vì nó chỉ lưu trữ được tối đa 1.000 dòng dữ liệu.", "Vì cấu trúc bảng 2 chiều trực quan, tính độc lập dữ liệu cao và ngôn ngữ truy vấn chuẩn hóa SQL mạnh mẽ.", "Vì nó không cần kiểm tra tính toàn vẹn dữ liệu."], "correct": 2, "explanation": "Chính xác! Mô hình quan hệ giải phóng người lập trình khỏi việc điều hướng con trỏ vật lý nhờ đại số quan hệ và ngôn ngữ SQL trực quan, dễ dùng và chặt chẽ."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Vòng đời Thiết kế CSDL & Thực hành Xây dựng Mô hình", "takeaway": "Nắm vững 4 bước vòng đời thiết kế CSDL từ phân tích yêu cầu, thiết kế khái niệm (ERD), thiết kế logic (Relational Schema) đến thiết kế vật lý (SQL DDL tối ưu).", "summary": "\n        <h4>5.1. Bốn Giai đoạn trong Vòng đời Thiết kế CSDL (Database Design Lifecycle)</h4>\n        <ol>\n            <li><b>Giai đoạn 1 - Thu thập & Phân tích Yêu cầu (Requirements Analysis):</b> Phỏng vấn các phòng ban nghiệp vụ, thu thập biểu mẫu báo cáo, xác định quy tắc kinh doanh (Business Rules) và phạm vi dữ liệu hệ thống cần quản lý.</li>\n            <li><b>Giai đoạn 2 - Thiết kế Khái niệm (Conceptual Design):</b> Xây dựng sơ đồ <b>ERD (Entity-Relationship Diagram)</b>. Xác định chính xác các Thực thể, Thuộc tính, Khóa định danh, Bội số liên kết và Ràng buộc tham gia. <i>(Giai đoạn này hoàn toàn độc lập với phần mềm DBMS)</i>.</li>\n            <li><b>Giai đoạn 3 - Thiết kế Logic (Logical Design):</b> Ánh xạ sơ đồ ERD thành <b>Lược đồ quan hệ (Relational Schema)</b>. Chuyển đổi thực thể thành bảng, thiết lập khóa chính (PK), khóa ngoại (FK), và chuẩn hóa dữ liệu (thường đạt Chuẩn 3NF hoặc BCNF) để triệt tiêu dư thừa.</li>\n            <li><b>Giai đoạn 4 - Thiết kế Vật lý (Physical Design):</b> Cài đặt cụ thể trên một hệ quản trị CSDL (như MySQL/PostgreSQL). Chọn kiểu dữ liệu tối ưu bộ nhớ, thiết lập B-Tree Index cho các trường thường xuyên tìm kiếm, cấu hình phân vùng (Partitioning) và chính sách bảo mật/sao lưu.</li>\n        </ol>\n\n        <h4>5.2. Case Study: Chuyển đổi Quan hệ M:N sang Lược đồ Logic</h4>\n        <p>Trong sơ đồ ER, quan hệ Nhiều - Nhiều (M:N) giữa <code>SinhVien</code> và <code>MonHoc</code> không thể biểu diễn trực tiếp bằng một khóa ngoại đơn lẻ trong mô hình quan hệ. Ta phải tách thành một <b>Bảng trung gian (Associative Table / Junction Table)</b>:</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Relational Mapping: M:N Junction Table</span>\n                <span>SQL Implementation</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- Bảng thực thể 1</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">sinh_vien</span> (\n    ma_sv <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">PRIMARY KEY</span>,\n    ho_ten <span class=\"kw\">VARCHAR</span>(100) <span class=\"kw\">NOT NULL</span>\n);\n\n<span class=\"cm\">-- Bảng thực thể 2</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">mon_hoc</span> (\n    ma_mh <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">PRIMARY KEY</span>,\n    ten_mh <span class=\"kw\">VARCHAR</span>(100) <span class=\"kw\">NOT NULL</span>,\n    so_tin_chi <span class=\"kw\">INT</span> <span class=\"kw\">CHECK</span> (so_tin_chi &gt; 0)\n);\n\n<span class=\"cm\">-- Bảng trung gian giải quyết quan hệ M:N 'dang_ky'</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">dang_ky_mon_hoc</span> (\n    ma_sv <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    ma_mh <span class=\"kw\">VARCHAR</span>(10) <span class=\"kw\">NOT NULL</span>,\n    ngay_dang_ky <span class=\"kw\">DATETIME</span> <span class=\"kw\">DEFAULT</span> <span class=\"fn\">CURRENT_TIMESTAMP</span>,\n    diem_so <span class=\"kw\">DECIMAL</span>(3,1) <span class=\"kw\">NULL</span>,\n    <span class=\"kw\">PRIMARY KEY</span> (ma_sv, ma_mh), <span class=\"cm\">-- Khóa chính phức hợp</span>\n    <span class=\"kw\">FOREIGN KEY</span> (ma_sv) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">sinh_vien</span>(ma_sv) <span class=\"kw\">ON DELETE CASCADE</span>,\n    <span class=\"kw\">FOREIGN KEY</span> (ma_mh) <span class=\"kw\">REFERENCES</span> <span class=\"tbl\">mon_hoc</span>(ma_mh) <span class=\"kw\">ON DELETE CASCADE</span>\n);</code></pre>\n        </div>\n        ", "questions": [{"qid": "q5_1", "text": "Thứ tự tuần tự chuẩn xác của các giai đoạn trong quy trình thiết kế cơ sở dữ liệu là gì?", "options": ["Physical Design → Conceptual Design → Requirements Analysis → Logical Design.", "Requirements Analysis → Conceptual Design (ERD) → Logical Design (Schema) → Physical Design (DDL).", "Viết mã SQL DDL → Phỏng vấn nghiệp vụ → Vẽ sơ đồ ERD → Mua phần cứng server.", "Logical Design → Requirements Analysis → Physical Design → Conceptual Design."], "correct": 1, "explanation": "Chính xác! Quy trình chuẩn bắt đầu từ phân tích yêu cầu nghiệp vụ, chuyển thành sơ đồ khái niệm ERD, ánh xạ sang lược đồ quan hệ logic, và cuối cùng là cài đặt vật lý."}, {"qid": "q5_2", "text": "Khi chuyển đổi một mối quan hệ Nhiều - Nhiều (M:N) từ sơ đồ ERD sang mô hình quan hệ logic, giải pháp chuẩn mực là gì?", "options": ["Gộp hai thực thể thành một bảng duy nhất chứa tất cả các thuộc tính lặp lại.", "Xóa bỏ hoàn toàn mối quan hệ vì SQL không hỗ trợ nhiều - nhiều.", "Tạo một bảng trung gian (Junction Table) chứa khóa ngoại tham chiếu đến khóa chính của cả 2 bảng thực thể ban đầu.", "Lưu danh sách mã môn học dưới dạng chuỗi phân cách bởi dấu phẩy trong cột sinh viên."], "correct": 2, "explanation": "Chính xác! Quan hệ M:N luôn được phân rã thành hai quan hệ 1:N thông qua một bảng trung gian (junction table) có khóa chính phức hợp gồm các khóa ngoại trỏ về 2 bảng cha."}]}];
+const STORAGE_KEY = 'dbms_erd_l1_v1';
+const LESSON_TITLE = 'Bài 1: Mô hình hóa Dữ liệu trong DBMS (Data Modeling)';
+const LESSON_CODE = '01-data-modeling';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
+    if (isUnlocked) {
+      pill.onclick = () => scrollToStage(s.num);
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
+
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIdx) => {
+      let optionsHtml = '';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
+        }
+
+        optionsHtml += `
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
+        </div>
+      `;
+    });
+
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
+
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
+        </div>
+
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
+          </div>
+          ${questionsHtml}
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(stageEl);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
+      allAnswered = false;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
+    }
+
+    // Render feedback
+    const fb = document.getElementById(`fb_${q.qid}`);
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
+    }
+  });
+
+  if (!allAnswered) {
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
+    return;
+  }
+
+  saveState();
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
+    }
+    saveState();
+    updateScorecard();
+
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
+
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
+    if (stageNum < STAGES.length) {
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
+        if (nextBadge) {
+          nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
+        }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+      }
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
+      setTimeout(() => {
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
+    }
+  } else {
+    updateScorecard();
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById(`stage-${stageNum}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const rows = [
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const isCor = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        String(s.num),
+        s.title,
+        q.qid,
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  // Kích thước chuẩn: Rộng 880px, chiều cao tính theo số chặng
+  const W = 880;
+  const rowH = 46;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Thẻ chứa viền bo góc
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
+
+  // Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
+
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
+
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
+
+  ctx.save();
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
+
+  // Thanh tiến độ đồ họa
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
+  if (completedParts > 0 && totalParts > 0) {
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.save();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
+  y += 18;
+
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '…' : s.title;
+    ctx.fillText(label, 56, y + 28);
+
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    }
+    ctx.restore();
+
+    y += rowH + rowGap;
+  });
+
+  // Footer ghi chú
+  y += 14;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
+  ctx.restore();
+
+  // Kích hoạt tải ảnh PNG
+  const a = document.createElement('a');
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+</body>
+</html>

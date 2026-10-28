@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entity-Relationship Model — Trung tâm Bài học Tương tác ER & EER</title>
+<meta name="description" content="Trung tâm điều phối tiến trình học tập và kiểm tra Checkpoint tương tác cho toàn bộ Chương 2: Mô hình Thực thể - Liên kết (ER & EER) trong CSDL.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-sub: #eff6ff;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --primary-grad: linear-gradient(135deg, #0a2540 0%, #174b88 50%, #20639b 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 44px 0 38px;
+  box-shadow: 0 8px 24px rgba(10, 37, 64, 0.2);
+}
+header.hero .eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+header.hero h1 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 12px;
+  line-height: 1.25;
+}
+header.hero p {
+  font-size: 15.5px;
+  color: #e2e8f0;
+  max-width: 860px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Sticky Score & Identity Bar */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+}
+.student-inputs input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--blue-sub);
+  color: var(--blue);
+  border: 1px solid #bfdbfe;
+}
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+button {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #1e40af;
+}
+.btn-secondary {
+  background: #fff;
+  color: #334155;
+  border: 1px solid var(--line);
+}
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.progress-track {
+  height: 4px;
+  background: #e2e8f0;
+  width: 100%;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #16a34a);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* Master Certificate Download Card */
+.hub-banner-summary {
+  background: linear-gradient(135deg, #0f2952 0%, #1e498a 100%);
+  color: #fff;
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin: 26px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 6px 20px rgba(15, 41, 82, 0.15);
+  flex-wrap: wrap;
+}
+.hub-banner-summary h3 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+.hub-banner-summary p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #cbd5e1;
+  max-width: 640px;
+}
+
+/* Lesson Cards Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: #cbd5e1;
+}
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.card-num {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.card-status-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+.card.completed {
+  border-color: #86efac;
+}
+.card.completed .card-status-badge {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+.card h2 {
+  font-size: 18px;
+  margin: 0 0 10px;
+  line-height: 1.35;
+  color: #0f172a;
+}
+.card p {
+  font-size: 13.5px;
+  color: #475569;
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+.card .features {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.card .features span {
+  font-size: 11px;
+  font-weight: 600;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: #64748b;
+}
+.btn-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  background: #0f172a;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 9px;
+  transition: all 0.15s;
+}
+.btn-open:hover {
+  background: var(--blue);
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px 0 40px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../index.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Trang chủ Danh mục Bài giảng</a>
+    <div class="eyebrow">HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU · KHÓA HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Entity-Relationship Model — Trung tâm Bài học Tương tác ER &amp; EER</h1>
+    <p>Hệ thống tự động theo dõi tiến trình học tập và kết quả trắc nghiệm Checkpoint của bạn qua 5 bài giảng thiết kế CSDL mức khái niệm: từ Mô hình hóa dữ liệu (Data Modeling), Bản chất sơ đồ ERD, Quan hệ đệ quy, Phân cấp kế thừa Generalization/Specialization/Aggregation đến Mô hình ER mở rộng (EER Model). Bạn có thể xuất giấy chứng nhận kết quả ảnh PNG cho từng bài hoặc xuất chứng nhận tổng quan toàn chương bên dưới.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="hubStudentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="hubStudentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="hubStudentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="hubLessonStat">Tiến độ: 0 / 5 bài</div>
+        <div class="stat-pill" id="hubScoreStat">Điểm: 0 / 46 câu</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-primary" id="hubExportPng" title="Xuất chứng nhận PNG tổng quan có đầy đủ thông tin tóm tắt từng bài học">Xuất Chứng nhận Tổng quan (.PNG)</button>
+        <button class="btn-secondary" id="hubExportCsv" title="Xuất toàn bộ bảng điểm chi tiết file CSV">Xuất CSV</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="hubProgressBar"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="hub-banner-summary">
+    <div>
+      <h3>🎓 Chứng nhận Tổng quan Toàn Chương (Master Certificate)</h3>
+      <p>Chức năng xuất ảnh PNG tổng hợp sẽ tự động trích xuất thông tin tóm tắt, số chặng đã mở khóa và điểm số của cả 5 bài học trong chương Mô hình Thực thể - Liên kết.</p>
+    </div>
+    <div>
+      <button class="btn-primary" style="background:#fff;color:#0f2952;padding:10px 18px" onclick="exportMasterCertificatePNG()">Tải Chứng nhận PNG ➔</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Card 1 -->
+    <div class="card" id="card-l1">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 01 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l1">Đang học (0/5)</span>
+        </div>
+        <h2>01. Mô hình hóa Dữ liệu trong DBMS (Data Modeling)</h2>
+        <p>3 cấp độ mô hình hóa dữ liệu (Conceptual, Logical, Physical), so sánh 5 thế hệ mô hình logic (Hierarchical, Network, Relational, NoSQL) và vòng đời thiết kế CSDL.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="data-modeling/data-modeling.html">Vào học tương tác ➔</a>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card" id="card-l2">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 02 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l2">Đang học (0/5)</span>
+        </div>
+        <h2>02. Mô hình Thực thể - Liên kết (ER Model Fundamentals)</h2>
+        <p>Thực thể mạnh vs Thực thể yếu, 5 dạng thuộc tính (Khóa, Đa trị, Dẫn xuất), bậc liên kết (Unary, Binary, Ternary), bội số, tham gia toàn phần và ánh xạ SQL.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="er-model/er-model.html">Vào học tương tác ➔</a>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card" id="card-l3">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 03 · 4 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l3">Đang học (0/4)</span>
+        </div>
+        <h2>03. Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships)</h2>
+        <p>Bản chất liên kết tự tham chiếu Unary, định danh vai trò (Role Names), 3 dạng bội số (1:1, 1:N, M:N), cây tổ chức nhân sự, BOM và truy vấn đệ quy CTE.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>8 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="recursive-relationship/recursive-relationship.html">Vào học tương tác ➔</a>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card" id="card-l4">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 04 · 4 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l4">Đang học (0/4)</span>
+        </div>
+        <h2>04. Generalization, Specialization &amp; Aggregation</h2>
+        <p>Mở rộng trừu tượng hóa: Bottom-up Generalization, Top-down Specialization, kế thừa thuộc tính IS-A, và mô hình hóa quan hệ cấp cao với Aggregation.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>8 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="generalization-specialization-aggregation/generalization-specialization-aggregation.html">Vào học tương tác ➔</a>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card" id="card-l5">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 05 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l5">Đang học (0/5)</span>
+        </div>
+        <h2>05. Mô hình ER Mở rộng (Enhanced ER / EER Model)</h2>
+        <p>Kỹ thuật EER chuyên sâu: 4 tổ hợp ràng buộc phân lớp (Disjoint/Overlapping × Total/Partial), Category/Union Type, Đa kế thừa Lattice và 4 chiến lược ánh xạ SQL.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="enhanced-er-model/enhanced-er-model.html">Vào học tương tác ➔</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · Chương 2: Mô hình Thực thể - Liên kết (ER &amp; EER) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const LESSON_METADATA = [
+  {
+    num: 1,
+    id: 'l1',
+    storageKey: 'dbms_erd_l1_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Mô hình hóa Dữ liệu trong DBMS (Data Modeling)',
+    summary: '3 cấp độ mô hình hóa dữ liệu (Conceptual, Logical, Physical), so sánh 5 thế hệ mô hình logic (Hierarchical, Network, Relational, NoSQL) và vòng đời thiết kế CSDL.'
+  },
+  {
+    num: 2,
+    id: 'l2',
+    storageKey: 'dbms_erd_l2_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Mô hình Thực thể - Liên kết (ER Model Fundamentals)',
+    summary: 'Thực thể mạnh vs Thực thể yếu, 5 dạng thuộc tính (Khóa, Đa trị, Dẫn xuất), bậc liên kết (Unary, Binary, Ternary), bội số, tham gia toàn phần và ánh xạ SQL.'
+  },
+  {
+    num: 3,
+    id: 'l3',
+    storageKey: 'dbms_erd_l3_v1',
+    stagesCount: 4,
+    qCount: 8,
+    title: 'Quan hệ Đệ quy trong Sơ đồ ER (Recursive Relationships)',
+    summary: 'Bản chất liên kết tự tham chiếu Unary, định danh vai trò (Role Names), 3 dạng bội số (1:1, 1:N, M:N), cây tổ chức nhân sự, BOM và truy vấn đệ quy CTE.'
+  },
+  {
+    num: 4,
+    id: 'l4',
+    storageKey: 'dbms_erd_l4_v1',
+    stagesCount: 4,
+    qCount: 8,
+    title: 'Generalization, Specialization & Aggregation',
+    summary: 'Mở rộng trừu tượng hóa: Bottom-up Generalization, Top-down Specialization, kế thừa thuộc tính IS-A, và mô hình hóa quan hệ cấp cao với Aggregation.'
+  },
+  {
+    num: 5,
+    id: 'l5',
+    storageKey: 'dbms_erd_l5_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Mô hình ER Mở rộng (Enhanced ER / EER Model)',
+    summary: 'Kỹ thuật EER chuyên sâu: 4 tổ hợp ràng buộc phân lớp (Disjoint/Overlapping × Total/Partial), Category/Union Type, Đa kế thừa Lattice và 4 chiến lược ánh xạ SQL.'
+  }
+];
+
+function getStoredLessonData(lesson) {
+  try {
+    const raw = localStorage.getItem(lesson.storageKey);
+    if (!raw) return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+    return JSON.parse(raw);
+  } catch (e) {
+    return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+  }
+}
+
+function updateHubUI() {
+  let totalCompletedLessons = 0;
+  let totalScoreAll = 0;
+  let totalQuestionsAll = 0;
+  let commonStudentId = '';
+  let commonStudentName = '';
+
+  LESSON_METADATA.forEach(l => {
+    const data = getStoredLessonData(l);
+    if (!commonStudentId && data.studentId) commonStudentId = data.studentId;
+    if (!commonStudentName && data.studentName) commonStudentName = data.studentName;
+
+    const doneCount = (data.completedStages || []).length;
+    let score = 0;
+    Object.values(data.scores || {}).forEach(v => { if (v) score++; });
+
+    totalScoreAll += score;
+    totalQuestionsAll += l.qCount;
+
+    const isAllDone = doneCount === l.stagesCount && l.stagesCount > 0;
+    if (isAllDone) totalCompletedLessons++;
+
+    const card = document.getElementById(`card-${l.id}`);
+    const badge = document.getElementById(`badge-${l.id}`);
+
+    if (badge) {
+      if (isAllDone) {
+        badge.textContent = `✓ Hoàn thành (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.add('completed');
+      } else if (doneCount > 0) {
+        badge.textContent = `Đang học (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.remove('completed');
+      } else {
+        badge.textContent = `Chưa bắt đầu (0/${l.stagesCount})`;
+        if (card) card.classList.remove('completed');
+      }
+    }
+  });
+
+  const idInput = document.getElementById('hubStudentId');
+  const nameInput = document.getElementById('hubStudentName');
+  if (idInput && !idInput.value && commonStudentId) idInput.value = commonStudentId;
+  if (nameInput && !nameInput.value && commonStudentName) nameInput.value = commonStudentName;
+
+  const lessonStat = document.getElementById('hubLessonStat');
+  const scoreStat = document.getElementById('hubScoreStat');
+  if (lessonStat) lessonStat.textContent = `Tiến độ: ${totalCompletedLessons} / ${LESSON_METADATA.length} bài`;
+  if (scoreStat) scoreStat.textContent = `Điểm: ${totalScoreAll} / ${totalQuestionsAll} câu`;
+
+  const bar = document.getElementById('hubProgressBar');
+  if (bar) {
+    const pct = totalQuestionsAll > 0 ? Math.round((totalScoreAll / totalQuestionsAll) * 100) : 0;
+    bar.style.width = pct + '%';
+  }
+}
+
+function exportMasterCertificatePNG() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim() || 'Chưa điền MSSV';
+  const name = (document.getElementById('hubStudentName')?.value || '').trim() || 'Học viên DBMS';
+
+  const lessons = LESSON_METADATA.map(l => {
+    const prog = getStoredLessonData(l);
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
+    return {
+      num: l.num,
+      title: l.title,
+      summary: l.summary,
+      stagesCount: l.stagesCount,
+      qCount: l.qCount,
+      doneStages: (prog.completedStages || []).length,
+      score: score
+    };
+  });
+
+  const totalStages = lessons.reduce((acc, l) => acc + l.stagesCount, 0);
+  const doneStages = lessons.reduce((acc, l) => acc + l.doneStages, 0);
+  const totalQuestions = lessons.reduce((acc, l) => acc + l.qCount, 0);
+  const totalScore = lessons.reduce((acc, l) => acc + l.score, 0);
+  const pct = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const W = 960;
+  const cardH = 88;
+  const gap = 12;
+  const H = 450 + (lessons.length * (cardH + gap)) + 50;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  function wrapText(c, text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = text.split(' ');
+    let line = '';
+    let lineCount = 0;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = c.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        c.fillText(line.trim(), x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        lineCount++;
+        if (maxLines && lineCount >= maxLines - 1) {
+          let rem = words.slice(n).join(' ');
+          while (rem.length > 0 && c.measureText(rem + '…').width > maxWidth) {
+            rem = rem.slice(0, -1);
+          }
+          c.fillText(rem + '…', x, y);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    c.fillText(line.trim(), x, y);
+  }
+
+  // Outer Background
+  ctx.fillStyle = '#f4f7fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Main Container
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#d9e2ef', 1.5);
+
+  // Top Header Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#0a2540');
+  grad.addColorStop(1, '#1b5a9e');
+  drawRoundedRect(ctx, 16, 16, W - 32, 110, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 11.5px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN TỔNG THỂ TOÀN CHƯƠNG', 40, 46);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText('CHƯƠNG 2: MÔ HÌNH THỰC THỂ - LIÊN KẾT (ER & EER MODEL)', 40, 78);
+
+  ctx.fillStyle = '#dbeafe';
+  ctx.font = '12.5px Arial, sans-serif';
+  ctx.fillText(`Thời gian xuất chứng nhận: ${dateStr}`, 40, 104);
+  ctx.restore();
+
+  // Student & Score Block
+  const cardY = 142;
+  // Student card
+  drawRoundedRect(ctx, 40, cardY, 520, 110, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
+  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
+  ctx.fillText('HỌC PHẦN ĐÀO TẠO:', 58, cardY + 76);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16.5px Arial, sans-serif';
+  ctx.fillText(name, 58, cardY + 52);
+  ctx.fillText(mssv, 310, cardY + 52);
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = '#1e3a6e';
+  ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
+  ctx.restore();
+
+  // Score & Rank card
+  const scoreBoxX = 580;
+  const scoreBoxW = W - 40 - scoreBoxX;
+  const isPass = pct >= 50;
+  const isEx = pct >= 90;
+  const isGood = pct >= 80;
+  const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
+  const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
+
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 110, 10, isEx ? '#f0fdf4' : '#f8fafc', isEx ? '#bbf7d0' : '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.fillStyle = rankColor;
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('KẾT QUẢ TỔNG QUAN 5 BÀI:', scoreBoxX + 18, cardY + 30);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 30px Arial, sans-serif';
+  ctx.fillText(`${totalScore} / ${totalQuestions}`, scoreBoxX + 18, cardY + 68);
+
+  // Rank Pill
+  drawRoundedRect(ctx, scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16, rankColor, null, 0);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
+  ctx.textAlign = 'left';
+
+  // Progress Bar
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5, '#e2e8f0', null, 0);
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5, rankColor, null, 0);
+  ctx.restore();
+
+  // Module Overview Box
+  const descY = 268;
+  drawRoundedRect(ctx, 40, descY, W - 80, 80, 10, '#f1f5f9', '#cbd5e1', 1);
+
+  ctx.save();
+  ctx.fillStyle = '#1e3a6e';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('📖 MỤC TIÊU NĂNG LỰC TOÀN CHƯƠNG MÔ HÌNH THỰC THỂ - LIÊN KẾT (ER & EER):', 56, descY + 24);
+
+  ctx.fillStyle = '#334155';
+  ctx.font = '12px Arial, sans-serif';
+  wrapText(ctx, 'Học viên đã trải qua 5 bài giảng tương tác chuẩn quốc tế: thấu hiểu 3 cấp độ mô hình dữ liệu; phân tích thành phần ERD (thực thể mạnh/yếu, 5 dạng thuộc tính, bậc liên kết, ràng buộc tham gia); làm chủ quan hệ đệ quy (Role Names & Recursive CTE); trừu tượng hóa Generalization/Specialization/Aggregation; và thiết kế EER chuyên sâu với 4 tổ hợp ràng buộc, Category/Union Type cùng 4 chiến lược ánh xạ tối ưu sang SQL.', 56, descY + 44, W - 112, 19, 2);
+  ctx.restore();
+
+  // Section Breakdown Header
+  let y = 372;
+  ctx.save();
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText('CHI TIẾT KẾT QUẢ & THÔNG TIN TÓM TẮT CHO TỪNG BÀI HỌC (5 BÀI HỌC):', 40, y);
+  ctx.restore();
+  y += 18;
+
+  // Render EACH LESSON with its SUMMARY INFORMATION
+  lessons.forEach((l) => {
+    const isLessonAllDone = l.doneStages === l.stagesCount && l.stagesCount > 0;
+    drawRoundedRect(ctx, 40, y, W - 80, cardH, 8, '#ffffff', isLessonAllDone ? '#86efac' : '#e2e8f0', isLessonAllDone ? 1.5 : 1);
+
+    ctx.save();
+    // Top Line: Lesson Name
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText(`${l.num}. ${l.title}`, 56, y + 25);
+
+    // Status Pill
+    const badgeX = W - 40 - 200;
+    drawRoundedRect(ctx, badgeX, y + 10, 185, 24, 12, isLessonAllDone ? '#ecfdf5' : '#f1f5f9', isLessonAllDone ? '#a7f3d0' : '#cbd5e1', 1);
+
+    ctx.fillStyle = isLessonAllDone ? '#059669' : '#64748b';
+    ctx.font = 'bold 11px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    const statusStr = isLessonAllDone ? '✓ HOÀN THÀNH' : `${l.doneStages}/${l.stagesCount} chặng`;
+    ctx.fillText(`${statusStr} · Điểm: ${l.score}/${l.qCount}`, badgeX + 92, y + 26);
+    ctx.textAlign = 'left';
+
+    // Summary Information for each lesson
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px Arial, sans-serif';
+    wrapText(ctx, `• Tóm tắt nội dung: ${l.summary}`, 56, y + 50, W - 112, 17, 2);
+    ctx.restore();
+
+    y += cardH + gap;
+  });
+
+  // Footer
+  y += 10;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Bảng chứng nhận tự động.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Khoa Công nghệ Thông tin', W - 40, y);
+  ctx.textAlign = 'left';
+  ctx.restore();
+
+  const a = document.createElement('a');
+  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9A-Za-z0-9_-]+/g, '_');
+  a.download = `chung_nhan_tong_quan_erd_${safeName}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function exportMasterCsv() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim();
+  const name = (document.getElementById('hubStudentName')?.value || '').trim();
+
+  const rows = [
+    ['MSSV', 'HoTen', 'MaBaiHoc', 'TenBaiHoc', 'SoChangHoanThanh', 'TongSoChang', 'DiemDatDuoc', 'TongDiem', 'TomTatNoiDung']
+  ];
+
+  LESSON_METADATA.forEach(l => {
+    const data = getStoredLessonData(l);
+    const done = (data.completedStages || []).length;
+    let score = 0;
+    Object.values(data.scores || {}).forEach(v => { if (v) score++; });
+
+    rows.push([
+      `"${mssv}"`,
+      `"${name}"`,
+      `"${l.id}"`,
+      `"${l.title}"`,
+      done,
+      l.stagesCount,
+      score,
+      l.qCount,
+      `"${l.summary.replace(/"/g, '""')}"`
+    ]);
+  });
+
+  const csvContent = '\uFEFF' + rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9A-Za-z0-9_-]+/g, '_');
+  a.download = `bang_diem_tong_quan_erd_${safeName}.csv`;
+  a.href = url;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateHubUI();
+  document.getElementById('hubExportPng')?.addEventListener('click', exportMasterCertificatePNG);
+  document.getElementById('hubExportCsv')?.addEventListener('click', exportMasterCsv);
+  document.getElementById('hubStudentId')?.addEventListener('input', () => {
+    const id = document.getElementById('hubStudentId').value;
+    LESSON_METADATA.forEach(l => {
+      try {
+        const raw = localStorage.getItem(l.storageKey);
+        const obj = raw ? JSON.parse(raw) : {};
+        obj.studentId = id;
+        localStorage.setItem(l.storageKey, JSON.stringify(obj));
+      } catch(e) {}
+    });
+  });
+  document.getElementById('hubStudentName')?.addEventListener('input', () => {
+    const name = document.getElementById('hubStudentName').value;
+    LESSON_METADATA.forEach(l => {
+      try {
+        const raw = localStorage.getItem(l.storageKey);
+        const obj = raw ? JSON.parse(raw) : {};
+        obj.studentName = name;
+        localStorage.setItem(l.storageKey, JSON.stringify(obj));
+      } catch(e) {}
+    });
+  });
+});
+</script>
+</body>
+</html>
