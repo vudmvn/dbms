@@ -130,17 +130,16 @@ Phần này trình bày mô hình ER ở mức khái niệm, dùng thực thể,
 
 ## Relational Model and Functional Dependencies
 
-Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, các loại khóa, phụ thuộc hàm và vai trò của chúng trong thiết kế lược đồ.
+Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, các loại khóa, phụ thuộc hàm và vai trò của chúng trong thiết kế lược đồ. Trải nghiệm hệ thống học tập có khóa chặng và tự chấm điểm tại [Trung tâm Bài học Tương tác Mô hình Quan hệ & Phụ thuộc Hàm](lectures/relational-model-and-functional-dependencies/relational-model-and-functional-dependencies.html).
 
-| Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
+| Bài học | Bài giảng Markdown | Bản Web Tương tác (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
-| Relational Schema trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | <span class="missing">—</span> | <span class="missing">—</span> | Relation, attribute, tuple và schema |
-| Mapping từ ER Model sang Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [HTML](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | Chuyển ERD sang bảng quan hệ |
-| Các loại khóa trong mô hình quan hệ | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [HTML](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super, candidate, primary, foreign và các loại khóa khác |
-| Functional Dependency trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | <span class="missing">—</span> | <span class="missing">—</span> | Phụ thuộc hàm, determinant và dependent attribute |
-| Các loại Functional Dependency trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | <span class="missing">—</span> | <span class="missing">—</span> | Trivial, non-trivial, multivalued, transitive, fully và partial dependency |
-| Attribute Closure trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/attribute-closure/attribute-closure.md) | <span class="missing">—</span> | <span class="missing">—</span> | Tìm bao đóng thuộc tính |
-| Schema Design trong DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/schema-design/schema-design.md) | <span class="missing">—</span> | <span class="missing">—</span> | Chiến lược thiết kế schema |
+| 🎯 **Trung tâm Bài học Tương tác Mô hình Quan hệ & Phụ thuộc Hàm (Master Hub)** | <span class="missing">—</span> | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/relational-model-and-functional-dependencies.html) | <span class="missing">—</span> | Hub tổng hợp 5 bài học, 25 chặng, 50 câu hỏi & Cấp chứng nhận Master |
+| 01. Mô hình Quan hệ & Lược đồ Quan hệ (Relational Schema) | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.html) | <span class="missing">—</span> | Khái niệm Relation, Tuple, Attribute, Schema vs Instance, 4 ràng buộc toàn vẹn |
+| 02. Các loại Khóa trong CSDL Quan hệ (Keys in Relational Model) | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super key, Candidate key, Primary key, Foreign key, Natural vs Surrogate key |
+| 03. Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational) | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | Quy trình 7 bước: thực thể mạnh/yếu, 1:1, 1:N, M:N, đa trị, kế thừa IS-A |
+| 04. Phụ thuộc Hàm & Hệ Tiên đề Armstrong (Functional Dependency) | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.html) | <span class="missing">—</span> | Định nghĩa FD, Tiên đề Armstrong, luật thứ cấp, Bao đóng X+ và tìm Khóa |
+| 05. Phân loại Phụ thuộc Hàm & Phủ Tối thiểu (FD Types & Minimal Cover) | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | [HTML Tương tác](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.html) | <span class="missing">—</span> | Trivial, Full vs Partial, Transitive FD, MVD, Phủ tối thiểu, cầu nối chuẩn hóa |
 
 ## Normalization
 
@@ -313,17 +312,16 @@ This section covers the conceptual ER model, using entities, attributes, and rel
 
 ## Relational Model and Functional Dependencies
 
-Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, các loại khóa, phụ thuộc hàm và vai trò của chúng trong thiết kế lược đồ.
+This section covers data organization in relational tables, key types, functional dependencies, and their role in relational schema design. Stage-locked interactive learning system with auto-grading is available at the [Relational Model & Functional Dependencies Interactive Learning Hub](lectures/relational-model-and-functional-dependencies/relational-model-and-functional-dependencies.html).
 
-| Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
+| Lesson | Markdown Lecture | Interactive Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
-| Relational Schema in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | <span class="missing">—</span> | <span class="missing">—</span> | Relation, attribute, tuple, and schema |
-| Mapping from ER Model to Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [HTML](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | Mapping ERD to relational tables |
-| Types of Keys in the Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [HTML](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super, candidate, primary, foreign, and other key types |
-| Functional Dependency in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | <span class="missing">—</span> | <span class="missing">—</span> | Functional dependency, determinant, and dependent attribute |
-| Types of Functional Dependencies in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | <span class="missing">—</span> | <span class="missing">—</span> | Trivial, non-trivial, multivalued, transitive, fully, and partial dependency |
-| Attribute Closure in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/attribute-closure/attribute-closure.md) | <span class="missing">—</span> | <span class="missing">—</span> | Finding attribute closures |
-| Schema Design in DBMS | [Markdown](lectures/relational-model-and-functional-dependencies/schema-design/schema-design.md) | <span class="missing">—</span> | <span class="missing">—</span> | Schema design strategies |
+| 🎯 **Relational Model & Functional Dependencies Interactive Learning Center (Master Hub)** | <span class="missing">—</span> | [Interactive HTML](lectures/relational-model-and-functional-dependencies/relational-model-and-functional-dependencies.html) | <span class="missing">—</span> | Aggregated 5 lessons, 25 stages, 50 questions & Master certificate |
+| 01. Relational Model & Relational Schema | [Markdown](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.md) | [Interactive HTML](lectures/relational-model-and-functional-dependencies/relational-schema/relational-schema.html) | <span class="missing">—</span> | Relations, Tuples, Attributes, Schema vs Instance, 4 core integrity constraints |
+| 02. Types of Keys in the Relational Model | [Markdown](lectures/relational-model-and-functional-dependencies/key/key.md) | [Interactive HTML](lectures/relational-model-and-functional-dependencies/key/key.html) | <span class="missing">—</span> | Super keys, candidate keys, primary keys, foreign keys, natural vs surrogate keys |
+| 03. Mapping ER/EER to Relational Schema | [Markdown](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md) | [Interactive HTML](lectures/relational-model-and-functional-dependencies/er-2-relational/er-2-relational.html) | <span class="missing">—</span> | 7-step mapping: strong/weak entities, 1:1, 1:N, M:N, multivalued, IS-A inheritance |
+| 04. Functional Dependency & Armstrong's Axioms | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md) | [Interactive HTML](lectures/relational-model-and-functional-dependencies/functional-dependency/functional-dependency.html) | <span class="missing">—</span> | Formal FD definition, Armstrong's axioms, secondary rules, attribute closure X+, candidate keys |
+| 05. FD Types & Minimal Cover | [Markdown](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md) | [Interactive HTML](lectures/relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.html) | <span class="missing">—</span> | Trivial, full vs partial, transitive FD, MVD, minimal cover algorithm, normalization bridge |
 
 ## Normalization
 

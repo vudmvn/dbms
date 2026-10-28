@@ -1,680 +1,1276 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mapping from ER Model to Relational Model</title>
-<meta name="description" content="Bài giảng đầy đủ về chuyển ER Model sang Relational Model, có sơ đồ, SQL DDL và bài tập thực hành cho từng case.">
+<title>Bài 3: Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational) | DBMS Interactive</title>
+<meta name="description" content="Nắm vững quy trình chuẩn 7 bước chuyển đổi từ mô hình khái niệm ER/EER sang lược đồ cơ sở dữ liệu quan hệ hoàn chỉnh: ánh xạ thực thể mạnh/yếu, quan hệ 1:1, 1:N, M:N, thuộc tính đa trị và quan hệ kế thừa IS-A.">
 <style>
-:root{
- --bg:#f7f8fc;--surface:#fff;--surface2:#f0f4ff;--text:#182033;--muted:#5f6b7a;
- --primary:#2856d7;--accent:#7a3ff2;--green:#157a55;--orange:#c35a10;--red:#b42318;
- --border:#dbe2ef;--shadow:0 10px 30px rgba(26,46,89,.08);--code:#101827;--codeText:#e8eefc;
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
 }
-body.dark{
- --bg:#0e1420;--surface:#151e2e;--surface2:#1a2740;--text:#eef3ff;--muted:#aab8ce;
- --primary:#82a5ff;--accent:#b69bff;--green:#63d5aa;--orange:#ffb46f;--red:#ff8f86;
- --border:#2c3a54;--shadow:none;--code:#0a101b;--codeText:#e7edf8;
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
-#progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent));z-index:1200;width:0}
-.topbar{position:sticky;top:0;z-index:1000;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-.topin{max-width:1260px;margin:auto;padding:.65rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.brand{font-weight:850}.brand span{color:var(--primary)}
-.actions{display:flex;gap:.55rem;flex-wrap:wrap}
-button,.btn{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:.48rem .72rem;cursor:pointer}
-button:hover,.btn:hover{border-color:var(--primary);text-decoration:none}
-.hero{background:linear-gradient(135deg,#103779,#4a2da6);color:white;padding:4rem 1.2rem 3.4rem}
-.heroin{max-width:1140px;margin:auto}
-.kicker{text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:.78rem;opacity:.86}
-h1{font-size:clamp(2.15rem,5vw,4.25rem);line-height:1.06;margin:.45rem 0 1rem;max-width:1000px}
-.hero p{max-width:930px;color:#e5ecff;font-size:1.1rem}
-.chips{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1.25rem}
-.chip{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);padding:.3rem .62rem;border-radius:999px;font-size:.88rem}
-.layout{max-width:1260px;margin:auto;padding:2rem 1.2rem 5rem;display:grid;grid-template-columns:295px minmax(0,1fr);gap:2rem}
-.toc{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1rem;box-shadow:var(--shadow)}
-.toc h2{font-size:1rem;margin:.1rem 0 .6rem}.toc a{display:block;color:var(--muted);padding:.25rem .4rem;border-radius:7px;font-size:.86rem}
-.toc a:hover,.toc a.active{color:var(--primary);background:var(--surface2);text-decoration:none}
-main{min-width:0}
-section{scroll-margin-top:82px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:clamp(1.2rem,3vw,2.15rem);margin-bottom:1.45rem;box-shadow:var(--shadow)}
-h2{font-size:1.72rem;line-height:1.2;margin:.1rem 0 1rem}h3{font-size:1.18rem;margin:1.35rem 0 .55rem}h4{margin:1rem 0 .35rem}
-.lead{font-size:1.06rem;color:var(--muted)}
-.grid2,.grid3,.grid4{display:grid;gap:1rem;margin:1rem 0}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}
-.card{border:1px solid var(--border);border-radius:13px;padding:1rem;background:var(--surface)}.card h3,.card h4{margin-top:0}
-.note,.tip,.warn,.example,.practice{background:var(--surface2);border-left:5px solid var(--primary);padding:.9rem 1rem;border-radius:10px;margin:1rem 0}
-.tip{border-left-color:var(--green)}.warn{border-left-color:var(--orange)}.example{border-left-color:var(--accent)}.practice{border-left-color:#0d7490}
-.practice h3{margin-top:.1rem}
-table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.94rem}th,td{border:1px solid var(--border);padding:.62rem .7rem;vertical-align:top}th{background:var(--surface2);text-align:left}
-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--surface2);padding:.1rem .28rem;border-radius:5px}
-pre{background:var(--code);color:var(--codeText);padding:1rem;border-radius:11px;overflow:auto;line-height:1.52}pre code{background:none;padding:0;color:inherit}
-svg.diagram{width:100%;height:auto;border:1px solid var(--border);border-radius:13px;background:#fff;margin:.7rem 0}
-.formula{font-family:Cambria,Georgia,serif;background:var(--surface2);padding:.7rem .85rem;border-radius:8px;margin:.7rem 0}
-.badge{display:inline-block;padding:.18rem .5rem;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem;font-weight:750}
-.pk{color:#1d4ed8;font-weight:800}.fk{color:#7c3aed;font-weight:800}.uniq{color:#047857;font-weight:800}
-.steps{counter-reset:s;list-style:none;padding:0}.steps li{counter-increment:s;position:relative;padding-left:3rem;margin:.75rem 0}.steps li:before{content:counter(s);position:absolute;left:0;top:.05rem;width:2rem;height:2rem;display:grid;place-items:center;border-radius:50%;background:var(--primary);color:white;font-weight:800}
-.casehead{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}.caseid{display:inline-grid;place-items:center;min-width:42px;height:32px;padding:0 .65rem;border-radius:999px;background:var(--primary);color:white;font-weight:850}
-details{border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:.65rem .8rem;margin:.75rem 0}
-summary{cursor:pointer;font-weight:800;color:var(--primary)}
-.answer{padding-top:.6rem}
-.mini{font-size:.88rem;color:var(--muted)}
-.quiz-item{border:1px solid var(--border);border-radius:12px;padding:1rem;margin:.8rem 0}.quiz-item label{display:block;padding:.3rem;border-radius:6px}.quiz-item label:hover{background:var(--surface2)}.qans{display:none;background:var(--surface2);padding:.6rem;border-radius:7px;margin-top:.5rem}.qans.show{display:block}
-.rulebox{border:2px solid var(--primary);border-radius:13px;padding:1rem;background:var(--surface2);font-weight:700}
-.erbox{fill:#eef3ff;stroke:#2856d7;stroke-width:3}.erdia{fill:#f4efff;stroke:#7a3ff2;stroke-width:3}.erweak{fill:#fff3e8;stroke:#c35a10;stroke-width:3}.ertext{font:700 19px system-ui;fill:#182033}.ersmall{font:14px system-ui;fill:#475569}.erline{stroke:#475569;stroke-width:3;fill:none}
-footer{max-width:1120px;margin:0 auto 3rem;padding:0 1.2rem;color:var(--muted)}
-@media(max-width:980px){.layout{grid-template-columns:1fr}.toc{position:static;max-height:none}.grid4{grid-template-columns:repeat(2,1fr)}}@media(max-width:720px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
-@media print{.topbar,aside,#progress,.no-print{display:none!important}.hero{background:white!important;color:#111;padding:1rem 0}.hero p{color:#333}.layout{display:block;max-width:none;padding:0}section{border:0;box-shadow:none;padding:0;break-inside:avoid}body{background:#fff;color:#111;font-size:11pt}}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Enhanced Media & Figures */
+.stage-figure {
+  margin: 18px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 30, 60, 0.05);
+  text-align: center;
+}
+.stage-img {
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+figcaption::before {
+  content: "📊 ";
+}
+
+/* Callouts */
+.callout {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.callout-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.callout.tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  color: #14532d;
+}
+.callout.warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 5px solid #d97706;
+  color: #78350f;
+}
+.callout.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+}
+
+/* Comparison Table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.compare-table th {
+  background: #1e3a6e;
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 650;
+}
+.compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+.compare-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+.compare-table tr:hover td {
+  background: #f1f5f9;
+}
+
+/* Codebox */
+.codebox {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid #334155;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+.codebox-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 650;
+}
+.codebox-code, .codebox pre {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+.codebox-code code, .codebox pre code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+.codebox .kw { color: #38bdf8; font-weight: bold; }
+.codebox .tbl { color: #f472b6; }
+.codebox .str { color: #a3e635; }
+.codebox .cm { color: #64748b; font-style: italic; }
+.codebox .fn { color: #fbbf24; }
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
 </style>
 </head>
 <body>
-<div id="progress"></div>
-<div class="topbar"><div class="topin">
-<div class="brand">DBMS Lecture · <span>ER → Relational Mapping</span></div>
-<div class="actions"><button onclick="toggleTheme()">◐ Giao diện</button><button onclick="window.print()">⎙ In/PDF</button><a class="btn" href="#summary">Bảng tổng hợp</a><a class="btn" href="#quiz">✓ Quiz</a></div>
-</div></div>
 
-<header class="hero"><div class="heroin">
-<div class="kicker">Database Design · Conceptual → Logical Design</div>
-<h1>Mapping from ER Model to Relational Model</h1>
-<p>Chuyển ERD thành lược đồ quan hệ một cách có hệ thống: xác định bảng, primary key, foreign key, UNIQUE/NOT NULL, xử lý từng cardinality và participation constraint, sau đó kiểm tra lại bằng business rules. Mỗi case đều có bài tập thực hành và lời giải ẩn.</p>
-<div class="chips"><span class="chip">5 core cases theo GeeksforGeeks</span><span class="chip">+ 7 case mở rộng</span><span class="chip">ERD → Schema → SQL DDL</span><span class="chip">Practice từng case</span><span class="chip">Quiz tương tác</span></div>
-</div></header>
+<header class="hero">
+  <div class="wrap">
+    <a href="../relational-model-and-functional-dependencies.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Về Hub Relational Model & Functional Dependencies</a>
+    <div class="eyebrow">DBMS · RELATIONAL MODEL & FUNCTIONAL DEPENDENCIES · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 3: Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational)</h1>
+    <p>Nắm vững quy trình chuẩn 7 bước chuyển đổi từ mô hình khái niệm ER/EER sang lược đồ cơ sở dữ liệu quan hệ hoàn chỉnh: ánh xạ thực thể mạnh/yếu, quan hệ 1:1, 1:N, M:N, thuộc tính đa trị và quan hệ kế thừa IS-A.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất báo cáo kết quả PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
 
-<div class="layout">
-<aside><nav class="toc" id="toc">
-<h2>Mục lục</h2>
-<a href="#objectives">1. Mục tiêu</a>
-<a href="#principles">2. Nguyên tắc chung</a>
-<a href="#case0">3. Strong entity</a>
-<a href="#case1">4. Case 1: 1:1 + total</a>
-<a href="#case2">5. Case 2: 1:1 + partial/partial</a>
-<a href="#case3">6. Case 3: N:1</a>
-<a href="#case4">7. Case 4: M:N</a>
-<a href="#case5">8. Case 5: Weak entity</a>
-<a href="#case6">9. Composite & derived</a>
-<a href="#case7">10. Multivalued attribute</a>
-<a href="#case8">11. Relationship attributes</a>
-<a href="#case9">12. Recursive relationship</a>
-<a href="#case10">13. N-ary relationship</a>
-<a href="#case11">14. Specialization/Generalization</a>
-<a href="#summary">15. Bảng quy tắc tổng hợp</a>
-<a href="#workflow">16. Quy trình làm bài</a>
-<a href="#mixed">17. Bài tập tổng hợp</a>
-<a href="#quiz">18. Quiz</a>
-<a href="#sources">19. Tài liệu tham khảo</a>
-</nav></aside>
-
-<main>
-<section id="objectives">
-<h2>1. Mục tiêu học tập</h2>
-<p class="lead">Sau bài này, người học phải có thể nhìn một ERD và quyết định chính xác: <b>cần bao nhiêu bảng, PK là gì, FK nằm ở đâu, có cần UNIQUE/NOT NULL hay bảng trung gian không</b>.</p>
-<div class="grid2">
-<div class="card"><h3>Đọc ERD</h3><p>Xác định entity, relationship, cardinality và participation.</p></div>
-<div class="card"><h3>Ánh xạ</h3><p>Chuyển từng construct sang relation/table thích hợp.</p></div>
-<div class="card"><h3>Ràng buộc</h3><p>Biến semantics ER thành PK, FK, UNIQUE, NOT NULL, CHECK.</p></div>
-<div class="card"><h3>Thực hành</h3><p>Viết schema và SQL DDL cho từng case, sau đó tự kiểm tra bằng business rule.</p></div>
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
 </div>
-<div class="note"><b>Chỉnh một điểm thuật ngữ:</b> ER model là <i>conceptual model</i>; relational model thường là <i>logical model</i>, chưa phải physical storage model. Bước physical design còn gồm file organization, indexes, partitioning…</div>
-</section>
 
-<section id="principles">
-<h2>2. Nguyên tắc chung khi chuyển ER → Relational</h2>
-<ol class="steps">
-<li>Mỗi <b>strong entity</b> thường trở thành một relation.</li>
-<li>Chuyển các simple attributes thành columns; composite attribute được tách thành các thành phần cần lưu.</li>
-<li>Chọn key của entity làm <b>PRIMARY KEY</b>.</li>
-<li>Với <b>1:N</b>, đưa PK phía 1 sang phía N làm FK.</li>
-<li>Với <b>M:N</b>, tạo relation trung gian.</li>
-<li>Với <b>1:1</b>, chọn phía đặt FK dựa trên participation và NULL; dùng UNIQUE để giữ 1:1.</li>
-<li>Weak entity nhận key của owner + partial key.</li>
-<li>Multivalued attribute thường cần relation riêng.</li>
-<li>Relationship attributes phải đi cùng relation đại diện relationship.</li>
-<li>Cuối cùng kiểm tra lại <b>min/max cardinality</b> bằng NOT NULL, UNIQUE hoặc constraints bổ sung.</li>
-</ol>
-<div class="rulebox">Không chỉ hỏi “FK đặt ở đâu?” — hãy hỏi thêm “constraint nào khiến relational schema vẫn giữ đúng semantics của ERD?”</div>
-</section>
-
-<section id="case0">
-<div class="casehead"><span class="caseid">0</span><h2>Strong Entity → Relation</h2></div>
-<p>Đây là case nền tảng: mỗi strong entity có key riêng thường được ánh xạ thành một table.</p>
-<div class="formula">STUDENT(StudentID, FullName, DOB, Email) → STUDENT table</div>
-<pre><code>CREATE TABLE Student (
-    StudentID INT PRIMARY KEY,
-    FullName  VARCHAR(100) NOT NULL,
-    DOB       DATE,
-    Email     VARCHAR(200) UNIQUE
-);</code></pre>
-<div class="practice"><h3>Thực hành 0</h3>
-<p>ERD có entity <b>PRODUCT</b> với ProductID (key), ProductName, Price, Stock. Hãy viết relational schema và SQL DDL. Price và Stock không được âm.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>PRODUCT(ProductID PK, ProductName, Price, Stock)
-
-CREATE TABLE Product (
-    ProductID   INT PRIMARY KEY,
-    ProductName VARCHAR(150) NOT NULL,
-    Price       DECIMAL(12,2) CHECK (Price >= 0),
-    Stock       INT CHECK (Stock >= 0)
-);</code></pre>
-</div></details>
-</div>
-</section>
-
-<section id="case1">
-<div class="casehead"><span class="caseid">1</span><h2>Binary 1:1 + Total Participation ở một phía</h2></div>
-<p><b>Ví dụ:</b> PERSON — HAS — PASSPORT. Một person có thể chưa có passport; mỗi passport bắt buộc thuộc đúng một person.</p>
-<svg class="diagram" viewBox="0 0 950 270">
-<rect x="80" y="85" width="190" height="80" rx="9" class="erbox"/><text x="175" y="132" text-anchor="middle" class="ertext">PERSON</text>
-<polygon points="390,125 470,80 550,125 470,170" class="erdia"/><text x="470" y="132" text-anchor="middle" class="ertext">HAS</text>
-<rect x="680" y="85" width="190" height="80" rx="9" class="erbox"/><text x="775" y="132" text-anchor="middle" class="ertext">PASSPORT</text>
-<line x1="270" y1="125" x2="390" y2="125" class="erline"/><line x1="550" y1="118" x2="680" y2="118" class="erline"/><line x1="550" y1="132" x2="680" y2="132" class="erline"/>
-<text x="320" y="110" class="ersmall">1</text><text x="615" y="108" class="ersmall">1 + total</text>
-</svg>
-<h3>Cách ánh xạ thực dụng</h3>
-<p>Vì PASSPORT total participation, đặt <code>PersonID</code> vào PASSPORT là cách rõ semantics: FK <b>NOT NULL + UNIQUE</b>.</p>
-<pre><code>PERSON(
-    PersonID PK,
-    FullName
-)
-
-PASSPORT(
-    PassportNo PK,
-    PersonID FK UNIQUE NOT NULL,
-    IssueDate
-)</code></pre>
-<pre><code>CREATE TABLE Passport (
-    PassportNo VARCHAR(20) PRIMARY KEY,
-    PersonID   INT NOT NULL UNIQUE,
-    IssueDate  DATE,
-    FOREIGN KEY (PersonID) REFERENCES Person(PersonID)
-);</code></pre>
-<div class="tip"><b>Tại sao UNIQUE?</b> Nếu chỉ FK mà không UNIQUE, nhiều passport có thể trỏ tới cùng một person → biến quan hệ thành 1:N.</div>
-<div class="practice"><h3>Thực hành Case 1</h3>
-<p>COUNTRY — HAS_CAPITAL — CITY. Mỗi country phải có đúng một capital; một city là capital của tối đa một country. CITY vẫn có thể tồn tại mà không phải capital.</p>
-<p><b>Yêu cầu:</b> (1) chọn phía đặt FK; (2) viết schema; (3) chỉ ra UNIQUE/NOT NULL cần thiết.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>CITY(CityID PK, CityName, ...)
-COUNTRY(
-    CountryID PK,
-    CountryName,
-    CapitalCityID FK UNIQUE NOT NULL
-)</code></pre>
-<p>Đặt CapitalCityID trong COUNTRY phản ánh total participation của COUNTRY vào HAS_CAPITAL. <code>UNIQUE</code> ngăn hai country có cùng capital; <code>NOT NULL</code> bảo đảm mỗi country phải có capital.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case2">
-<div class="casehead"><span class="caseid">2</span><h2>Binary 1:1 + Partial Participation ở cả hai phía</h2></div>
-<p>Ví dụ kinh điển: hai entity có thể không tham gia relationship. Khi đó không thể dựa vào total participation để chọn một phía “tự nhiên” tuyệt đối.</p>
-<div class="grid2">
-<div class="card"><h3>Option A: FK ở A</h3><p>A(..., B_ID FK UNIQUE NULL)</p></div>
-<div class="card"><h3>Option B: Relationship table</h3><p>R(A_ID PK/FK, B_ID FK UNIQUE)</p></div>
-</div>
-<p>Trong thiết kế thực tế, nếu relationship có ít record và cần tránh NULL hoặc có attributes riêng, một relationship table có thể hợp lý. Nếu relationship đơn giản và access pattern ưu tiên một phía, đặt nullable UNIQUE FK ở một entity thường đơn giản hơn.</p>
-<pre><code>MALE(MaleID PK, ..., FemaleID FK UNIQUE NULL)
-FEMALE(FemaleID PK, ...)</code></pre>
-<div class="warn"><b>Điểm cần dạy kỹ:</b> cardinality 1:1 không chỉ cần FK; phải có UNIQUE trên FK để giữ “tối đa một”.</div>
-<div class="practice"><h3>Thực hành Case 2</h3>
-<p>EMPLOYEE có thể được cấp một COMPANY_CAR hoặc không. Mỗi COMPANY_CAR có thể được gán cho tối đa một employee hoặc đang nằm trong kho.</p>
-<p><b>Yêu cầu:</b> đề xuất 2 cách ánh xạ; phân tích cách nào phù hợp hơn nếu việc gán xe có thêm <code>AssignedDate</code> và <code>ReturnDueDate</code>.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<p><b>Cách 1:</b> <code>EMPLOYEE(..., CarID FK UNIQUE NULL)</code>.</p>
-<p><b>Cách 2:</b> <code>CAR_ASSIGNMENT(EmployeeID PK/FK, CarID FK UNIQUE, AssignedDate, ReturnDueDate)</code>.</p>
-<p>Nếu relationship có nhiều attributes và có ý nghĩa nghiệp vụ rõ, bảng CAR_ASSIGNMENT thường sạch hơn. Nếu cần lịch sử nhiều lần cấp xe, relationship không còn đơn giản 1:1 “tại mọi thời điểm”; nên có AssignmentID hoặc khóa theo thời gian.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case3">
-<div class="casehead"><span class="caseid">3</span><h2>Binary N:1 / 1:N</h2></div>
-<p>Quy tắc chuẩn: đưa PK của phía <b>1</b> sang phía <b>N</b> làm foreign key.</p>
-<svg class="diagram" viewBox="0 0 940 250">
-<rect x="60" y="82" width="200" height="80" rx="9" class="erbox"/><text x="160" y="129" text-anchor="middle" class="ertext">STUDENT</text>
-<polygon points="380,122 460,77 540,122 460,167" class="erdia"/><text x="460" y="129" text-anchor="middle" class="ertext">ENROLLS</text>
-<rect x="660" y="82" width="220" height="80" rx="9" class="erbox"/><text x="770" y="129" text-anchor="middle" class="ertext">ELECTIVE</text>
-<line x1="260" y1="122" x2="380" y2="122" class="erline"/><line x1="540" y1="122" x2="660" y2="122" class="erline"/>
-<text x="315" y="108" class="ersmall">N</text><text x="605" y="108" class="ersmall">1</text>
-</svg>
-<pre><code>STUDENT(
-    StudentID PK,
-    FullName,
-    ElectiveID FK   -- nullable nếu student có thể chưa chọn
-)
-
-ELECTIVE(
-    ElectiveID PK,
-    CourseName
-)</code></pre>
-<p>Nếu mọi student bắt buộc chọn đúng một elective → <code>ElectiveID NOT NULL</code>.</p>
-<div class="practice"><h3>Thực hành Case 3</h3>
-<p>Một DEPARTMENT có nhiều EMPLOYEE. Mỗi employee thuộc đúng một department.</p>
-<p><b>Yêu cầu:</b> viết schema, SQL DDL và cho biết <code>DepartmentID</code> có được NULL không.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>DEPARTMENT(DepartmentID PK, DepartmentName)
-
-EMPLOYEE(
-    EmployeeID PK,
-    FullName,
-    DepartmentID FK NOT NULL
-)</code></pre>
-<pre><code>CREATE TABLE Employee (
-  EmployeeID INT PRIMARY KEY,
-  FullName VARCHAR(100) NOT NULL,
-  DepartmentID INT NOT NULL,
-  FOREIGN KEY (DepartmentID)
-    REFERENCES Department(DepartmentID)
-);</code></pre>
-<p>Không NULL vì participation phía EMPLOYEE là total.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case4">
-<div class="casehead"><span class="caseid">4</span><h2>Binary M:N</h2></div>
-<p>M:N không thể cài trực tiếp bằng một FK ở một phía. Tạo <b>junction/associative relation</b> chứa PK của hai entity dưới dạng FK.</p>
-<pre><code>STUDENT(StudentID PK, ...)
-COURSE(CourseID PK, ...)
-
-ENROLLMENT(
-    StudentID PK/FK,
-    CourseID  PK/FK
-)</code></pre>
-<div class="formula">PK(ENROLLMENT) = (StudentID, CourseID)</div>
-<div class="practice"><h3>Thực hành Case 4</h3>
-<p>DOCTOR điều trị nhiều PATIENT; PATIENT có thể được nhiều DOCTOR điều trị. Mỗi cặp doctor–patient có <code>StartDate</code>.</p>
-<p><b>Yêu cầu:</b> tạo relational schema và xác định nơi lưu StartDate.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>DOCTOR(DoctorID PK, ...)
-PATIENT(PatientID PK, ...)
-TREATMENT(
-    DoctorID  PK/FK,
-    PatientID PK/FK,
-    StartDate
-)</code></pre>
-<p><code>StartDate</code> là relationship attribute nên thuộc TREATMENT.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case5">
-<div class="casehead"><span class="caseid">5</span><h2>Weak Entity</h2></div>
-<p>Weak entity không tự có full key; nó cần owner key + partial key.</p>
-<svg class="diagram" viewBox="0 0 950 260">
-<rect x="65" y="82" width="200" height="82" rx="9" class="erbox"/><text x="165" y="130" text-anchor="middle" class="ertext">EMPLOYEE</text>
-<polygon points="382,123 460,78 538,123 460,168" class="erdia"/><polygon points="393,123 460,85 527,123 460,161" fill="none" stroke="#7a3ff2" stroke-width="2"/>
-<text x="460" y="130" text-anchor="middle" class="ertext">HAS</text>
-<rect x="675" y="77" width="210" height="92" rx="9" class="erweak"/><rect x="683" y="85" width="194" height="76" rx="7" fill="none" stroke="#c35a10" stroke-width="2"/><text x="780" y="130" text-anchor="middle" class="ertext">DEPENDENT</text>
-<line x1="265" y1="123" x2="382" y2="123" class="erline"/><line x1="538" y1="116" x2="675" y2="116" class="erline"/><line x1="538" y1="130" x2="675" y2="130" class="erline"/>
-</svg>
-<pre><code>EMPLOYEE(EmployeeID PK, ...)
-
-DEPENDENT(
-    EmployeeID   PK/FK,
-    DependentName PK,      -- partial key
-    DOB,
-    RelationshipType
-)</code></pre>
-<p><code>(EmployeeID, DependentName)</code> là composite PK.</p>
-<div class="practice"><h3>Thực hành Case 5</h3>
-<p>HOTEL có nhiều ROOM. RoomNumber chỉ duy nhất <i>trong một hotel</i>, không duy nhất toàn hệ thống. ROOM không có ý nghĩa trong hệ thống nếu không biết HOTEL owner.</p>
-<p><b>Yêu cầu:</b> ánh xạ HOTEL và ROOM.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>HOTEL(
-    HotelID PK,
-    HotelName
-)
-
-ROOM(
-    HotelID   PK/FK,
-    RoomNumber PK,
-    RoomType,
-    Price
-)</code></pre>
-<p>Khóa ROOM là <code>(HotelID, RoomNumber)</code>.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case6">
-<div class="casehead"><span class="caseid">6</span><h2>Composite & Derived Attributes</h2></div>
-<h3>Composite attribute</h3>
-<p>Thông thường lưu các thành phần nguyên tử cần truy vấn.</p>
-<div class="formula">Address = {Street, Ward, District, City} → Street, Ward, District, City</div>
-<h3>Derived attribute</h3>
-<p>Thuộc tính tính được từ dữ liệu khác thường không cần lưu trực tiếp.</p>
-<div class="formula">Age = current_date − DateOfBirth → lưu DateOfBirth, tính Age khi cần</div>
-<div class="practice"><h3>Thực hành Case 6</h3>
-<p>CUSTOMER có <code>Name = {FirstName, MiddleName, LastName}</code>, <code>DateOfBirth</code> và derived attribute <code>Age</code>. Hãy ánh xạ.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>CUSTOMER(
-    CustomerID PK,
-    FirstName,
-    MiddleName,
-    LastName,
-    DateOfBirth
-)</code></pre>
-<p>Không cần column Age nếu nó luôn có thể tính từ DateOfBirth.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case7">
-<div class="casehead"><span class="caseid">7</span><h2>Multivalued Attribute</h2></div>
-<p>Một multivalued attribute thường trở thành relation riêng gồm owner PK + giá trị attribute.</p>
-<div class="formula">STUDENT.PhoneNumber → STUDENT_PHONE(StudentID, PhoneNumber)</div>
-<pre><code>STUDENT(StudentID PK, FullName)
-
-STUDENT_PHONE(
-    StudentID  PK/FK,
-    PhoneNumber PK
-)</code></pre>
-<div class="practice"><h3>Thực hành Case 7</h3>
-<p>SUPPLIER có thể có nhiều EmailAddress. Một supplier không được lưu trùng cùng một email hai lần.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>SUPPLIER(SupplierID PK, SupplierName)
-
-SUPPLIER_EMAIL(
-    SupplierID   PK/FK,
-    EmailAddress PK
-)</code></pre>
-</div></details>
-</div>
-</section>
-
-<section id="case8">
-<div class="casehead"><span class="caseid">8</span><h2>Relationship Attributes</h2></div>
-<p>Relationship attribute thuộc relation đại diện relationship, không bị “đẩy” tùy tiện sang entity.</p>
-<div class="example"><b>STUDENT ENROLLS COURSE</b> có Semester, EnrollDate, Grade. Grade không phải thuộc tính của STUDENT hay COURSE riêng lẻ.</div>
-<pre><code>ENROLLMENT(
-    StudentID PK/FK,
-    CourseID  PK/FK,
-    Semester  PK,
-    EnrollDate,
-    Grade
-)</code></pre>
-<div class="warn"><b>Khóa phụ thuộc semantics.</b> Nếu sinh viên có thể học lại cùng course ở nhiều semester, PK chỉ (StudentID, CourseID) là sai; cần thêm Semester hoặc SectionID.</div>
-<div class="practice"><h3>Thực hành Case 8</h3>
-<p>EMPLOYEE — WORKS_ON — PROJECT có HoursPerWeek và Role. Một employee có thể tham gia cùng project một lần.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>WORKS_ON(
-    EmployeeID PK/FK,
-    ProjectID  PK/FK,
-    HoursPerWeek,
-    Role
-)</code></pre>
-</div></details>
-</div>
-</section>
-
-<section id="case9">
-<div class="casehead"><span class="caseid">9</span><h2>Recursive Relationship</h2></div>
-<h3>Recursive 1:N</h3>
-<p>EMPLOYEE supervises EMPLOYEE. Một supervisor có nhiều subordinate; mỗi subordinate có tối đa một supervisor.</p>
-<pre><code>EMPLOYEE(
-    EmployeeID PK,
-    FullName,
-    SupervisorID FK NULL
-)</code></pre>
-<p><code>SupervisorID REFERENCES Employee(EmployeeID)</code> là self-referencing FK.</p>
-<h3>Recursive M:N</h3>
-<p>PERSON knows PERSON → tạo relation riêng.</p>
-<pre><code>KNOWS(
-    PersonID1 PK/FK,
-    PersonID2 PK/FK,
-    SinceDate
-)</code></pre>
-<div class="practice"><h3>Thực hành Case 9</h3>
-<p>CATEGORY có thể có một ParentCategory và nhiều child categories. Root category không có parent.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>CATEGORY(
-    CategoryID PK,
-    CategoryName,
-    ParentCategoryID FK NULL
-)</code></pre>
-<p><code>ParentCategoryID REFERENCES Category(CategoryID)</code>.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case10">
-<div class="casehead"><span class="caseid">10</span><h2>N-ary Relationship</h2></div>
-<p>Với ternary/n-ary relationship, tạo relation riêng chứa PK của các entity tham gia dưới dạng FK. PK không nhất thiết luôn là “tất cả FK”; phải dựa vào cardinality semantics.</p>
-<div class="example"><b>SUPPLIER supplies PART to PROJECT</b> với Quantity.</div>
-<pre><code>SUPPLY(
-    SupplierID PK/FK,
-    PartID     PK/FK,
-    ProjectID  PK/FK,
-    Quantity
-)</code></pre>
-<div class="warn"><b>Không tự động tách ternary thành ba binary relationship.</b> Việc đó có thể làm mất thông tin “supplier nào cung cấp part nào cho project nào”.</div>
-<div class="practice"><h3>Thực hành Case 10</h3>
-<p>DOCTOR kê DRUG cho PATIENT; mỗi occurrence có Dose và StartDate. Cùng doctor có thể kê cùng drug cho nhiều patient.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<pre><code>PRESCRIPTION(
-    DoctorID  PK/FK,
-    PatientID PK/FK,
-    DrugID    PK/FK,
-    StartDate PK,
-    Dose
-)</code></pre>
-<p>Thêm StartDate vào PK nếu một bộ Doctor–Patient–Drug có thể xuất hiện nhiều lần theo thời gian.</p>
-</div></details>
-</div>
-</section>
-
-<section id="case11">
-<div class="casehead"><span class="caseid">11</span><h2>Specialization / Generalization (EER → Relational)</h2></div>
-<p>Một chiến lược tổng quát và an toàn: một relation cho superclass + một relation cho mỗi subclass.</p>
-<pre><code>EMPLOYEE(
-    EmployeeID PK,
-    FullName,
-    Salary
-)
-
-ENGINEER(
-    EmployeeID PK/FK,
-    EngineeringField
-)
-
-MANAGER(
-    EmployeeID PK/FK,
-    ManagementLevel
-)</code></pre>
-<p>Chiến lược này hỗ trợ partial và overlapping tốt.</p>
-<div class="grid2">
-<div class="card"><h3>Total + Disjoint</h3><p>Có thể cân nhắc chỉ tạo tables cho subclasses, hoặc một table + type discriminator.</p></div>
-<div class="card"><h3>Overlapping</h3><p>Superclass + separate subtype tables thường dễ giữ semantics hơn.</p></div>
-</div>
-<div class="practice"><h3>Thực hành Case 11</h3>
-<p>ACCOUNT được specialize thành SAVINGS_ACCOUNT và CURRENT_ACCOUNT. Mọi account phải thuộc đúng một subtype. Savings có InterestRate; Current có OverdraftLimit.</p>
-<p><b>Yêu cầu:</b> đề xuất ít nhất 2 mapping strategies.</p>
-<details><summary>Xem đáp án gợi ý</summary><div class="answer">
-<p><b>Strategy A:</b></p>
-<pre><code>ACCOUNT(AccountID PK, Balance)
-SAVINGS_ACCOUNT(AccountID PK/FK, InterestRate)
-CURRENT_ACCOUNT(AccountID PK/FK, OverdraftLimit)</code></pre>
-<p><b>Strategy B:</b> vì total + disjoint, có thể dùng một table:</p>
-<pre><code>ACCOUNT(
-    AccountID PK,
-    Balance,
-    AccountType,
-    InterestRate NULL,
-    OverdraftLimit NULL
-)</code></pre>
-<p>Cần CHECK để bảo đảm đúng subtype attribute tương ứng với AccountType.</p>
-</div></details>
-</div>
-</section>
-
-<section id="summary">
-<h2>15. Bảng quy tắc tổng hợp</h2>
-<table>
-<thead><tr><th>ER construct</th><th>Mapping điển hình</th><th>Constraint quan trọng</th></tr></thead>
-<tbody>
-<tr><td>Strong entity</td><td>Một table</td><td>PK từ key attribute</td></tr>
-<tr><td>1:1</td><td>FK ở một phía hoặc relationship table</td><td>FK + UNIQUE; NOT NULL nếu total</td></tr>
-<tr><td>1:N</td><td>FK phía N</td><td>NOT NULL nếu phía N total</td></tr>
-<tr><td>M:N</td><td>Junction table</td><td>PK thường là tổ hợp 2 FK</td></tr>
-<tr><td>Weak entity</td><td>Table riêng</td><td>Owner PK + partial key</td></tr>
-<tr><td>Composite attribute</td><td>Tách thành components</td><td>Chỉ lưu phần cần thiết</td></tr>
-<tr><td>Derived attribute</td><td>Thường không lưu</td><td>Tính từ base data</td></tr>
-<tr><td>Multivalued attribute</td><td>Table riêng</td><td>Owner PK + value</td></tr>
-<tr><td>Relationship attributes</td><td>Nằm ở relation đại diện relationship</td><td>Key dựa vào semantics</td></tr>
-<tr><td>Recursive 1:N</td><td>Self FK</td><td>Nullable nếu root/no parent</td></tr>
-<tr><td>Recursive M:N</td><td>Relationship table</td><td>2 self FKs</td></tr>
-<tr><td>N-ary</td><td>Relation riêng</td><td>FKs + key theo cardinality</td></tr>
-<tr><td>Specialization</td><td>Superclass + subtype tables</td><td>Subtype PK cũng là FK</td></tr>
-</tbody>
-</table>
-
-<h3>Minimum table count – chỉ dùng như heuristic</h3>
-<table>
-<thead><tr><th>Relationship</th><th>Thường gặp</th></tr></thead><tbody>
-<tr><td>1:1, partial cả hai</td><td>2 tables nếu nhúng FK; có thể 3 nếu relationship cần tồn tại độc lập</td></tr>
-<tr><td>1:1, total ít nhất một phía</td><td>Có thể merge mạnh hơn, nhưng thực tế thường vẫn giữ entity tables riêng và dùng FK/UNIQUE</td></tr>
-<tr><td>1:N</td><td>2 entity tables; FK ở N</td></tr>
-<tr><td>M:N</td><td>3 tables: 2 entities + 1 junction</td></tr>
-</tbody></table>
-<div class="warn"><b>Đừng học thuộc “số bảng tối thiểu” mà bỏ semantics.</b> Trong thiết kế thực tế, giữ entity tables riêng thường rõ ràng hơn việc merge quá mạnh chỉ để giảm số bảng.</div>
-</section>
-
-<section id="workflow">
-<h2>16. Quy trình 8 bước khi làm bài ER → Relational</h2>
-<ol class="steps">
-<li>Liệt kê tất cả strong entities → tables.</li>
-<li>Xác định PK của từng table.</li>
-<li>Xử lý weak entities.</li>
-<li>Xử lý composite, derived và multivalued attributes.</li>
-<li>Xử lý relationships theo thứ tự 1:1 → 1:N → M:N → n-ary.</li>
-<li>Đặt relationship attributes đúng relation.</li>
-<li>Chuyển participation thành NULL/NOT NULL; cardinality thành UNIQUE/FK phù hợp.</li>
-<li>Đọc schema ngược về business rules để phát hiện mapping sai.</li>
-</ol>
-<div class="tip"><b>Kiểm tra cuối:</b> nếu relational schema cho phép một trạng thái mà ERD cấm, mapping còn thiếu constraint.</div>
-</section>
-
-<section id="mixed">
-<h2>17. Bài tập tổng hợp</h2>
-<h3>Bài A – University</h3>
-<p>Mỗi DEPARTMENT có nhiều STUDENT; mỗi STUDENT thuộc đúng một department. STUDENT đăng ký nhiều SECTION; mỗi SECTION có nhiều students. ENROLLMENT có EnrollDate và Grade. Một STUDENT có nhiều PhoneNumber.</p>
-<details><summary>Gợi ý đáp án</summary><div class="answer">
-<pre><code>DEPARTMENT(DepartmentID PK, ...)
-STUDENT(StudentID PK, DepartmentID FK NOT NULL, ...)
-STUDENT_PHONE(StudentID PK/FK, PhoneNumber PK)
-SECTION(SectionID PK, ...)
-ENROLLMENT(StudentID PK/FK, SectionID PK/FK, EnrollDate, Grade)</code></pre>
-</div></details>
-
-<h3>Bài B – E-commerce</h3>
-<p>CUSTOMER đặt ORDER. Mỗi ORDER thuộc đúng một customer. ORDER có nhiều PRODUCT và PRODUCT xuất hiện trong nhiều ORDER. Mỗi dòng order có Quantity và UnitPriceAtOrder.</p>
-<details><summary>Gợi ý đáp án</summary><div class="answer">
-<pre><code>CUSTOMER(CustomerID PK, ...)
-ORDERS(OrderID PK, CustomerID FK NOT NULL, OrderDate, ...)
-PRODUCT(ProductID PK, ...)
-ORDER_ITEM(
-    OrderID PK/FK,
-    ProductID PK/FK,
-    Quantity,
-    UnitPriceAtOrder
-)</code></pre>
-</div></details>
-
-<h3>Bài C – Logistics</h3>
-<p>DRIVER lái nhiều VEHICLE theo thời gian; VEHICLE có thể do nhiều DRIVER lái ở những thời điểm khác nhau. Mỗi assignment có StartTime và EndTime. VEHICLE thuộc đúng một DEPOT.</p>
-<details><summary>Gợi ý đáp án</summary><div class="answer">
-<pre><code>DEPOT(DepotID PK, ...)
-VEHICLE(VehicleID PK, DepotID FK NOT NULL, ...)
-DRIVER(DriverID PK, ...)
-DRIVER_VEHICLE(
-    DriverID PK/FK,
-    VehicleID PK/FK,
-    StartTime PK,
-    EndTime
-)</code></pre>
-</div></details>
-
-<h3>Bài D – Hospital</h3>
-<p>PATIENT có nhiều emergency contacts. DOCTOR kê DRUG cho PATIENT; prescription có Dose, Frequency, StartDate, EndDate. Hãy xác định relations và keys.</p>
-<details><summary>Gợi ý đáp án</summary><div class="answer">
-<pre><code>PATIENT(PatientID PK, ...)
-PATIENT_CONTACT(PatientID PK/FK, ContactPhone PK, ContactName)
-DOCTOR(DoctorID PK, ...)
-DRUG(DrugID PK, ...)
-PRESCRIPTION(
-    DoctorID PK/FK,
-    PatientID PK/FK,
-    DrugID PK/FK,
-    StartDate PK,
-    Dose,
-    Frequency,
-    EndDate
-)</code></pre>
-</div></details>
-</section>
-
-<section id="quiz">
-<h2>18. Quiz tự kiểm tra</h2>
-<div class="quiz-item" data-a="b"><b>Câu 1.</b> 1:N thường ánh xạ bằng:
-<label><input type="radio" name="q1" value="a"> FK ở phía 1</label><label><input type="radio" name="q1" value="b"> FK ở phía N</label><label><input type="radio" name="q1" value="c"> Luôn tạo bảng mới</label><div class="qans">Đáp án: <b>B</b>.</div></div>
-<div class="quiz-item" data-a="c"><b>Câu 2.</b> M:N cần:
-<label><input type="radio" name="q2" value="a"> Một nullable FK</label><label><input type="radio" name="q2" value="b"> Merge 2 entities</label><label><input type="radio" name="q2" value="c"> Junction relation</label><div class="qans">Đáp án: <b>C</b>.</div></div>
-<div class="quiz-item" data-a="a"><b>Câu 3.</b> Weak entity key thường là:
-<label><input type="radio" name="q3" value="a"> Owner key + partial key</label><label><input type="radio" name="q3" value="b"> Chỉ partial key</label><label><input type="radio" name="q3" value="c"> Không có key</label><div class="qans">Đáp án: <b>A</b>.</div></div>
-<div class="quiz-item" data-a="b"><b>Câu 4.</b> Trong 1:1, FK cần constraint nào để ngăn nhiều row trỏ tới cùng entity?
-<label><input type="radio" name="q4" value="a"> CHECK</label><label><input type="radio" name="q4" value="b"> UNIQUE</label><label><input type="radio" name="q4" value="c"> DEFAULT</label><div class="qans">Đáp án: <b>B</b>.</div></div>
-<div class="quiz-item" data-a="c"><b>Câu 5.</b> Multivalued attribute thường:
-<label><input type="radio" name="q5" value="a"> Ghép bằng dấu phẩy trong 1 column</label><label><input type="radio" name="q5" value="b"> Bỏ đi</label><label><input type="radio" name="q5" value="c"> Tạo relation riêng</label><div class="qans">Đáp án: <b>C</b>.</div></div>
-<div class="quiz-item" data-a="a"><b>Câu 6.</b> Derived attribute như Age từ DOB thường:
-<label><input type="radio" name="q6" value="a"> Không cần lưu trực tiếp</label><label><input type="radio" name="q6" value="b"> Luôn là PK</label><label><input type="radio" name="q6" value="c"> Luôn tạo table mới</label><div class="qans">Đáp án: <b>A</b>.</div></div>
-<div class="quiz-item" data-a="b"><b>Câu 7.</b> Recursive 1:N thường dùng:
-<label><input type="radio" name="q7" value="a"> Junction table bắt buộc</label><label><input type="radio" name="q7" value="b"> Self-referencing FK</label><label><input type="radio" name="q7" value="c"> Không thể ánh xạ</label><div class="qans">Đáp án: <b>B</b>.</div></div>
-<div class="quiz-item" data-a="c"><b>Câu 8.</b> Relationship attribute của M:N nên nằm:
-<label><input type="radio" name="q8" value="a"> Entity A</label><label><input type="radio" name="q8" value="b"> Entity B</label><label><input type="radio" name="q8" value="c"> Junction relation</label><div class="qans">Đáp án: <b>C</b>.</div></div>
-<div class="quiz-item" data-a="a"><b>Câu 9.</b> Total participation của phía N trong 1:N thường tương ứng:
-<label><input type="radio" name="q9" value="a"> FK NOT NULL</label><label><input type="radio" name="q9" value="b"> FK UNIQUE bắt buộc</label><label><input type="radio" name="q9" value="c"> DROP FK</label><div class="qans">Đáp án: <b>A</b>.</div></div>
-<div class="quiz-item" data-a="b"><b>Câu 10.</b> Ternary relationship:
-<label><input type="radio" name="q10" value="a"> Luôn tách thành 3 binary</label><label><input type="radio" name="q10" value="b"> Thường tạo relation riêng, giữ đồng thời các participant keys</label><label><input type="radio" name="q10" value="c"> Không thể có attributes</label><div class="qans">Đáp án: <b>B</b>.</div></div>
-<button onclick="gradeQuiz()">Kiểm tra kết quả</button> <button onclick="resetQuiz()">Làm lại</button><p id="score" style="font-weight:850"></p>
-</section>
-
-<section id="sources">
-<h2>19. Tài liệu tham khảo</h2>
-<ul>
-<li><a href="https://www.geeksforgeeks.org/dbms/mapping-from-er-model-to-relational-model/" target="_blank" rel="noopener">GeeksforGeeks — Mapping from ER Model to Relational Model</a></li>
-<li><a href="https://www.geeksforgeeks.org/dbms/introduction-of-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Introduction of ER Model</a></li>
-<li><a href="https://www.geeksforgeeks.org/dbms/generalization-specialization-and-aggregation-in-er-model/" target="_blank" rel="noopener">GeeksforGeeks — Generalization, Specialization and Aggregation</a></li>
-</ul>
-<div class="tip"><b>Gợi ý dạy học:</b> cho sinh viên làm từng case theo chu trình <i>ERD → schema notation → SQL DDL → insert vài record thử vi phạm constraint</i>. Việc cố tình tạo dữ liệu sai giúp sinh viên hiểu vì sao cần FK, UNIQUE và NOT NULL.</div>
-</section>
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
 </main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
 </div>
 
-<footer><hr><p><b>ER Model → Relational Model Mapping</b> · Lecture + case-by-case practice · HTML độc lập, có dark mode, đáp án ẩn và quiz.</p></footer>
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 03-er-2-relational. Bài 3: Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
 <script>
-function toggleTheme(){
- document.body.classList.toggle('dark');
- localStorage.setItem('ermap-theme',document.body.classList.contains('dark')?'dark':'light');
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Ánh xạ Thực thể Mạnh & Thực thể Yếu (Strong & Weak Entities)", "takeaway": "Thực thể mạnh được chuyển thành bảng độc lập với khóa chính riêng. Thực thể yếu chuyển thành bảng phụ thuộc với khóa chính kết hợp giữa khóa ngoại của bảng cha và khóa bộ phận.", "summary": "\n        <h4>1.1. Bước 1: Ánh xạ Thực thể Mạnh (Regular / Strong Entity Mapping)</h4>\n        <p>Với mỗi thực thể mạnh $E$ trong sơ đồ ER, ta tạo một lược đồ quan hệ $R$ tương ứng bao gồm tất cả các thuộc tính đơn nguyên tử của $E$. Chọn một trong các khóa của $E$ làm <b>Khóa chính (Primary Key)</b> của $R$.</p>\n        <pre><code>-- Sơ đồ ER: SINH_VIEN(<u>MaSV</u>, HoTen, NgaySinh, QueQuan)\n-- Ánh xạ sang SQL DDL:\nCREATE TABLE SINH_VIEN (\n    MaSV VARCHAR(20) PRIMARY KEY,\n    HoTen NVARCHAR(100) NOT NULL,\n    NgaySinh DATE NOT NULL,\n    QueQuan NVARCHAR(100)\n);</code></pre>\n\n        <h4>1.2. Bước 2: Ánh xạ Thực thể Yếu (Weak Entity Mapping)</h4>\n        <p>Thực thể yếu $W$ không có đủ thuộc tính để tự định danh mà phụ thuộc vào thực thể chủ quyền (Owner Entity) $E$ thông qua liên kết xác định (Identifying Relationship). Quy tắc ánh xạ:</p>\n        <ol>\n            <li>Tạo bảng $R$ đại diện cho thực thể yếu $W$, bao gồm tất cả thuộc tính đơn của $W$.</li>\n            <li>Thêm các thuộc tính khóa chính của thực thể cha $E$ vào $R$ dưới dạng <b>Khóa ngoại (Foreign Key)</b>.</li>\n            <li>Khóa chính của $R$ là <b>Composite Key</b> kết hợp giữa: <code>Khóa ngoại trỏ về cha + Khóa bộ phận (Partial Key / Discriminator)</code> của $W$.</li>\n            <li>Cấu hình <code>ON DELETE CASCADE</code> để bảo đảm khi xóa thực thể cha thì thực thể yếu liên quan cũng bị xóa theo.</li>\n        </ol>\n\n        <pre><code>-- Thực thể yếu THAN_NHAN phụ thuộc NHAN_VIEN qua liên kết CO_THAN_NHAN:\n-- Partial Key là TenThanNhan\nCREATE TABLE THAN_NHAN (\n    MaNV VARCHAR(20),\n    TenThanNhan NVARCHAR(100),\n    MoiQuanHe NVARCHAR(50),\n    PRIMARY KEY (MaNV, TenThanNhan),\n    FOREIGN KEY (MaNV) REFERENCES NHAN_VIEN(MaNV) ON DELETE CASCADE\n);</code></pre>\n        ", "questions": [{"id": "q1", "stem": "Khi ánh xạ một Thực thể yếu (Weak Entity) sang lược đồ quan hệ, khóa chính (Primary Key) của bảng mới được xác định như thế nào?", "options": ["Chỉ sử dụng khóa bộ phận (Partial Key) của chính thực thể yếu đó", "Hệ thống tự động sinh một mã ngẫu nhiên không liên quan đến thực thể cha", "Kết hợp khóa ngoại (Foreign Key) tham chiếu đến thực thể cha cùng với khóa bộ phận (Partial Key) của thực thể yếu", "Sử dụng toàn bộ các thuộc tính của thực thể cha làm khóa chính"], "correct": 2, "explain": "Khóa chính của thực thể yếu bắt buộc phải là Composite Key ghép từ Foreign Key trỏ về thực thể cha và Partial Key của chính nó."}, {"id": "q2", "stem": "Tại sao trong bảng ánh xạ từ thực thể yếu, ràng buộc khóa ngoại thường đi kèm hành động `ON DELETE CASCADE`?", "options": ["Vì thực thể yếu có thể tồn tại độc lập mà không cần thực thể cha", "Vì sự tồn tại của thực thể yếu phụ thuộc hoàn toàn vào thực thể cha; khi thực thể cha bị xóa thì thực thể yếu không còn lý do để tồn tại", "Để tăng tốc độ truy vấn SELECT", "Vì SQL bắt buộc mọi bảng đều phải có ON DELETE CASCADE"], "correct": 1, "explain": "Thực thể yếu có tính phụ thuộc tồn tại (Existence Dependency). Khi cha bị xóa, toàn bộ bản ghi con yếu phải bị xóa theo (CASCADE)."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Ánh xạ Mối quan hệ Nhị phân 1:1 và 1:N", "takeaway": "Với quan hệ 1:N, luôn đặt FK ở bảng phía 'N' trỏ về bảng phía '1'. Với quan hệ 1:1, đặt FK ở bảng có tham gia toàn phần và bổ sung ràng buộc UNIQUE.", "summary": "\n        <h4>2.1. Ánh xạ Mối quan hệ 1:N (Một - Nhiều)</h4>\n        <p>Đây là mối quan hệ phổ biến nhất trong thiết kế CSDL thực tế (ví dụ: Một Khoa có Nhiều Sinh viên; Một Khách hàng có Nhiều Đơn hàng).</p>\n        <div class=\"note-box\">\n            <b>Quy tắc vàng cho quan hệ 1:N:</b><br>\n            Luôn luôn thêm <b>Khóa ngoại (Foreign Key)</b> vào bảng ở <b>phía 'N' (Many side)</b> để trỏ về Khóa chính của bảng ở <b>phía '1' (One side)</b>. Tuyệt đối không làm ngược lại vì sẽ gây dư thừa hoặc vi phạm dạng chuẩn 1NF.\n        </div>\n        <pre><code>-- Quan hệ KHOA (1) ----- (N) SINH_VIEN\nALTER TABLE SINH_VIEN ADD COLUMN MaKhoa VARCHAR(20);\nALTER TABLE SINH_VIEN ADD CONSTRAINT fk_sv_khoa \n    FOREIGN KEY (MaKhoa) REFERENCES KHOA(MaKhoa);</code></pre>\n\n        <h4>2.2. Ánh xạ Mối quan hệ 1:1 (Một - Một)</h4>\n        <p>Có 3 chiến lược thiết kế tùy thuộc vào mức độ tham gia (Participation):</p>\n        <ol>\n            <li><b>Chiến lược Khóa ngoại (Foreign Key Approach - Phổ biến nhất):</b> Chọn một trong hai bảng để đặt Khóa ngoại trỏ sang bảng kia. <i>Ưu tiên đặt FK vào bảng có Tham gia toàn phần (Total Participation / đường kẻ đôi)</i> để giảm thiểu số lượng giá trị NULL. <b>Bắt buộc phải thêm ràng buộc <code>UNIQUE</code> cho cột FK</b> để ngăn chặn một bản ghi bị gán cho nhiều đối tượng.</li>\n            <li><b>Chiến lược Hợp nhất bảng (Merged Relation Approach):</b> Nếu cả 2 thực thể đều tham gia toàn phần (1:1 Total - Total) và có cùng chu kỳ sống, ta có thể gộp cả hai thực thể thành 1 bảng duy nhất.</li>\n            <li><b>Chiến lược Bảng liên kết trung gian (Cross-reference / Junction Table):</b> Tạo bảng thứ 3 lưu 2 khóa ngoại, thường chỉ dùng khi cả 2 bên đều tham gia bán phần và tỷ lệ liên kết rất thấp.</li>\n        </ol>\n        <pre><code>-- Quan hệ 1:1 giữa NHAN_VIEN và BAN_LAM_VIEC (Mỗi bàn chỉ cấp cho 1 NV):\nCREATE TABLE BAN_LAM_VIEC (\n    MaBan VARCHAR(20) PRIMARY KEY,\n    ViTri NVARCHAR(100),\n    MaNV VARCHAR(20) UNIQUE, -- Ràng buộc UNIQUE bảo đảm tính chất 1:1\n    FOREIGN KEY (MaNV) REFERENCES NHAN_VIEN(MaNV)\n);</code></pre>\n        ", "questions": [{"id": "q3", "stem": "Trong mối quan hệ 1:N giữa `LOP_HOC` (1) và `SINH_VIEN` (N), vị trí chính xác để đặt Khóa ngoại (Foreign Key) là ở đâu?", "options": ["Đặt trong bảng LOP_HOC trỏ về bảng SINH_VIEN", "Đặt trong bảng SINH_VIEN trỏ về bảng LOP_HOC", "Bắt buộc phải tạo một bảng trung gian thứ 3", "Đặt khóa ngoại ở cả hai bảng trỏ lẫn nhau"], "correct": 1, "explain": "Quy tắc kinh điển cho quan hệ 1:N: Khóa ngoại luôn luôn được đặt ở bảng phía nhiều (Many side - SINH_VIEN) trỏ về bảng phía một (One side - LOP_HOC)."}, {"id": "q4", "stem": "Khi ánh xạ mối quan hệ 1:1 bằng phương pháp đặt Khóa ngoại vào một trong hai bảng, ràng buộc nào sau đây là BẮT BUỘC phải khai báo trên cột Khóa ngoại đó?", "options": ["Ràng buộc CHECK (giá trị > 0)", "Ràng buộc UNIQUE", "Ràng buộc AUTO_INCREMENT", "Ràng buộc DEFAULT '1'"], "correct": 1, "explain": "Ràng buộc UNIQUE trên cột khóa ngoại là bắt buộc để đảm bảo một giá trị cha chỉ được tham chiếu tối đa một lần, duy trì tính chất 1:1."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Ánh xạ Mối quan hệ Nhiều - Nhiều (M:N) & Bảng Trung gian", "takeaway": "Mối quan hệ M:N bắt buộc phải được chuyển thành một Bảng liên kết trung gian (Junction Table) có khóa chính là Composite Key của 2 khóa ngoại.", "summary": "\n        <h4>3.1. Tại sao không thể đặt Khóa ngoại trực tiếp trong quan hệ M:N?</h4>\n        <p>Xét mối quan hệ giữa <code>SINH_VIEN</code> và <code>MON_HOC</code>: Một sinh viên có thể đăng ký Nhiều môn học, và một môn học có thể có Nhiều sinh viên theo học.</p>\n        <ul>\n            <li>Nếu đặt <code>MaMonHoc</code> vào <code>SINH_VIEN</code>: Cột này sẽ phải chứa danh sách mảng các mã môn học (Vi phạm 1NF vì giá trị không nguyên tử) hoặc phải nhân bản dòng sinh viên nhiều lần (gây trùng khóa chính).</li>\n            <li>Nếu làm ngược lại đặt <code>MaSV</code> vào <code>MON_HOC</code>: Tương tự, vi phạm chuẩn hóa.</li>\n        </ul>\n\n        <h4>3.2. Giải pháp: Bảng liên kết trung gian (Junction / Bridge / Associative Table)</h4>\n        <p>Với mỗi mối quan hệ nhiều-nhiều (M:N), ta bắt buộc phải tạo một bảng quan hệ mới $R_{link}$:</p>\n        <ol>\n            <li>Bảng $R_{link}$ chứa ít nhất 2 thuộc tính là Khóa ngoại tham chiếu đến Khóa chính của 2 bảng thực thể tham gia.</li>\n            <li>Khóa chính của $R_{link}$ là <b>Composite Primary Key</b> tạo từ sự kết hợp của cả 2 khóa ngoại: $PK = (FK_1, FK_2)$.</li>\n            <li>Nếu mối quan hệ M:N trong sơ đồ ER có các <b>thuộc tính của liên kết (Relationship Attributes)</b> (ví dụ: <code>DiemSo</code>, <code>HocKy</code>, <code>NgayDangKy</code>), các thuộc tính này sẽ được chuyển thành các cột dữ liệu thông thường trong bảng liên kết $R_{link}$.</li>\n        </ol>\n\n        <pre><code>-- Sơ đồ ER: SINH_VIEN (M) ----- [DANG_KY: HocKy, Diem] ----- (N) MON_HOC\nCREATE TABLE DANG_KY_HOC (\n    MaSV VARCHAR(20),\n    MaMonHoc VARCHAR(20),\n    HocKy VARCHAR(10) NOT NULL,\n    DiemThi DECIMAL(4,2),\n    PRIMARY KEY (MaSV, MaMonHoc, HocKy),\n    FOREIGN KEY (MaSV) REFERENCES SINH_VIEN(MaSV) ON DELETE CASCADE,\n    FOREIGN KEY (MaMonHoc) REFERENCES MON_HOC(MaMonHoc) ON DELETE RESTRICT\n);</code></pre>\n        ", "questions": [{"id": "q5", "stem": "Khi chuyển đổi một mối quan hệ Nhiều - Nhiều (M:N) từ sơ đồ ER sang mô hình quan hệ, kỹ thuật chuẩn bắt buộc là gì?", "options": ["Tạo một cột kiểu mảng JSON trong bảng thực thể thứ nhất", "Tạo một bảng liên kết trung gian (Junction Table) chứa 2 khóa ngoại trỏ về 2 bảng thực thể", "Xóa bỏ mối quan hệ đó vì mô hình quan hệ không hỗ trợ quan hệ M:N", "Gộp hai bảng thực thể thành một bảng duy nhất"], "correct": 1, "explain": "Mối quan hệ M:N bắt buộc phải được phân rã thành hai mối quan hệ 1:N thông qua một bảng trung gian (Junction/Bridge Table)."}, {"id": "q6", "stem": "Trong mối quan hệ M:N giữa `DOC_GIA` và `SACH` qua hành động 'MƯỢN', thuộc tính `NgayMuon` và `HanTra` sẽ được đặt ở bảng nào trong lược đồ quan hệ?", "options": ["Đặt trong bảng DOC_GIA", "Đặt trong bảng SACH", "Đặt trong bảng liên kết trung gian MUON_SACH", "Nhân bản vào cả hai bảng DOC_GIA và SACH"], "correct": 2, "explain": "Thuộc tính của mối quan hệ M:N được chuyển thành các cột trong bảng trung gian (Junction Table) biểu diễn mối liên kết đó."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Ánh xạ Thuộc tính Phức hợp, Đa trị & Quan hệ N-ngôi", "takeaway": "Thuộc tính phức hợp được tách thành các cột đơn. Thuộc tính đa trị tách thành bảng riêng biệt. Quan hệ N-ngôi được ánh xạ thành bảng trung gian chứa N khóa ngoại.", "summary": "\n        <h4>4.1. Ánh xạ Thuộc tính Phức hợp (Composite Attributes)</h4>\n        <p>Thuộc tính phức hợp gồm nhiều thành phần con phân cấp (ví dụ: <code>DiaChi(SoNha, Duong, PhuongXa, QuanHuyen, TinhThanh)</code>). Để bảo đảm nguyên tắc <b>Giá trị Nguyên tử (First Normal Form - 1NF)</b>, ta làm phẳng (flatten) bằng cách đưa trực tiếp các thuộc tính thành phần con vào bảng dưới dạng các cột độc lập:</p>\n        <pre><code>-- Không tạo cột DiaChi gộp, mà phân rã thành:\nCREATE TABLE KHACH_HANG (\n    MaKH INT PRIMARY KEY,\n    HoTen NVARCHAR(100),\n    DiaChi_SoNha NVARCHAR(50),\n    DiaChi_Duong NVARCHAR(100),\n    DiaChi_QuanHuyen NVARCHAR(100),\n    DiaChi_TinhThanh NVARCHAR(100)\n);</code></pre>\n\n        <h4>4.2. Ánh xạ Thuộc tính Đa trị (Multivalued Attributes)</h4>\n        <p>Thuộc tính đa trị là thuộc tính có thể nhận đồng thời nhiều giá trị cho cùng một thực thể (ví dụ: một nhân viên có nhiều số điện thoại: <code>SoDienThoai{0901..., 0988...}</code>). Quy tắc ánh xạ:</p>\n        <ol>\n            <li>Tạo một bảng mới riêng biệt dành riêng cho thuộc tính đa trị đó.</li>\n            <li>Bảng mới gồm: Khóa ngoại tham chiếu về khóa chính của thực thể gốc + Cột lưu giá trị thuộc tính đa trị.</li>\n            <li>Khóa chính của bảng mới là <b>Composite PK</b> gồm cả 2 cột trên.</li>\n        </ol>\n        <pre><code>-- Bảng riêng cho thuộc tính đa trị SoDienThoai của NHAN_VIEN:\nCREATE TABLE NHAN_VIEN_SDT (\n    MaNV VARCHAR(20),\n    SoDienThoai VARCHAR(15),\n    PRIMARY KEY (MaNV, SoDienThoai),\n    FOREIGN KEY (MaNV) REFERENCES NHAN_VIEN(MaNV) ON DELETE CASCADE\n);</code></pre>\n\n        <h4>4.3. Ánh xạ Mối quan hệ N-ngôi ($N \\ge 3$)</h4>\n        <p>Mối quan hệ Ternary (3 ngôi) hoặc N-ngôi (ví dụ: <code>NHA_CUNG_CAP</code> cung cấp <code>LINH_KIEN</code> cho <code>DU_AN</code>) được chuyển thành một bảng trung gian riêng biệt chứa $N$ khóa ngoại trỏ về $N$ thực thể tham gia.</p>\n        ", "questions": [{"id": "q7", "stem": "Một thực thể `NHAN_VIEN` có thuộc tính đa trị `BangCap` (mỗi nhân viên có thể có nhiều bằng cấp khác nhau). Cách ánh xạ chuẩn sang CSDL quan hệ là gì?", "options": ["Lưu toàn bộ các bằng cấp dưới dạng chuỗi ngăn cách bởi dấu phẩy trong 1 ô dữ liệu", "Tạo bảng riêng `NHAN_VIEN_BANG_CAP` gồm `MaNV` (FK) và `TenBangCap`, với Primary Key là `(MaNV, TenBangCap)`", "Thêm sẵn 10 cột BangCap1, BangCap2, ..., BangCap10 vào bảng NHAN_VIEN", "Bỏ qua thuộc tính này vì mô hình quan hệ không cho phép lưu nhiều bằng cấp"], "correct": 1, "explain": "Quy tắc chuẩn hóa 1NF yêu cầu tách thuộc tính đa trị thành một bảng riêng biệt với khóa chính là Composite Key gồm FK + giá trị thuộc tính."}, {"id": "q8", "stem": "Khi ánh xạ một Thuộc tính Phức hợp (Composite Attribute) như `HoTen(Ho, TenDem, Ten)`, ta cần xử lý như thế nào?", "options": ["Tạo một bảng mới riêng cho HoTen", "Làm phẳng (Flatten) bằng cách tạo 3 cột đơn lẻ `Ho`, `TenDem`, `Ten` ngay trong bảng thực thể", "Lưu dưới dạng kiểu nhị phân mã hóa", "Chỉ giữ lại thuộc tính Ten và bỏ Ho, TenDem"], "correct": 1, "explain": "Thuộc tính phức hợp được làm phẳng bằng cách đưa các thành phần con thành các cột đơn nguyên tử trong cùng bảng để thỏa mãn 1NF."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Ánh xạ Kế thừa EER (IS-A) & Tổng kết Quy trình Chuyển đổi", "takeaway": "Có 4 chiến lược ánh xạ quan hệ kế thừa IS-A: bảng riêng cho từng lớp (phổ biến nhất), chỉ tạo bảng lớp con, gộp 1 bảng duy nhất với cột Type, hoặc gộp 1 bảng với các cờ Boolean.", "summary": "\n        <h4>5.1. Bốn Chiến lược Ánh xạ Quan hệ Kế thừa (Generalization / Specialization)</h4>\n        <p>Xét lớp cha <code>NGUOI_DUNG(<u>ID</u>, HoTen, Email)</code> và 2 lớp con chuyên biệt <code>GIANG_VIEN(HocHam, Luong)</code>, <code>SINH_VIEN(ChuyenNganh, DiemTB)</code>:</p>\n\n        <div class=\"note-box\">\n            <b>Chiến lược 1: Bảng cho cả Superclass và Subclasses (Khuyên dùng trong RDBMS):</b><br>\n            Tạo 1 bảng cho lớp cha <code>NGUOI_DUNG</code> và tạo các bảng riêng cho từng lớp con <code>GIANG_VIEN</code>, <code>SINH_VIEN</code>. Khóa chính của bảng con đồng thời là Khóa ngoại trỏ về bảng cha ($PK = FK$).<br>\n            <i>Ưu điểm:</i> Không có giá trị NULL lãng phí, duy trì toàn vẹn dữ liệu tốt nhất.\n        </div>\n\n        <div class=\"tip-box\">\n            <b>Chiến lược 2: Chỉ tạo bảng cho các Subclasses (Subclasses Only):</b><br>\n            Chỉ tạo bảng <code>GIANG_VIEN(<u>ID</u>, HoTen, Email, HocHam, Luong)</code> và <code>SINH_VIEN(<u>ID</u>, HoTen, Email, ChuyenNganh, DiemTB)</code>.<br>\n            <i>Điều kiện áp dụng:</i> Chỉ khả thi khi quan hệ kế thừa là <b>Total Participation (Toàn phần)</b> và <b>Disjoint (Không giao nhau)</b>.\n        </div>\n\n        <div class=\"warn-box\">\n            <b>Chiến lược 3: Một bảng duy nhất gộp chung (Single Table with Type Column):</b><br>\n            Gộp tất cả vào 1 bảng <code>NGUOI_DUNG(<u>ID</u>, HoTen, Email, Type, HocHam, Luong, ChuyenNganh, DiemTB)</code>.<br>\n            <i>Ưu điểm:</i> Tốc độ truy vấn siêu nhanh (không cần JOIN).<br>\n            <i>Nhược điểm:</i> Chứa rất nhiều ô giá trị NULL (lãng phí không gian nếu các lớp con có nhiều thuộc tính riêng).\n        </div>\n\n        <h4>5.2. Bảng Tóm tắt Quy trình 7 bước Ánh xạ Chuẩn ER sang Relational</h4>\n        <table class=\"stage-table\">\n            <thead>\n                <tr>\n                    <th>Bước</th>\n                    <th>Thành phần Sơ đồ ER</th>\n                    <th>Kết quả Lược đồ Quan hệ tương ứng</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Bước 1</b></td>\n                    <td>Thực thể mạnh (Regular Entity)</td>\n                    <td>Bảng riêng, PK là khóa của thực thể</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 2</b></td>\n                    <td>Thực thể yếu (Weak Entity)</td>\n                    <td>Bảng riêng, $PK = (FK_{cha} + Partial\\_Key)$</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 3</b></td>\n                    <td>Quan hệ nhị phân 1:1</td>\n                    <td>Đặt FK vào 1 bên (ưu tiên bên Total), kèm UNIQUE</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 4</b></td>\n                    <td>Quan hệ nhị phân 1:N</td>\n                    <td>Đặt FK ở bảng bên phía 'N' trỏ về bảng bên phía '1'</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 5</b></td>\n                    <td>Quan hệ nhị phân M:N</td>\n                    <td>Bảng liên kết trung gian, $PK = (FK_1, FK_2)$</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 6</b></td>\n                    <td>Thuộc tính đa trị</td>\n                    <td>Bảng riêng, $PK = (FK_{cha} + Thuoc\\_Tinh)$</td>\n                </tr>\n                <tr>\n                    <td><b>Bước 7</b></td>\n                    <td>Kế thừa EER (IS-A)</td>\n                    <td>Ánh xạ theo 1 trong 4 chiến lược (ưu tiên bảng cha + bảng con với PK=FK)</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"id": "q9", "stem": "Trong chiến lược ánh xạ kế thừa IS-A tạo bảng cho cả Superclass và các Subclasses (Chiến lược 1), khóa chính của bảng Subclass được định nghĩa như thế nào?", "options": ["Sử dụng một cột số nguyên tự tăng mới độc lập", "Khóa chính của bảng Subclass đồng thời là Khóa ngoại (PK = FK) tham chiếu trực tiếp đến Khóa chính của bảng Superclass", "Không cần khóa chính cho bảng Subclass", "Sử dụng toàn bộ các thuộc tính riêng của Subclass làm khóa chính"], "correct": 1, "explain": "Trong chiến lược ánh xạ chuẩn, bảng lớp con có Khóa chính đồng thời đóng vai trò Khóa ngoại (PK = FK) trỏ về bảng cha."}, {"id": "q10", "stem": "Khi nào thì chiến lược gộp toàn bộ Superclass và các Subclasses vào một bảng duy nhất (Single Relation with Type Column) phát huy ưu thế lớn nhất?", "options": ["Khi các lớp con có hàng trăm thuộc tính riêng biệt phức tạp", "Khi hệ thống ưu tiên tối đa tốc độ truy vấn đọc dữ liệu, chấp nhận có nhiều giá trị NULL và các lớp con có ít thuộc tính riêng", "Khi cơ sở dữ liệu không hỗ trợ câu lệnh CREATE TABLE", "Khi quan hệ kế thừa là Overlapping và số lượng lớp con là vô hạn"], "correct": 1, "explain": "Chiến lược 1 bảng duy nhất tối ưu cho tốc độ đọc vì không tốn chi phí JOIN bảng, nhưng phải chấp nhận các ô NULL của thuộc tính riêng."}]}];
+const STORAGE_KEY = 'dbms_rmfd_l3_er2rel_v1';
+const LESSON_TITLE = 'Bài 3: Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational)';
+const LESSON_CODE = '03-er-2-relational';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
 }
-if(localStorage.getItem('ermap-theme')==='dark')document.body.classList.add('dark');
-function updateProgress(){
- let d=document.documentElement,h=d.scrollHeight-d.clientHeight;
- document.getElementById('progress').style.width=(h?d.scrollTop/h*100:0)+'%';
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
 }
-addEventListener('scroll',updateProgress,{passive:true});updateProgress();
-let sections=[...document.querySelectorAll('main section')],links=[...document.querySelectorAll('#toc a')];
-let obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-20% 0px -70% 0px'});
-sections.forEach(s=>obs.observe(s));
-function gradeQuiz(){
- let qs=[...document.querySelectorAll('.quiz-item')],score=0,answered=0;
- qs.forEach(q=>{let x=q.querySelector('input:checked');q.querySelector('.qans').classList.add('show');if(x){answered++;if(x.value===q.dataset.a)score++;}});
- document.getElementById('score').textContent=`Kết quả: ${score}/${qs.length} câu đúng · Đã trả lời ${answered}/${qs.length} câu.`;
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
 }
-function resetQuiz(){
- document.querySelectorAll('.quiz-item input').forEach(x=>x.checked=false);
- document.querySelectorAll('.qans').forEach(x=>x.classList.remove('show'));
- document.getElementById('score').textContent='';
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
 }
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
+    if (isUnlocked) {
+      pill.onclick = () => scrollToStage(s.num);
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
+
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIdx) => {
+      let optionsHtml = '';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
+        }
+
+        optionsHtml += `
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
+        </div>
+      `;
+    });
+
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
+
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
+        </div>
+
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
+          </div>
+          ${questionsHtml}
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(stageEl);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
+      allAnswered = false;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
+    }
+
+    // Render feedback
+    const fb = document.getElementById(`fb_${q.qid}`);
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
+    }
+  });
+
+  if (!allAnswered) {
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
+    return;
+  }
+
+  saveState();
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
+    }
+    saveState();
+    updateScorecard();
+
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
+
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
+    if (stageNum < STAGES.length) {
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
+        if (nextBadge) {
+          nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
+        }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+      }
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
+      setTimeout(() => {
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
+    }
+  } else {
+    updateScorecard();
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById(`stage-${stageNum}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const rows = [
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const isCor = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        String(s.num),
+        s.title,
+        q.qid,
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  // Kích thước chuẩn: Rộng 880px, chiều cao tính theo số chặng
+  const W = 880;
+  const rowH = 46;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Thẻ chứa viền bo góc
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
+
+  // Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
+
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
+
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
+
+  ctx.save();
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
+
+  // Thanh tiến độ đồ họa
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
+  if (completedParts > 0 && totalParts > 0) {
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.save();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
+  y += 18;
+
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '…' : s.title;
+    ctx.fillText(label, 56, y + 28);
+
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    }
+    ctx.restore();
+
+    y += rowH + rowGap;
+  });
+
+  // Footer ghi chú
+  y += 14;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
+  ctx.restore();
+
+  // Kích hoạt tải ảnh PNG
+  const a = document.createElement('a');
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
 </script>
 </body>
 </html>

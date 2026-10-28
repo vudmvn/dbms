@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relational Model &amp; Functional Dependencies · Trung tâm Bài học Tương tác</title>
+<meta name="description" content="Trung tâm điều phối tiến trình học tập và kiểm tra Checkpoint tương tác cho toàn bộ Chương 3: Mô hình Quan hệ và Phụ thuộc Hàm trong CSDL.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-sub: #eff6ff;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --primary-grad: linear-gradient(135deg, #0a2540 0%, #174b88 50%, #20639b 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 44px 0 38px;
+  box-shadow: 0 8px 24px rgba(10, 37, 64, 0.2);
+}
+header.hero .eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+header.hero h1 {
+  margin: 0 0 12px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 15px;
+  color: #e0e7ff;
+  max-width: 860px;
+  line-height: 1.6;
+}
+
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus {
+  border-color: var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+}
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #1e40af;
+}
+.btn-secondary {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--line);
+}
+.btn-secondary:hover {
+  background: #f1f5f9;
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  transition: width 0.3s ease;
+}
+
+main.wrap {
+  padding-top: 28px;
+  padding-bottom: 60px;
+}
+
+.hub-banner-summary {
+  background: linear-gradient(135deg, #0f2952 0%, #1e40af 100%);
+  color: #fff;
+  padding: 22px 24px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hub-banner-summary h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.hub-banner-summary p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #dbeafe;
+  max-width: 650px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: #cbd5e1;
+}
+.card.completed {
+  border-color: #86efac;
+  background: linear-gradient(to bottom, #ffffff, #f0fdf4);
+}
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-num {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.card-status-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--muted);
+}
+.card.completed .card-status-badge {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.35;
+  color: var(--text);
+}
+.card p {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.card .features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.card .features span {
+  font-size: 11.5px;
+  background: #f8fafc;
+  color: #475569;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+}
+.card .btn-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 9px 16px;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.card .btn-open:hover {
+  background: #1e40af;
+}
+
+footer {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../../index.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Trang chủ Danh mục Bài giảng</a>
+    <div class="eyebrow">HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU · KHÓA HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Relational Model &amp; Functional Dependencies · Trung tâm Bài học Tương tác</h1>
+    <p>Hệ thống tự động theo dõi tiến trình học tập và kết quả trắc nghiệm Checkpoint của bạn qua 5 bài giảng lý thuyết nền tảng CSDL quan hệ: từ Mô hình quan hệ &amp; Lược đồ (Relational Schema), 9 loại Khóa trong CSDL, Ánh xạ từ ER sang bảng quan hệ, Phụ thuộc hàm &amp; Tiên đề Armstrong, đến Phân loại phụ thuộc hàm, Thuật toán tìm Bao đóng &amp; Phủ tối thiểu (Minimal Cover). Bạn có thể xuất giấy chứng nhận kết quả ảnh PNG cho từng bài hoặc xuất chứng nhận tổng quan toàn chương bên dưới.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="hubStudentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="hubStudentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="hubStudentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="hubLessonStat">Tiến độ: 0 / 5 bài</div>
+        <div class="stat-pill" id="hubScoreStat">Điểm: 0 / 50 câu</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-primary" id="hubExportPng" title="Xuất chứng nhận PNG tổng quan có đầy đủ thông tin tóm tắt từng bài học">Xuất Chứng nhận Tổng quan (.PNG)</button>
+        <button class="btn-secondary" id="hubExportCsv" title="Xuất toàn bộ bảng điểm chi tiết file CSV">Xuất CSV</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="hubProgressBar"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="hub-banner-summary">
+    <div>
+      <h3>🎯 Chứng nhận Tổng quan Toàn Chương (Master Certificate)</h3>
+      <p>Chức năng xuất ảnh PNG tổng hợp sẽ tự động trích xuất thông tin tóm tắt, số chặng đã mở khóa và điểm số của cả 5 bài học trong chương Mô hình quan hệ &amp; Phụ thuộc hàm.</p>
+    </div>
+    <div>
+      <button class="btn-primary" style="background:#fff;color:#0f2952;padding:10px 18px" onclick="exportMasterCertificatePNG()">Tải Chứng nhận PNG ⬇</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Card 1 -->
+    <div class="card" id="card-l1">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 01 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l1">Đang học (0/5)</span>
+        </div>
+        <h2>01. Mô hình Quan hệ &amp; Lược đồ Quan hệ (Relational Schema)</h2>
+        <p>Bản chất mô hình quan hệ của E.F. Codd, phân biệt Relational Schema vs Instance, 4 ràng buộc toàn vẹn và cơ chế xử lý vi phạm DML (CASCADE/RESTRICT/SET NULL).</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="relational-schema/relational-schema.html">Vào học tương tác →</a>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card" id="card-l2">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 02 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l2">Đang học (0/5)</span>
+        </div>
+        <h2>02. Các loại Khóa trong CSDL Quan hệ (Keys in Relational Model)</h2>
+        <p>Phân cấp toàn diện 9 loại khóa: Super Key, Candidate Key, Primary Key, Alternate Key, Foreign Key, Composite Key, Unique, Natural vs Surrogate Key và Partial Key.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="key/key.html">Vào học tương tác →</a>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card" id="card-l3">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 03 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l3">Đang học (0/5)</span>
+        </div>
+        <h2>03. Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational)</h2>
+        <p>Quy trình 7 bước ánh xạ thực thể mạnh/yếu, quan hệ 1:1, 1:N, M:N (Junction Table), thuộc tính đa trị/phức hợp, quan hệ N-ngôi và 4 chiến lược kế thừa EER.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="er-2-relational/er-2-relational.html">Vào học tương tác →</a>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card" id="card-l4">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 04 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l4">Đang học (0/5)</span>
+        </div>
+        <h2>04. Phụ thuộc Hàm &amp; Hệ Tiên đề Armstrong (Functional Dependency)</h2>
+        <p>Định nghĩa hình thức X → Y, 3 tiên đề Armstrong (Phản xạ, Tăng dần, Bắc cầu), luật thứ cấp, thuật toán Bao đóng thuộc tính X+ và kỹ thuật tìm Khóa ứng viên.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="functional-dependency/functional-dependency.html">Vào học tương tác →</a>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card" id="card-l5">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 05 · 5 CHẶNG</span>
+          <span class="card-status-badge" id="badge-l5">Đang học (0/5)</span>
+        </div>
+        <h2>05. Phân loại Phụ thuộc Hàm &amp; Phủ Tối thiểu (FD Types &amp; Minimal Cover)</h2>
+        <p>Phân loại Trivial, Full vs Partial FD, Transitive FD, MVD, thuật toán 3 bước tìm Phủ tối thiểu (Minimal Cover) và cây cầu nối trực tiếp đến các dạng chuẩn 1NF-BCNF-4NF.</p>
+        <div class="features">
+          <span>Khóa từng phần</span>
+          <span>10 câu hỏi checkpoint</span>
+          <span>Đã có tóm tắt PNG</span>
+        </div>
+      </div>
+      <a class="btn-open" href="functional-dependency-types/functional-dependency-types.html">Vào học tương tác →</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Hệ thống Học tập &amp; Đánh giá Năng lực CSDL · Relational Model &amp; Functional Dependencies Hub · Bản cập nhật 2026
+  </div>
+</footer>
+
+<script>
+const LESSON_METADATA = [
+  {
+    num: 1,
+    id: 'l1',
+    storageKey: 'dbms_rmfd_l1_schema_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Mô hình Quan hệ & Lược đồ Quan hệ (Relational Schema)',
+    summary: 'Bản chất mô hình quan hệ của E.F. Codd, phân biệt Relational Schema vs Instance, 4 ràng buộc toàn vẹn và cơ chế xử lý vi phạm DML (CASCADE/RESTRICT/SET NULL).'
+  },
+  {
+    num: 2,
+    id: 'l2',
+    storageKey: 'dbms_rmfd_l2_key_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Các loại Khóa trong CSDL Quan hệ (Keys in Relational Model)',
+    summary: 'Phân cấp toàn diện 9 loại khóa: Super Key, Candidate Key, Primary Key, Alternate Key, Foreign Key, Composite Key, Unique, Natural vs Surrogate Key và Partial Key.'
+  },
+  {
+    num: 3,
+    id: 'l3',
+    storageKey: 'dbms_rmfd_l3_er2rel_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Ánh xạ từ ER/EER sang Lược đồ Quan hệ (Mapping ER to Relational)',
+    summary: 'Quy trình 7 bước ánh xạ thực thể mạnh/yếu, quan hệ 1:1, 1:N, M:N (Junction Table), thuộc tính đa trị/phức hợp, quan hệ N-ngôi và 4 chiến lược kế thừa EER.'
+  },
+  {
+    num: 4,
+    id: 'l4',
+    storageKey: 'dbms_rmfd_l4_fd_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Phụ thuộc Hàm & Hệ Tiên đề Armstrong (Functional Dependency)',
+    summary: 'Định nghĩa hình thức X → Y, 3 tiên đề Armstrong (Phản xạ, Tăng dần, Bắc cầu), luật thứ cấp, thuật toán Bao đóng thuộc tính X+ và kỹ thuật tìm Khóa ứng viên.'
+  },
+  {
+    num: 5,
+    id: 'l5',
+    storageKey: 'dbms_rmfd_l5_types_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Phân loại Phụ thuộc Hàm & Phủ Tối thiểu (FD Types & Minimal Cover)',
+    summary: 'Phân biệt Trivial, Full vs Partial FD, Transitive FD, MVD, thuật toán 3 bước tìm Phủ tối thiểu (Minimal Cover) và cây cầu nối trực tiếp đến các dạng chuẩn 1NF-BCNF-4NF.'
+  }
+];
+
+function getStoredLessonData(lesson) {
+  try {
+    const raw = localStorage.getItem(lesson.storageKey);
+    if (!raw) return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+    return JSON.parse(raw);
+  } catch (e) {
+    return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+  }
+}
+
+function updateHubUI() {
+  let totalCompletedLessons = 0;
+  let totalScoreAll = 0;
+  let totalQuestionsAll = 0;
+  let commonStudentId = '';
+  let commonStudentName = '';
+
+  LESSON_METADATA.forEach(l => {
+    const data = getStoredLessonData(l);
+    if (!commonStudentId && data.studentId) commonStudentId = data.studentId;
+    if (!commonStudentName && data.studentName) commonStudentName = data.studentName;
+
+    const doneCount = (data.completedStages || []).length;
+    let score = 0;
+    Object.values(data.scores || {}).forEach(v => { if (v) score++; });
+
+    totalScoreAll += score;
+    totalQuestionsAll += l.qCount;
+
+    const isAllDone = doneCount === l.stagesCount && l.stagesCount > 0;
+    if (isAllDone) totalCompletedLessons++;
+
+    const card = document.getElementById(`card-${l.id}`);
+    const badge = document.getElementById(`badge-${l.id}`);
+
+    if (badge) {
+      if (isAllDone) {
+        badge.textContent = `✓ Hoàn thành (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.add('completed');
+      } else if (doneCount > 0) {
+        badge.textContent = `Đang học (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.remove('completed');
+      } else {
+        badge.textContent = `Chưa bắt đầu (0/${l.stagesCount})`;
+        if (card) card.classList.remove('completed');
+      }
+    }
+  });
+
+  const idInput = document.getElementById('hubStudentId');
+  const nameInput = document.getElementById('hubStudentName');
+  if (idInput && !idInput.value && commonStudentId) idInput.value = commonStudentId;
+  if (nameInput && !nameInput.value && commonStudentName) nameInput.value = commonStudentName;
+
+  const lessonStat = document.getElementById('hubLessonStat');
+  const scoreStat = document.getElementById('hubScoreStat');
+  if (lessonStat) lessonStat.textContent = `Tiến độ: ${totalCompletedLessons} / ${LESSON_METADATA.length} bài`;
+  if (scoreStat) scoreStat.textContent = `Điểm: ${totalScoreAll} / ${totalQuestionsAll} câu`;
+
+  const bar = document.getElementById('hubProgressBar');
+  if (bar) {
+    const pct = totalQuestionsAll > 0 ? Math.round((totalScoreAll / totalQuestionsAll) * 100) : 0;
+    bar.style.width = pct + '%';
+  }
+}
+
+function exportMasterCertificatePNG() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim() || 'Chưa điền MSSV';
+  const name = (document.getElementById('hubStudentName')?.value || '').trim() || 'Học viên DBMS';
+
+  const lessons = LESSON_METADATA.map(l => {
+    const prog = getStoredLessonData(l);
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
+    return {
+      num: l.num,
+      title: l.title,
+      summary: l.summary,
+      stagesCount: l.stagesCount,
+      qCount: l.qCount,
+      doneStages: (prog.completedStages || []).length,
+      score: score
+    };
+  });
+
+  const totalStages = lessons.reduce((acc, l) => acc + l.stagesCount, 0);
+  const doneStages = lessons.reduce((acc, l) => acc + l.doneStages, 0);
+  const totalQuestions = lessons.reduce((acc, l) => acc + l.qCount, 0);
+  const totalScore = lessons.reduce((acc, l) => acc + l.score, 0);
+  const pct = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const W = 960;
+  const cardH = 88;
+  const gap = 12;
+  const H = 450 + (lessons.length * (cardH + gap)) + 50;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  function wrapText(c, text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = text.split(' ');
+    let line = '';
+    let lineCount = 0;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = c.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        c.fillText(line.trim(), x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        lineCount++;
+        if (maxLines && lineCount >= maxLines - 1) {
+          let rem = words.slice(n).join(' ');
+          while (rem.length > 0 && c.measureText(rem + '...').width > maxWidth) {
+            rem = rem.slice(0, -1);
+          }
+          c.fillText(rem + '...', x, y);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    c.fillText(line.trim(), x, y);
+  }
+
+  // Outer Background
+  ctx.fillStyle = '#f4f7fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Main Container
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#d9e2ef', 1.5);
+
+  // Top Header Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#0a2540');
+  grad.addColorStop(1, '#1b5a9e');
+  drawRoundedRect(ctx, 16, 16, W - 32, 110, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 11.5px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN TỔNG THỂ TOÀN CHƯƠNG', 40, 46);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText('CHƯƠNG 3: RELATIONAL MODEL & FUNCTIONAL DEPENDENCIES', 40, 78);
+
+  ctx.fillStyle = '#dbeafe';
+  ctx.font = '12.5px Arial, sans-serif';
+  ctx.fillText(`Thời gian xuất chứng nhận: ${dateStr}`, 40, 104);
+  ctx.restore();
+
+  // Student & Score Block
+  const cardY = 142;
+  // Student card
+  drawRoundedRect(ctx, 40, cardY, 520, 110, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.fillStyle = '#64748b';
+  ctx.font = 'bold 11px Arial, sans-serif';
+  ctx.fillText('THÔNG TIN HỌC VIÊN', 56, cardY + 24);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 17px Arial, sans-serif';
+  ctx.fillText(name, 56, cardY + 54);
+
+  ctx.fillStyle = '#1e40af';
+  ctx.font = 'bold 13.5px Consolas, monospace';
+  ctx.fillText(`MÃ SINH VIÊN: ${mssv}`, 56, cardY + 80);
+
+  ctx.fillStyle = '#475569';
+  ctx.font = '12px Arial, sans-serif';
+  ctx.fillText(`Tiến độ toàn khóa: ${doneStages}/${totalStages} chặng hoàn thành`, 56, cardY + 100);
+  ctx.restore();
+
+  // Score card
+  drawRoundedRect(ctx, 580, cardY, 340, 110, 10, '#f0fdf4', '#86efac', 1.5);
+
+  ctx.save();
+  ctx.fillStyle = '#15803d';
+  ctx.font = 'bold 11px Arial, sans-serif';
+  ctx.fillText('ĐIỂM TỔNG HỢP TOÀN CHƯƠNG', 600, cardY + 24);
+
+  ctx.fillStyle = '#15803d';
+  ctx.font = 'bold 36px Arial, sans-serif';
+  ctx.fillText(`${totalScore} / ${totalQuestions}`, 600, cardY + 68);
+
+  ctx.fillStyle = '#166534';
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillText(`Tỷ lệ chính xác: ${pct}% · ${doneStages === totalStages ? 'ĐẠT CHUẨN MASTER' : 'ĐANG HỌC'}`, 600, cardY + 96);
+  ctx.restore();
+
+  // Section divider label
+  let curY = 276;
+  ctx.save();
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText('BẢNG TIẾN TRÌNH & TÓM TẮT KẾT QUẢ 5 BÀI HỌC', 40, curY);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12.5px Arial, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('5 BÀI GIẢNG · 25 CHẶNG HỌC · 50 CÂU HỎI CHECKPOINT', W - 40, curY);
+  ctx.restore();
+
+  curY += 14;
+
+  // Render cards for each lesson
+  lessons.forEach(l => {
+    const isDone = l.doneStages === l.stagesCount && l.stagesCount > 0;
+    const boxBg = isDone ? '#ffffff' : '#fcfdff';
+    const boxBorder = isDone ? '#bbf7d0' : '#e2e8f0';
+
+    drawRoundedRect(ctx, 40, curY, W - 80, cardH, 8, boxBg, boxBorder, 1.2);
+
+    // Number & title
+    ctx.save();
+    ctx.fillStyle = '#1e3a8a';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText(`BÀI ${l.num.toString().padStart(2, '0')}: ${l.title}`, 56, curY + 24);
+
+    // Summary line
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px Arial, sans-serif';
+    wrapText(ctx, l.summary, 56, curY + 44, 600, 16, 2);
+
+    // Progress badge
+    const badgeW = 200;
+    const badgeX = W - 40 - badgeW - 16;
+    const badgeY = curY + 22;
+
+    const bBg = isDone ? '#dcfce7' : (l.doneStages > 0 ? '#eff6ff' : '#f1f5f9');
+    const bBorder = isDone ? '#86efac' : (l.doneStages > 0 ? '#bfdbfe' : '#e2e8f0');
+    const bColor = isDone ? '#15803d' : (l.doneStages > 0 ? '#1d4ed8' : '#64748b');
+
+    drawRoundedRect(ctx, badgeX, badgeY, badgeW, 44, 7, bBg, bBorder, 1);
+
+    ctx.fillStyle = bColor;
+    ctx.font = 'bold 12.5px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    const statusText = isDone ? '✓ ĐÃ HOÀN THÀNH' : (l.doneStages > 0 ? 'ĐANG TIẾN HÀNH' : 'CHƯA BẮT ĐẦU');
+    ctx.fillText(statusText, badgeX + badgeW / 2, badgeY + 18);
+
+    ctx.font = '11.5px Arial, sans-serif';
+    ctx.fillText(`Chặng: ${l.doneStages}/${l.stagesCount} · Điểm: ${l.score}/${l.qCount}`, badgeX + badgeW / 2, badgeY + 36);
+
+    ctx.restore();
+
+    curY += cardH + gap;
+  });
+
+  // Footer bar
+  curY += 10;
+  ctx.save();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.beginPath();
+  ctx.moveTo(40, curY);
+  ctx.lineTo(W - 40, curY);
+  ctx.stroke();
+
+  curY += 24;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Chứng nhận kết quả học tập khóa học DBMS · Relational Model & Functional Dependencies · Xác thực dữ liệu Client-side LocalStorage.', 40, curY);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, curY);
+  ctx.restore();
+
+  // Trigger download
+  const safeMssv = (mssv && mssv !== 'Chưa điền MSSV' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  const safeName = (name && name !== 'Học viên DBMS' ? name : 'hoc_vien').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  const a = document.createElement('a');
+  a.download = `chung_nhan_tong_quan_rmfd_${safeMssv}_${safeName}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function exportMasterCSV() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim() || 'N/A';
+  const name = (document.getElementById('hubStudentName')?.value || '').trim() || 'N/A';
+
+  let csv = 'MSSV,HoVaTen,BaiSo,TenBai,SoChangHoanThanh,TongSoChang,DiemSo,TongDiem,TrangThai\n';
+  LESSON_METADATA.forEach(l => {
+    const prog = getStoredLessonData(l);
+    const doneStages = (prog.completedStages || []).length;
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
+    const isDone = doneStages === l.stagesCount;
+    const status = isDone ? 'HoanThanh' : (doneStages > 0 ? 'DangHoc' : 'ChuaBatDau');
+    csv += `"${mssv}","${name}","${l.num}","${l.title}",${doneStages},${l.stagesCount},${score},${l.qCount},"${status}"\n`;
+  });
+
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bang_diem_rmfd_${mssv}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateHubUI();
+  document.getElementById('hubExportPng')?.addEventListener('click', exportMasterCertificatePNG);
+  document.getElementById('hubExportCsv')?.addEventListener('click', exportMasterCSV);
+  document.getElementById('hubStudentId')?.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    LESSON_METADATA.forEach(l => {
+      const data = getStoredLessonData(l);
+      data.studentId = val;
+      localStorage.setItem(l.storageKey, JSON.stringify(data));
+    });
+  });
+  document.getElementById('hubStudentName')?.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    LESSON_METADATA.forEach(l => {
+      const data = getStoredLessonData(l);
+      data.studentName = val;
+      localStorage.setItem(l.storageKey, JSON.stringify(data));
+    });
+  });
+});
+</script>
+</body>
+</html>

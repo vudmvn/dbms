@@ -1,7 +1,6 @@
 ---
 layout: page
 title: "Relational Schema trong DBMS"
-permalink: /Data-Modeling/relational-schema/
 ---
 
 # Relational Schema trong DBMS

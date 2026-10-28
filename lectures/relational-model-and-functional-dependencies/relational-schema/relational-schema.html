@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 1: Mô hình Quan hệ & Lược đồ Quan hệ (Relational Model & Schema) | DBMS Interactive</title>
+<meta name="description" content="Khám phá bản chất của Mô hình Quan hệ (E.F. Codd 1970), phân biệt Relational Schema vs Relation Instance, làm chủ 4 ràng buộc toàn vẹn cốt lõi và kỹ thuật xử lý vi phạm trong hệ thống thực tế.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Enhanced Media & Figures */
+.stage-figure {
+  margin: 18px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 30, 60, 0.05);
+  text-align: center;
+}
+.stage-img {
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+figcaption::before {
+  content: "📊 ";
+}
+
+/* Callouts */
+.callout {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.callout-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.callout.tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 5px solid #16a34a;
+  color: #14532d;
+}
+.callout.warn {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 5px solid #d97706;
+  color: #78350f;
+}
+.callout.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+}
+
+/* Comparison Table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.compare-table th {
+  background: #1e3a6e;
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 650;
+}
+.compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+.compare-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+.compare-table tr:hover td {
+  background: #f1f5f9;
+}
+
+/* Codebox */
+.codebox {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid #334155;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+.codebox-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 650;
+}
+.codebox-code, .codebox pre {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+.codebox-code code, .codebox pre code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+.codebox .kw { color: #38bdf8; font-weight: bold; }
+.codebox .tbl { color: #f472b6; }
+.codebox .str { color: #a3e635; }
+.codebox .cm { color: #64748b; font-style: italic; }
+.codebox .fn { color: #fbbf24; }
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../relational-model-and-functional-dependencies.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Về Hub Relational Model & Functional Dependencies</a>
+    <div class="eyebrow">DBMS · RELATIONAL MODEL & FUNCTIONAL DEPENDENCIES · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 1: Mô hình Quan hệ & Lược đồ Quan hệ (Relational Model & Schema)</h1>
+    <p>Khám phá bản chất của Mô hình Quan hệ (E.F. Codd 1970), phân biệt Relational Schema vs Relation Instance, làm chủ 4 ràng buộc toàn vẹn cốt lõi và kỹ thuật xử lý vi phạm trong hệ thống thực tế.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất báo cáo kết quả PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 01-relational-schema. Bài 1: Mô hình Quan hệ & Lược đồ Quan hệ (Relational Model & Schema) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Bản chất Mô hình Quan hệ & Thuật ngữ Cốt lõi", "takeaway": "Mô hình quan hệ tổ chức dữ liệu dưới dạng các bảng 2 chiều (Relation), trong đó mỗi hàng là một Tuple (bộ dữ liệu) và mỗi cột là một Attribute (thuộc tính) có miền giá trị Domain xác định.", "summary": "\n        <h4>1.1. Sự ra đời của Mô hình Quan hệ (Relational Model)</h4>\n        <p>Mô hình dữ liệu quan hệ được đề xuất bởi tiến sĩ <b>Edgar F. Codd</b> (nhà khoa học tại IBM) vào năm 1970 trong bài báo kinh điển <i>\"A Relational Model of Data for Large Shared Data Banks\"</i>. Đây là bước ngoặt vĩ đại giải phóng lập trình viên khỏi cấu trúc vật lý phức tạp của mô hình mạng (Network Model) và phân cấp (Hierarchical Model) trước đó.</p>\n\n        <h4>1.2. Các thuật ngữ nền tảng (Toán học vs Thực tế CSDL)</h4>\n        <table class=\"stage-table\">\n            <thead>\n                <tr>\n                    <th>Thuật ngữ Hình thức (Toán học)</th>\n                    <th>Thuật ngữ Thực tế (RDBMS / SQL)</th>\n                    <th>Bản chất & Định nghĩa chi tiết</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Relation (Quan hệ)</b></td>\n                    <td><b>Table (Bảng)</b></td>\n                    <td>Bảng hai chiều gồm tiêu đề cột và các hàng dữ liệu chứa đựng thông tin về một đối tượng hoặc liên kết thực tế.</td>\n                </tr>\n                <tr>\n                    <td><b>Tuple (Bộ dữ liệu)</b></td>\n                    <td><b>Row / Record (Hàng / Bản ghi)</b></td>\n                    <td>Một phần tử trong quan hệ, đại diện cho một đối tượng cụ thể duy nhất (ví dụ: một sinh viên cụ thể).</td>\n                </tr>\n                <tr>\n                    <td><b>Attribute (Thuộc tính)</b></td>\n                    <td><b>Column / Field (Cột / Trường)</b></td>\n                    <td>Đặc trưng hoặc tính chất mô tả thực thể (ví dụ: <code>MaSV</code>, <code>HoTen</code>, <code>NgaySinh</code>).</td>\n                </tr>\n                <tr>\n                    <td><b>Domain (Miền giá trị)</b></td>\n                    <td><b>Data Type + Check Constraints</b></td>\n                    <td>Tập hợp tất cả các giá trị nguyên tố (atomic values) hợp lệ mà một thuộc tính được phép nhận.</td>\n                </tr>\n                <tr>\n                    <td><b>Degree (Bậc)</b></td>\n                    <td><b>Số lượng cột (Column Count)</b></td>\n                    <td>Tổng số thuộc tính cấu thành nên quan hệ (ví dụ: bảng có 5 cột thì Degree = 5).</td>\n                </tr>\n                <tr>\n                    <td><b>Cardinality (Lượng số)</b></td>\n                    <td><b>Số lượng hàng (Row Count)</b></td>\n                    <td>Tổng số bộ (tuples) hiện đang có trong bảng tại một thời điểm tức thời.</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"note-box\">\n            <b>Đặc trưng của Quan hệ chuẩn mực:</b> Trong một quan hệ theo lý thuyết quan hệ của Codd, thứ tự các hàng không quan trọng, thứ tự các cột không quan trọng, không có hai hàng nào trùng nhau 100%, và mọi giá trị tại giao điểm giữa hàng và cột đều phải là giá trị nguyên tử (Atomic - không thể phân tách tiếp).\n        </div>\n        ", "questions": [{"id": "q1", "stem": "Trong lý thuyết mô hình quan hệ của E.F. Codd, khái niệm nào sau đây tương ứng trực tiếp với 'Hàng dữ liệu' (Row / Record) trong bảng SQL?", "options": ["Attribute", "Tuple", "Domain", "Cardinality"], "correct": 1, "explain": "Tuple (bộ dữ liệu) trong toán học quan hệ tương ứng trực tiếp với một Row / Record trong bảng cơ sở dữ liệu."}, {"id": "q2", "stem": "Một bảng 'KHACH_HANG' có 6 cột thuộc tính và hiện đang lưu trữ thông tin của 1.250 khách hàng. Giá trị 'Degree' (Bậc) và 'Cardinality' (Lượng số) của bảng này lần lượt là:", "options": ["Degree = 1250, Cardinality = 6", "Degree = 6, Cardinality = 1250", "Degree = 6, Cardinality = 6", "Degree = 1250, Cardinality = 1250"], "correct": 1, "explain": "Degree (bậc) là số lượng thuộc tính/cột (6 cột), còn Cardinality (lượng số) là số lượng bộ dữ liệu/hàng (1250 hàng)."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Phân biệt Relational Schema và Relation Instance", "takeaway": "Lược đồ quan hệ (Schema) là định nghĩa khung cấu trúc tĩnh (Intension), trong khi Thể hiện quan hệ (Instance) là tập hợp dữ liệu cụ thể biến thiên theo thời gian (Extension).", "summary": "\n        <h4>2.1. Lược đồ quan hệ (Relational Schema - Khung định nghĩa tĩnh)</h4>\n        <p>Lược đồ quan hệ ký hiệu là $R(A_1, A_2, \\dots, A_n)$ bao gồm tên quan hệ $R$ và danh sách tập hợp các thuộc tính $A_1, A_2, \\dots, A_n$ kèm theo miền giá trị $dom(A_i)$ của từng thuộc tính. Lược đồ được xem là <b>Intension</b> (nội hàm tĩnh), rất ít khi thay đổi sau khi CSDL đã đi vào vận hành.</p>\n        <pre><code>-- Ký hiệu hình thức:\nSINH_VIEN(MaSV: String, HoTen: String, Email: String, NgaySinh: Date, DiemTB: Float)\n\n-- Ký hiệu rút gọn thường gặp trong tài liệu chuyên ngành:\nSINH_VIEN(<u>MaSV</u>, HoTen, Email, NgaySinh, DiemTB)</code></pre>\n\n        <h4>2.2. Thể hiện quan hệ (Relation Instance - Trạng thái dữ liệu động)</h4>\n        <p>Thể hiện quan hệ, ký hiệu là $r(R)$, là tập hợp hữu hạn các bộ giá trị cụ thể (tuples) tuân thủ lược đồ $R$ tại một thời điểm tức thời $t$. $r(R)$ được gọi là <b>Extension</b> (ngoại diên động), liên tục thay đổi khi người dùng thêm mới, cập nhật hoặc xóa dữ liệu.</p>\n\n        <table class=\"stage-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí So sánh</th>\n                    <th>Relational Schema (Lược đồ)</th>\n                    <th>Relation Instance (Thể hiện)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Bản chất</b></td>\n                    <td>Cấu trúc, khuôn mẫu thiết kế, quy tắc kiểu dữ liệu</td>\n                    <td>Tập hợp các dòng dữ liệu thực tế tại thời điểm cụ thể</td>\n                </tr>\n                <tr>\n                    <td><b>Tần suất thay đổi</b></td>\n                    <td>Rất hiếm khi thay đổi (chỉ khi có lệnh <code>ALTER TABLE</code>)</td>\n                    <td>Thay đổi liên tục thông qua các câu lệnh <code>INSERT, UPDATE, DELETE</code></td>\n                </tr>\n                <tr>\n                    <td><b>Thời điểm định nghĩa</b></td>\n                    <td>Giai đoạn thiết kế logic và triển khai DDL ban đầu</td>\n                    <td>Giai đoạn vận hành hệ thống (Data Operation)</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <h4>2.3. Lược đồ CSDL (Database Schema)</h4>\n        <p>Hệ thống CSDL thực tế không tồn tại một bảng đơn lẻ mà là một tập hợp các lược đồ quan hệ có ràng buộc liên kết lẫn nhau: $S = \\{R_1, R_2, \\dots, R_m\\}$ kèm theo tập các ràng buộc toàn vẹn $IC$ (Integrity Constraints).</p>\n        ", "questions": [{"id": "q3", "stem": "Mệnh đề nào sau đây miêu tả chính xác nhất về 'Relational Schema'?", "options": ["Là tập hợp tất cả các dòng dữ liệu hiện có trong bảng tại thời điểm hiện tại", "Là định nghĩa cấu trúc tĩnh gồm tên bảng, danh sách thuộc tính và miền giá trị", "Là câu lệnh SQL dùng để truy vấn lọc dữ liệu phức tạp", "Là file vật lý chứa các byte nhị phân được lưu trữ trên ổ cứng"], "correct": 1, "explain": "Relational Schema là khung cấu trúc định nghĩa tên quan hệ, các thuộc tính và miền giá trị (Intension), không phụ thuộc vào số dòng dữ liệu hiện có."}, {"id": "q4", "stem": "Khi người dùng thực thi lệnh `INSERT INTO SINH_VIEN VALUES ('SV001', 'Nguyen Van A', ...)` thành công, thành phần nào sau đây bị thay đổi?", "options": ["Relational Schema của bảng SINH_VIEN thay đổi", "Chỉ có Relation Instance của bảng SINH_VIEN thay đổi", "Cả Relational Schema và Relation Instance đều thay đổi", "Không thành phần nào thay đổi"], "correct": 1, "explain": "Lệnh INSERT chỉ thêm một tuple mới vào thể hiện dữ liệu (Relation Instance), cấu trúc định nghĩa của bảng (Relational Schema) giữ nguyên."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Bốn Ràng buộc Toàn vẹn Cốt lõi (Integrity Constraints)", "takeaway": "4 ràng buộc toàn vẹn cơ bản bảo đảm CSDL luôn đúng đắn và nhất quán: Domain Constraint, Key Constraint, Entity Integrity (PK không NULL), và Referential Integrity (FK hợp lệ).", "summary": "\n        <p>Ràng buộc toàn vẹn (Integrity Constraints - IC) là các điều kiện bắt buộc mà mọi thể hiện hợp lệ của CSDL đều phải thỏa mãn tại mọi thời điểm.</p>\n\n        <h4>3.1. Ràng buộc Miền giá trị (Domain Constraint)</h4>\n        <p>Mỗi giá trị của thuộc tính $A$ trong mỗi tuple bắt buộc phải thuộc miền giá trị nguyên tử $dom(A)$. Bao gồm kiểu dữ liệu (Data Type: INT, VARCHAR, DATE), giới hạn độ dài, định dạng, và điều kiện nghiệp vụ thông qua <code>CHECK</code>.</p>\n        <pre><code>-- Ví dụ Domain Constraint trong SQL:\nTuoi INT CHECK (Tuoi >= 18 AND Tuoi <= 65),\nDiemTB DECIMAL(4,2) CHECK (DiemTB BETWEEN 0.0 AND 10.0)</code></pre>\n\n        <h4>3.2. Ràng buộc Khóa (Key Constraint)</h4>\n        <p>Mọi quan hệ bắt buộc phải có ít nhất một tập thuộc tính (Super Key / Candidate Key) có giá trị duy nhất định danh từng tuple. Không được phép tồn tại 2 tuple $t_1, t_2$ khác nhau trong thể hiện mà $t_1[SK] = t_2[SK]$.</p>\n\n        <h4>3.3. Toàn vẹn Thực thể (Entity Integrity Constraint)</h4>\n        <div class=\"warn-box\">\n            <b>Quy tắc vàng:</b> Không một thuộc tính nào cấu thành nên Khóa chính (Primary Key) được phép nhận giá trị <code>NULL</code> ($t[PK] \neq NULL$).<br>\n            <i>Lý do:</i> Khóa chính đóng vai trò là danh tính (identity) để phân biệt một thực thể trong thế giới thực. Nếu một phần tử không rõ danh tính (NULL), hệ thống không thể định danh hoặc tham chiếu đến nó.\n        </div>\n\n        <h4>3.4. Toàn vẹn Tham chiếu (Referential Integrity Constraint)</h4>\n        <p>Được thiết lập giữa hai quan hệ thông qua Khóa ngoại (Foreign Key - FK). Nếu quan hệ $R_1$ có thuộc tính $FK$ tham chiếu đến khóa chính $PK$ của quan hệ $R_2$, thì với mọi tuple $t_1 \\in R_1$, giá trị $t_1[FK]$ bắt buộc phải thỏa mãn một trong hai điều kiện:</p>\n        <ol>\n            <li>$t_1[FK] = NULL$ (nếu cột FK không có ràng buộc NOT NULL).</li>\n            <li>Hoặc tồn tại một tuple $t_2 \\in R_2$ sao cho $t_1[FK] = t_2[PK]$.</li>\n        </ol>\n        <pre><code>-- Quan hệ SINH_VIEN tham chiếu LOP_HOC:\nALTER TABLE SINH_VIEN\nADD CONSTRAINT fk_sv_lop FOREIGN KEY (MaLop) REFERENCES LOP_HOC(MaLop);</code></pre>\n        ", "questions": [{"id": "q5", "stem": "Ràng buộc Toàn vẹn Thực thể (Entity Integrity Constraint) phát biểu rằng:", "options": ["Giá trị của khóa ngoại phải luôn luôn bằng khóa chính của bảng cha", "Không có bất kỳ thuộc tính nào thuộc Khóa chính (Primary Key) được phép nhận giá trị NULL", "Mỗi bảng chỉ được phép có tối đa một khóa ngoại duy nhất", "Mọi cột dữ liệu số đều phải có giá trị lớn hơn hoặc bằng 0"], "correct": 1, "explain": "Entity Integrity quy định mọi thuộc tính thuộc khóa chính đều không được nhận giá trị NULL, bảo đảm định danh duy nhất của từng tuple."}, {"id": "q6", "stem": "Bảng `DON_HANG` có cột `MaKhachHang` tham chiếu đến `KHACH_HANG(MaKhachHang)`. Trường hợp nào sau đây VI PHẠM ràng buộc Toàn vẹn Tham chiếu (Referential Integrity)?", "options": ["Chèn đơn hàng có `MaKhachHang = NULL` (khi cột cho phép NULL)", "Chèn đơn hàng có `MaKhachHang = 'KH999'`, trong đó mã 'KH999' đã có sẵn trong bảng `KHACH_HANG`", "Chèn đơn hàng có `MaKhachHang = 'KH777'`, nhưng trong bảng `KHACH_HANG` hoàn toàn chưa có khách nào mang mã 'KH777'", "Cập nhật tên khách hàng trong bảng `KHACH_HANG` mà không đổi mã khách"], "correct": 2, "explain": "Chèn khóa ngoại trỏ tới một giá trị khóa chính không hề tồn tại trong bảng cha là vi phạm nghiêm trọng ràng buộc Toàn vẹn Tham chiếu (Dangling reference)."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Thao tác DML & Cơ chế Xử lý Vi phạm Ràng buộc", "takeaway": "Khi các thao tác INSERT, UPDATE, DELETE có nguy cơ vi phạm ràng buộc toàn vẹn, RDBMS cung cấp các hành động chuẩn: Reject (RESTRICT/NO ACTION), CASCADE, SET NULL, hoặc SET DEFAULT.", "summary": "\n        <h4>4.1. Phân tích nguy cơ vi phạm theo thao tác DML</h4>\n        <table class=\"stage-table\">\n            <thead>\n                <tr>\n                    <th>Thao tác</th>\n                    <th>Ràng buộc có nguy cơ bị vi phạm</th>\n                    <th>Nguyên nhân cốt lõi</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>INSERT</b></td>\n                    <td>Domain, Key, Entity Integrity, Referential Integrity</td>\n                    <td>Dữ liệu mới có thể sai kiểu, trùng lặp PK, PK bị NULL, hoặc FK tham chiếu đến giá trị cha chưa tồn tại.</td>\n                </tr>\n                <tr>\n                    <td><b>DELETE</b></td>\n                    <td>Referential Integrity (Toàn vẹn tham chiếu)</td>\n                    <td>Chỉ có thể vi phạm nếu xóa dòng dữ liệu ở bảng cha (Parent) mà đang có các dòng ở bảng con (Child) tham chiếu tới.</td>\n                </tr>\n                <tr>\n                    <td><b>UPDATE</b></td>\n                    <td>Cả 4 ràng buộc</td>\n                    <td>Bản chất tương đương việc DELETE giá trị cũ và INSERT giá trị mới.</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <h4>4.2. Các cơ chế xử lý khi xóa/sửa dữ liệu ở bảng cha (ON DELETE / ON UPDATE)</h4>\n        <p>Khi một dòng dữ liệu ở bảng cha bị xóa hoặc cập nhật khóa chính, RDBMS hỗ trợ 4 chính sách xử lý tự động đối với các dòng con liên quan:</p>\n        <ol>\n            <li><b>RESTRICT / NO ACTION (Mặc định):</b> Từ chối thao tác ngay lập tức và báo lỗi vi phạm ràng buộc khóa ngoại nếu còn tồn tại dữ liệu con đang tham chiếu.</li>\n            <li><b>CASCADE (Lan truyền):</b>\n                <ul>\n                    <li><i>ON DELETE CASCADE:</i> Khi xóa dòng cha, tất cả các dòng con đang tham chiếu sẽ tự động bị xóa theo.</li>\n                    <li><i>ON UPDATE CASCADE:</i> Khi cập nhật mã khóa chính ở dòng cha, giá trị FK ở tất cả dòng con sẽ tự động được cập nhật đồng bộ.</li>\n                </ul>\n            </li>\n            <li><b>SET NULL:</b> Khi dòng cha bị xóa hoặc cập nhật, giá trị FK ở dòng con tự động đổi về <code>NULL</code> (Yêu cầu: cột FK phải cho phép NULL).</li>\n            <li><b>SET DEFAULT:</b> Giá trị FK ở các dòng con tự động gán về giá trị mặc định được thiết lập trước.</li>\n        </ol>\n\n        <pre><code>-- Cú pháp định nghĩa chính sách hành động tham chiếu:\nCREATE TABLE DON_HANG_CHI_TIET (\n    MaDonHang INT,\n    MaSanPham INT,\n    SoLuong INT NOT NULL,\n    PRIMARY KEY (MaDonHang, MaSanPham),\n    FOREIGN KEY (MaDonHang) REFERENCES DON_HANG(MaDonHang)\n        ON DELETE CASCADE\n        ON UPDATE CASCADE,\n    FOREIGN KEY (MaSanPham) REFERENCES SAN_PHAM(MaSanPham)\n        ON DELETE RESTRICT\n);</code></pre>\n        ", "questions": [{"id": "q7", "stem": "Một quan hệ cha `KHOA` và quan hệ con `SINH_VIEN` có ràng buộc khóa ngoại với tùy chọn `ON DELETE CASCADE`. Điều gì xảy ra khi xóa một Khoa khỏi bảng `KHOA`?", "options": ["Hệ thống từ chối xóa và báo lỗi ràng buộc toàn vẹn", "Khoa bị xóa, và tất cả sinh viên thuộc khoa đó trong bảng SINH_VIEN cũng tự động bị xóa", "Khoa bị xóa, cột MaKhoa của các sinh viên thuộc khoa đó tự động chuyển về NULL", "Chỉ có khoa bị xóa, dữ liệu sinh viên hoàn toàn giữ nguyên không đổi"], "correct": 1, "explain": "ON DELETE CASCADE sẽ tự động xóa lan truyền mọi bản ghi con ở bảng SINH_VIEN có tham chiếu đến dòng cha vừa bị xóa."}, {"id": "q8", "stem": "Thao tác `DELETE` trên bảng dữ liệu bình thường (không có bảng con nào tham chiếu tới nó) có thể vi phạm ràng buộc nào sau đây?", "options": ["Vi phạm Key Constraint", "Vi phạm Entity Integrity Constraint", "Vi phạm Domain Constraint", "Không thể vi phạm bất kỳ ràng buộc nào trong 3 ràng buộc trên"], "correct": 3, "explain": "Lệnh DELETE không bao giờ vi phạm Domain, Key hay Entity Integrity trên chính bảng đó; nó chỉ có thể gây lỗi Referential Integrity nếu có bảng khác đang trỏ tới dữ liệu bị xóa."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Bất thường Dữ liệu & Tiêu chuẩn Thiết kế Lược đồ Chuẩn mực", "takeaway": "Thiết kế lược đồ quan hệ kém dẫn đến dư thừa dữ liệu và 3 dị thường nguy hiểm (Insertion, Deletion, Update Anomaly). Chuẩn hóa lược đồ là giải pháp cốt lõi để bảo đảm an toàn dữ liệu.", "summary": "\n        <h4>5.1. Tác hại của Lược đồ Quan hệ Kém (Bad Schema Design)</h4>\n        <p>Khi gom quá nhiều thông tin không đồng nhất vào một bảng duy nhất (ví dụ: gộp thông tin Sinh viên, Lớp học và Giáo viên chủ nhiệm vào cùng một bảng <code>SINH_VIEN_FULL</code>), hệ thống sẽ gánh chịu <b>Dư thừa dữ liệu (Data Redundancy)</b> và phát sinh 3 dạng dị thường dữ liệu (Anomalies):</p>\n\n        <div class=\"note-box\">\n            <b>1. Dị thường khi Thêm mới (Insertion Anomaly):</b><br>\n            Không thể thêm thông tin của một thực thể nếu thiếu thông tin của thực thể khác. Ví dụ: Không thể tạo mới một Lớp học nếu lớp đó chưa tuyển sinh được sinh viên nào (vì <code>MaSV</code> là khóa chính, không được NULL).\n        </div>\n\n        <div class=\"warn-box\">\n            <b>2. Dị thường khi Xóa (Deletion Anomaly):</b><br>\n            Xóa một thông tin ngoài ý muốn làm mất luôn thông tin quan trọng khác. Ví dụ: Khi sinh viên duy nhất của một ngành chuyển trường và bị xóa khỏi bảng, toàn bộ thông tin về Ngành học đó cũng bị xóa sạch khỏi hệ thống.\n        </div>\n\n        <div class=\"tip-box\">\n            <b>3. Dị thường khi Cập nhật (Update / Modification Anomaly):</b><br>\n            Khi thông tin chung của một đối tượng (ví dụ: số điện thoại Trưởng khoa) bị thay đổi, ta phải sửa trên hàng trăm hàng dữ liệu sinh viên. Nếu bỏ sót dù chỉ 1 hàng, CSDL sẽ rơi vào trạng thái bất nhất (Inconsistent).\n        </div>\n\n        <h4>5.2. Giải pháp: Phân rã Lược đồ & Bảo toàn Ràng buộc</h4>\n        <p>Để loại bỏ triệt để các dị thường trên, nhà thiết kế CSDL sử dụng kỹ thuật <b>Chuẩn hóa (Normalization)</b> dựa trên Phụ thuộc hàm (Functional Dependencies) để phân rã một lược đồ lớn thành nhiều lược đồ nhỏ hơn:</p>\n        <ul>\n            <li><b>Mỗi bảng đại diện cho một chủ thể duy nhất:</b> Bảng <code>SINH_VIEN</code> chỉ chứa thông tin sinh viên, bảng <code>LOP_HOC</code> chỉ chứa thông tin lớp.</li>\n            <li><b>Liên kết thông qua Khóa ngoại:</b> Bảng <code>SINH_VIEN</code> lưu <code>MaLop</code> để trỏ tới <code>LOP_HOC(MaLop)</code>.</li>\n            <li><b>Không làm mất mát thông tin (Lossless Join):</b> Phép tự nhiên (Natural Join) các bảng nhỏ phải tái tạo chính xác 100% dữ liệu ban đầu.</li>\n        </ul>\n        ", "questions": [{"id": "q9", "stem": "Một bảng lưu thông tin chung `NHAN_VIEN_PHONG_BAN(MaNV, TenNV, MaPB, TenPB, TruongPhong)`. Khi một phòng ban chưa có nhân viên nào, ta không thể lưu thông tin phòng ban đó vào CSDL vì MaNV bị NULL. Đây là hiện tượng dị thường nào?", "options": ["Deletion Anomaly (Dị thường khi xóa)", "Insertion Anomaly (Dị thường khi chèn)", "Update Anomaly (Dị thường khi cập nhật)", "Domain Anomaly (Dị thường miền giá trị)"], "correct": 1, "explain": "Insertion Anomaly xảy ra khi không thể thêm dữ liệu của một thực thể độc lập do thiếu dữ liệu của một thực thể khác đi kèm."}, {"id": "q10", "stem": "Mục tiêu quan trọng nhất của việc phân rã lược đồ và chuẩn hóa CSDL quan hệ là gì?", "options": ["Tăng tối đa số lượng bảng để cơ sở dữ liệu trông đồ sộ hơn", "Loại bỏ dữ liệu dư thừa, ngăn chặn các dị thường (Insert/Delete/Update) và bảo đảm tính nhất quán dữ liệu", "Giúp mọi câu lệnh SQL chạy nhanh gấp đôi mà không cần lập chỉ mục Index", "Loại bỏ hoàn toàn sự cần thiết của khóa ngoại"], "correct": 1, "explain": "Chuẩn hóa nhằm mục tiêu cốt lõi là tối thiểu hóa dư thừa dữ liệu và loại bỏ các dị thường thêm/xóa/sửa, bảo đảm tính nhất quán của hệ thống."}]}];
+const STORAGE_KEY = 'dbms_rmfd_l1_schema_v1';
+const LESSON_TITLE = 'Bài 1: Mô hình Quan hệ & Lược đồ Quan hệ (Relational Model & Schema)';
+const LESSON_CODE = '01-relational-schema';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
+    if (isUnlocked) {
+      pill.onclick = () => scrollToStage(s.num);
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
+
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIdx) => {
+      let optionsHtml = '';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
+        }
+
+        optionsHtml += `
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
+        </div>
+      `;
+    });
+
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
+
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
+        </div>
+
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
+          </div>
+          ${questionsHtml}
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(stageEl);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
+      allAnswered = false;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
+    }
+
+    // Render feedback
+    const fb = document.getElementById(`fb_${q.qid}`);
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
+    }
+  });
+
+  if (!allAnswered) {
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
+    return;
+  }
+
+  saveState();
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
+    }
+    saveState();
+    updateScorecard();
+
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
+
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
+    if (stageNum < STAGES.length) {
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
+        if (nextBadge) {
+          nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
+        }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+      }
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
+      setTimeout(() => {
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
+    }
+  } else {
+    updateScorecard();
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById(`stage-${stageNum}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const rows = [
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const isCor = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        String(s.num),
+        s.title,
+        q.qid,
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  // Kích thước chuẩn: Rộng 880px, chiều cao tính theo số chặng
+  const W = 880;
+  const rowH = 46;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Thẻ chứa viền bo góc
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
+
+  // Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
+
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
+
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
+
+  ctx.save();
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
+
+  // Thanh tiến độ đồ họa
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
+  if (completedParts > 0 && totalParts > 0) {
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.save();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
+  y += 18;
+
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '' : s.title;
+    ctx.fillText(label, 56, y + 28);
+
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    }
+    ctx.restore();
+
+    y += rowH + rowGap;
+  });
+
+  // Footer ghi chú
+  y += 14;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
+  ctx.restore();
+
+  // Kích hoạt tải ảnh PNG
+  const a = document.createElement('a');
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+</body>
+</html>

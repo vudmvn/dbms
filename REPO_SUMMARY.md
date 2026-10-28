@@ -1,6 +1,6 @@
 # Repository Summary
 
-Last reviewed: 2026-07-03
+Last reviewed: 2026-10-28
 
 This file is a quick map of the repository so future updates do not need to
 rescan the whole folder before making small changes.
@@ -50,7 +50,7 @@ Important Jekyll settings:
   - Contains all lecture modules:
     - `lectures/introduction/`: Core DBMS introduction lessons.
     - `lectures/entity-relationship-model/`: Conceptual modeling lessons and ER labs.
-    - `lectures/relational-model-and-functional-dependencies/`: Relational schema, ER-to-relational mapping, keys, functional dependency, attribute closure, and schema design lessons.
+    - `lectures/relational-model-and-functional-dependencies/`: Relational schema, key types, ER-to-relational mapping, functional dependencies & Armstrong axioms, and FD types & minimal cover lessons with a central interactive learning hub.
     - `lectures/normalization/`: Normal forms overview plus 1NF, 2NF, 3NF, and 4NF lessons.
     - `lectures/MySQL/`: MySQL lessons and how-to guides organized by topic folder (`mysql-server`, `database-administration`, `data-definition`, `querying-data`, `index-optimization`, `data-modification-transactions`, and `programmability`).
 - `_config.yml`
@@ -111,6 +111,15 @@ Current homepage sections:
     - Duration: 60m.
     - Difficulty: Beginner.
 
+- Relational Model and Functional Dependencies
+  - `relational-model-and-functional-dependencies/relational-model-and-functional-dependencies.html`
+    - Central interactive hub aggregating 5 lessons, 25 stages, 50 checkpoint questions, and master certificate export.
+  - `relational-model-and-functional-dependencies/relational-schema/relational-schema.md` & `.html`
+  - `relational-model-and-functional-dependencies/key/key.md` & `.html`
+  - `relational-model-and-functional-dependencies/er-2-relational/er-2-relational.md` & `.html`
+  - `relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md` & `.html`
+  - `relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md` & `.html`
+
 - MySQL Server
   - `MySQL/mysql-server/gioi-thieu-mysql/gioi-thieu-mysql.md`
   - `MySQL/mysql-server/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.md`
@@ -138,6 +147,8 @@ Current homepage sections:
 
 Some older focused lessons remain in the repository for source preservation, but the homepage links to broader canonical lessons to reduce duplicated navigation content.
 
+- `relational-model-and-functional-dependencies/functional-dependency/` is the canonical lesson integrating formal functional dependencies, Armstrong's axioms, attribute closure algorithms, and candidate key discovery.
+- `relational-model-and-functional-dependencies/functional-dependency-types/` is the canonical lesson integrating FD classifications, minimal cover (canonical cover) algorithms, and the bridge to normalization forms.
 - `MySQL/database-administration/database/create-use-drop-database.md` is the canonical lesson for creating, selecting, and dropping databases.
   - Supersedes the separate `create-database`, `select-database`, and `drop-database` lessons in the homepage navigation.
 - `MySQL/data-definition/create-table-statement.md` and `MySQL/data-definition/table/tables.md` are the canonical lessons for `CREATE TABLE`, constraints, and table lifecycle topics.
@@ -213,6 +224,7 @@ Workflow trigger paths:
 
 ## Update Notes
 
+- 2026-10-28: Reorganized Relational Model and Functional Dependencies chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, PNG certificate export, and a central interactive learning hub (`relational-model-and-functional-dependencies.html`), updated `index.md` bilingually.
 - 2026-06-04: Refreshed `entity-relationship-model/er-model/` attribute and relationship
   image references against the GeeksforGeeks source, then regenerated the
   Vietnamese and English ER model PDFs.

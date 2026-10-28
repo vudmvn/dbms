@@ -1,7 +1,6 @@
 ---
 layout: page
 title: "Mapping từ ER Model sang Relational Model"
-permalink: /Data-Modeling/er-to-relational-mapping/
 ---
 
 # Bài giảng: Mapping từ ER Model sang Relational Model
