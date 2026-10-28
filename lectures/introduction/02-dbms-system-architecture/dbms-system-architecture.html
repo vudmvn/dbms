@@ -716,9 +716,10 @@ footer {
 </footer>
 
 <script>
-const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Kiến trúc 1 Tầng (1-Tier / Standalone Architecture)", "summary": "\n        <h4>1.1. Bản chất của Kiến trúc 1-Tier</h4>\n        <p>Kiến trúc 1-Tier (Single-Tier Architecture) là mô hình đơn giản nhất, trong đó toàn bộ 3 thành phần cốt lõi: <b>Giao diện người dùng (UI)</b>, <b>Xử lý logic nghiệp vụ (Business Logic)</b> và <b>Hệ quản trị CSDL (Database Engine)</b> cùng nằm chung trên <i>một máy tính duy nhất</i>.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-1.png\" alt=\"Kiến trúc 1-Tier Single Tier\">\n            <figcaption>Hình 2.1: Kiến trúc 1-Tier — Giao diện, Logic và CSDL tích hợp trong cùng một máy tính người dùng</figcaption>\n        </figure>\n\n        <h4>1.2. Ưu điểm và Hạn chế</h4>\n        <ul>\n            <li><b>Ưu điểm vượt trội:</b>\n                <ul>\n                    <li><i>Độ trễ bằng 0 (Zero Network Latency):</i> Mọi lệnh đọc/ghi đều diễn ra trực tiếp qua bộ nhớ RAM hoặc ổ đĩa cục bộ, không mất thời gian truyền gói tin qua mạng.</li>\n                    <li><i>Cài đặt cực kỳ tinh gọn:</i> Người dùng không cần cấu hình IP, mở cổng tường lửa (Firewall port) hay quản trị tài khoản mạng phức tạp.</li>\n                    <li><i>Hoạt động hoàn toàn Offline:</i> Ứng dụng chạy độc lập không phụ thuộc vào kết nối Internet.</li>\n                </ul>\n            </li>\n            <li><b>Hạn chế nghiêm trọng:</b>\n                <ul>\n                    <li><i>Không chia sẻ dữ liệu đồng thời:</i> Người dùng ở phòng ban khác không thể truy cập vào kho dữ liệu này.</li>\n                    <li><i>Rủi ro mất mát dữ liệu tuyệt đối:</i> Nếu máy tính bị hỏng phần cứng hoặc nhiễm mã độc mã hóa tệp (Ransomware), toàn bộ CSDL sẽ biến mất.</li>\n                </ul>\n            </li>\n        </ul>\n\n        <h4>1.3. Ứng dụng thực tế & Đại diện tiêu biểu: SQLite</h4>\n        <p>Đại diện lừng danh nhất của kiến trúc 1-Tier hiện nay là <b>SQLite</b>. SQLite là thư viện CSDL quan hệ nhúng được cài đặt trên hàng tỷ thiết bị toàn cầu (mọi điện thoại Android, iPhone, trình duyệt Chrome lưu cookies/lịch sử, game offline):</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Python Code: Sử dụng SQLite nhúng 1-Tier không cần cài Database Server</span>\n                <span>Embedded Database</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"kw\">import</span> sqlite3\n\n<span class=\"cm\"># Kết nối trực tiếp vào tệp CSDL cục bộ trên máy trạm</span>\nconn = sqlite3.connect(<span class=\"str\">'so_tay_ca_nhan.db'</span>)\ncursor = conn.cursor()\n\n<span class=\"cm\"># Tạo bảng và chèn dữ liệu không cần thông qua mạng</span>\ncursor.execute(<span class=\"str\">'''CREATE TABLE IF NOT EXISTS ghi_chu \n                  (id INTEGER PRIMARY KEY AUTOINCREMENT, tieu_de TEXT, noi_dung TEXT)'''</span>)\n\ncursor.execute(<span class=\"str\">\"INSERT INTO ghi_chu (tieu_de, noi_dung) VALUES (?, ?)\"</span>, \n               (<span class=\"str\">'Học DBMS'</span>, <span class=\"str\">'Hiểu rõ kiến trúc 1-Tier và SQLite'</span>))\nconn.commit()\nconn.close()</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Nhận diện nhanh:</b> Bất cứ phần mềm nào cài đặt mà chỉ một người mở trên máy tính cá nhân (như phần mềm sổ quỹ gia đình, kế toán nội bộ offline trên MS Access, file save game RPG) đều áp dụng kiến trúc 1-Tier.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Đặc điểm kỹ thuật nào sau đây mô tả đúng nhất về kiến trúc 1-Tier (Single-Tier)?", "options": ["Client gửi truy vấn SQL qua mạng Internet tới máy chủ đám mây của Amazon.", "Giao diện người dùng, mã logic xử lý và công cụ CSDL cùng nằm và thực thi trên một máy tính cục bộ duy nhất.", "Cần có tối thiểu 3 máy chủ vật lý riêng biệt phối hợp với nhau.", "Chỉ chạy được khi máy tính kết nối Wi-Fi tốc độ cao."], "correct": 1, "explanation": "Chính xác! Kiến trúc 1-Tier tích hợp toàn bộ giao diện, logic và CSDL trên cùng một máy đơn lẻ (như SQLite hoặc MS Access offline)."}, {"qid": "q1_2", "text": "Câu 1.2: Một chuỗi siêu thị có 200 điểm bán hàng cần các thu ngân cùng thanh toán và cập nhật số lượng tồn kho theo thời gian thực về kho tổng. Kiến trúc 1-Tier có đáp ứng được nhu cầu này không? Vì sao?", "options": ["Đáp ứng rất tốt vì 1-Tier chạy nhanh nhất do không có độ trễ mạng.", "Không đáp ứng được, vì 1-Tier không hỗ trợ chia sẻ dữ liệu tập trung qua mạng cho nhiều máy trạm đồng thời.", "Đáp ứng được nếu cài thêm phần mềm nén file WinRAR.", "Đáp ứng được nhưng phải mua thêm 200 màn hình cảm ứng."], "correct": 1, "explanation": "Chính xác! 1-Tier là kiến trúc độc lập máy đơn lẻ, hoàn toàn không hỗ trợ chia sẻ dữ liệu đồng thời giữa nhiều máy trạm qua mạng."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Kiến trúc 2 Tầng (2-Tier Client-Server Architecture)", "summary": "\n        <h4>2.1. Bản chất Kiến trúc 2-Tier: Client kết nối trực tiếp DB Server</h4>\n        <p>Để giải quyết bài toán chia sẻ dữ liệu cho nhiều máy tính trong mạng nội bộ (LAN), kiến trúc 2-Tier ra đời vào đầu thập niên 1990. Hệ thống được tách làm 2 thực thể:</p>\n        <ol>\n            <li><b>Client Tier (Máy trạm):</b> Chứa Giao diện đồ họa (GUI) và toàn bộ Logic xử lý nghiệp vụ (Business Rules). Vì chứa nhiều code xử lý nên thường được gọi là <b>Fat Client (Client nặng)</b>.</li>\n            <li><b>Database Server Tier (Máy chủ CSDL):</b> Máy chủ chuyên dụng cài đặt RDBMS (như Oracle, MS SQL Server). Client kết nối trực tiếp tới DB Server thông qua giao thức mạng và driver API như <b>ODBC (Open Database Connectivity)</b> hoặc <b>JDBC (Java Database Connectivity)</b>.</li>\n        </ol>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-2.png\" alt=\"Kiến trúc 2-Tier Client Server\">\n            <figcaption>Hình 2.2: Kiến trúc 2-Tier Client-Server — Các máy trạm Fat Client kết nối trực tiếp đến Database Server qua ODBC/JDBC</figcaption>\n        </figure>\n\n        <h4>2.2. Ba hiểm họa chí mạng của Kiến trúc 2-Tier</h4>\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">1. Lỗ hổng bảo mật nghiêm trọng (Security Risk):</b><br>\n                Vì Client kết nối trực tiếp vào DB, thông tin tài khoản Database (User, Password, IP Server) phải được lưu trong ứng dụng máy trạm. Hacker có thể decompile phần mềm để lấy mật khẩu root DB.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">2. Gánh nặng triển khai & bảo trì (Deployment Nightmare):</b><br>\n                Khi thay đổi luật kinh doanh (ví dụ: công thức tính chiết khấu), lập trình viên phải đi tới từng máy trạm trong công ty để cập nhật tệp thực thi (.exe).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">3. Nghẽn cổ chai kết nối (Connection Exhaustion):</b><br>\n                Mỗi Fat Client duy trì một kết nối mở liên tục (Stateful connection). Khi số lượng máy trạm tăng lên hàng nghìn, DB Server sẽ cạn kiệt tài nguyên RAM và sập.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">4. Phụ thuộc băng thông mạng LAN:</b><br>\n                Nếu Client chạy trên mạng di động hoặc Internet chập chờn, kết nối TCP tới DB bị ngắt liên tục gây treo phần mềm.\n            </div>\n        </div>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Code Example: Nguy cơ lộ thông tin tài khoản DB trong mã nguồn Fat Client</span>\n                <span>Legacy 2-Tier Fat Client Code</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">// Lỗ hổng kinh điển: Hardcode mật khẩu DB trong ứng dụng máy trạm Windows Form</span>\n<span class=\"kw\">public void</span> KetNoiDatabase() {\n    <span class=\"kw\">string</span> dbHost = <span class=\"str\">\"192.168.1.50\"</span>;\n    <span class=\"kw\">string</span> dbUser = <span class=\"str\">\"sa\"</span>;\n    <span class=\"kw\">string</span> dbPass = <span class=\"str\">\"MatKhauAdminCucKyBiMat@2026\"</span>; <span class=\"cm\">// NGUY HIỂM: Rất dễ bị dịch ngược</span>\n    <span class=\"kw\">string</span> connString = <span class=\"str\">$\"Server={dbHost};Database=NganHang;User Id={dbUser};Password={dbPass};\"</span>;\n    \n    SqlConnection conn = <span class=\"kw\">new</span> SqlConnection(connString);\n    conn.Open(); <span class=\"cm\">// Client nắm quyền lực trực tiếp tới Database</span>\n}</code></pre>\n        </div>\n\n        <div class=\"callout warn\">\n            <div class=\"callout-icon\">⚠️</div>\n            <div>\n                <b>Bài học lịch sử:</b> Kiến trúc 2-Tier chỉ phù hợp trong các phòng thí nghiệm kín, mạng nội bộ công ty gia đình dưới 50 máy trạm, hoàn toàn không được sử dụng cho các ứng dụng Internet công cộng!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Trong kiến trúc 2-Tier truyền thống, thuật ngữ 'Fat Client' (Client nặng) dùng để chỉ điều gì?", "options": ["Máy tính client có kích thước vỏ case và màn hình rất to.", "Ứng dụng máy trạm đảm nhận cả phần giao diện người dùng và phần lớn mã nguồn logic nghiệp vụ, kết nối trực tiếp với DB.", "Máy chủ CSDL phải xử lý hàng triệu phép tính ma trận cùng lúc.", "Ứng dụng chỉ hiển thị HTML tĩnh do server trả về."], "correct": 1, "explanation": "Chính xác! Fat Client là máy trạm ôm đồm cả giao diện lẫn toàn bộ logic nghiệp vụ và kết nối trực tiếp tới DB Server."}, {"qid": "q2_2", "text": "Câu 2.2: Lý do bảo mật cốt lõi nào khiến kiến trúc 2-Tier KHÔNG ĐƯỢC PHÉP triển khai cho các ứng dụng công khai trên Internet?", "options": ["Vì ngôn ngữ SQL không thể chạy được qua mạng Internet.", "Vì ứng dụng máy trạm phải giữ chuỗi kết nối và tài khoản truy cập trực tiếp vào DB Server, tạo lỗ hổng chí mạng nếu bị lộ lọt.", "Vì các công ty viễn thông chặn tất cả các gói tin ODBC.", "Vì chi phí tiền điện của máy tính client quá lớn."], "correct": 1, "explanation": "Chính xác! Để kết nối trực tiếp, client phải nắm chuỗi kết nối (IP, user/pass DB). Khi public ra Internet, hacker có thể tấn công trực diện vào DB Server."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Kiến trúc 3 Tầng (3-Tier Web & Enterprise Architecture)", "summary": "\n        <h4>3.1. Cuộc cách mạng 3-Tier: Tách biệt hoàn toàn 3 lớp</h4>\n        <p>Để khắc phục toàn bộ điểm yếu bảo mật và bảo trì của 2-Tier, kiến trúc 3-Tier ra đời và trở thành chuẩn mực thống trị toàn cầu cho mọi ứng dụng Web, Mobile và Cloud hiện nay:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-3.png\" alt=\"Kiến trúc 3-Tier Architecture\">\n            <figcaption>Hình 2.3: Kiến trúc 3-Tier — Tách biệt rõ ràng Presentation Tier, Application Tier và Data Tier</figcaption>\n        </figure>\n\n        <ol>\n            <li><b>1. Presentation Tier (Tầng hiển thị / Client Tier):</b>\n                <ul>\n                    <li>Gồm trình duyệt web (React, Vue, Angular), ứng dụng di động (Flutter, Swift, Kotlin).</li>\n                    <li>Được gọi là <b>Thin Client (Client nhẹ)</b>: Chỉ tập trung vẽ giao diện, nhận tương tác người dùng và hiển thị dữ liệu nhận từ máy chủ. Tuyệt đối không chứa logic bí mật hay chuỗi kết nối Database.</li>\n                </ul>\n            </li>\n            <li><b>2. Application / Business Logic Tier (Tầng ứng dụng / Máy chủ nghiệp vụ):</b>\n                <ul>\n                    <li>Máy chủ phần mềm (Node.js, Java Spring Boot, Python FastAPI, .NET Core).</li>\n                    <li>Đóng vai trò \"Người gác cổng\": Nhận request từ Client, kiểm tra xác thực (Authentication / JWT), áp dụng quy tắc nghiệp vụ, sau đó mới quyết định gửi lệnh truy vấn tới CSDL.</li>\n                </ul>\n            </li>\n            <li><b>3. Database Tier (Tầng cơ sở dữ liệu / Data Storage Tier):</b>\n                <ul>\n                    <li>Cụm máy chủ lưu trữ dữ liệu (MySQL, PostgreSQL, MongoDB, Oracle).</li>\n                    <li>Được bảo vệ nghiêm ngặt trong <b>Mạng nội bộ riêng (Private Subnet / DMZ)</b>: Chỉ cho phép duy nhất Application Server được kết nối tới qua tường lửa.</li>\n                </ul>\n            </li>\n        </ol>\n\n        <h4>3.2. Bảng so sánh chiến lược: 2-Tier vs 3-Tier</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chuẩn kỹ thuật</th>\n                    <th>Kiến trúc 2-Tier</th>\n                    <th>Kiến trúc 3-Tier</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Phân loại Client</b></td>\n                    <td>Fat Client (Chứa GUI + Business Logic)</td>\n                    <td>Thin Client (Chỉ xử lý GUI và gửi API)</td>\n                </tr>\n                <tr>\n                    <td><b>Mức độ an toàn bảo mật</b></td>\n                    <td>Thấp: Client nắm trực tiếp tài khoản DB</td>\n                    <td>Rất cao: DB ẩn hoàn toàn sau Application Server</td>\n                </tr>\n                <tr>\n                    <td><b>Khả năng mở rộng (Scalability)</b></td>\n                    <td>Kém: Giới hạn bởi số lượng kết nối tối đa của DB</td>\n                    <td>Tuyệt vời: Dễ dàng thêm Application Server (Scale-out)</td>\n                </tr>\n                <tr>\n                    <td><b>Bảo trì & Nâng cấp logic</b></td>\n                    <td>Khó khăn: Phải cập nhật phần mềm trên từng máy trạm</td>\n                    <td>Rất dễ: Chỉ triển khai lại mã nguồn trên App Server</td>\n                </tr>\n                <tr>\n                    <td><b>Hiệu năng mạng diện rộng (WAN)</b></td>\n                    <td>Kém, dễ mất kết nối trạng thái liên tục</td>\n                    <td>Tối ưu: Sử dụng REST API / JSON phi trạng thái (Stateless)</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Luồng tương tác an toàn trong 3-Tier qua REST API JSON</span>\n                <span>Modern HTTP API Request</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">// [Bước 1: Client] Trình duyệt web gửi yêu cầu thanh toán (Không gửi lệnh SQL)</span>\n<span class=\"kw\">POST</span> /api/v1/payments/checkout HTTP/1.1\n<span class=\"kw\">Host:</span> api.myshop.com\n<span class=\"kw\">Authorization:</span> Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n<span class=\"kw\">Content-Type:</span> application/json\n\n{\n    <span class=\"str\">\"orderId\"</span>: 98124,\n    <span class=\"str\">\"amount\"</span>: 750000,\n    <span class=\"str\">\"method\"</span>: <span class=\"str\">\"VNPAY_QR\"</span>\n}\n\n<span class=\"cm\">// [Bước 2: Application Server] Nhận JSON -> Kiểm tra JWT Token -> Validate số dư -> Mở Transaction với Database</span>\n<span class=\"cm\">// [Bước 3: Database Server] Nhận câu lệnh SQL an toàn (Prepared Statement) từ App Server -> Trả kết quả</span></code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🛡️</div>\n            <div>\n                <b>Nguyên tắc an ninh mạng tối thượng:</b> Trong kiến trúc 3-Tier, máy chủ Database <i>không bao giờ được gán địa chỉ IP công khai (Public IP)</i>. Mọi truy cập trái phép từ Internet bị chặn đứng 100% ở tầng mạng.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Trong kiến trúc 3-Tier, tầng nào đảm nhận trách nhiệm kiểm tra tính hợp lệ của dữ liệu, kiểm tra quyền người dùng (Authorization) và thực thi các quy tắc nghiệp vụ trước khi truy cập CSDL?", "options": ["Presentation Tier (Tầng hiển thị).", "Application / Business Logic Tier (Tầng ứng dụng/nghiệp vụ).", "Database Tier (Tầng cơ sở dữ liệu).", "Tầng cáp quang ngầm dưới biển."], "correct": 1, "explanation": "Chính xác! Tầng Application (Business Logic Tier) là trung tâm đầu não thực thi mọi quy tắc nghiệp vụ và kiểm tra bảo mật."}, {"qid": "q3_2", "text": "Câu 3.2: Khi một ngân hàng thay đổi quy định: 'Miễn phí chuyển tiền liên ngân hàng cho các giao dịch dưới 5 triệu', trong kiến trúc 3-Tier, đội ngũ kỹ sư cần chỉnh sửa mã nguồn ở đâu?", "options": ["Phải gửi nhân viên kỹ thuật tới từng điện thoại của hàng triệu khách hàng để cài lại app.", "Chỉ cần cập nhật mã nguồn trên các máy chủ Application Server (Business Tier) mà người dùng không cần cài đặt lại thiết bị.", "Chỉ cần format lại toàn bộ ổ cứng máy chủ Database.", "Phải đập bỏ hệ thống mạng và kéo cáp mạng mới."], "correct": 1, "explanation": "Chính xác! Toàn bộ logic tập trung tại Application Tier, việc nâng cấp quy tắc nghiệp vụ chỉ diễn ra tập trung tại cụm server ứng dụng."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Kiến trúc N-Tier, Cụm phân tán & Tổng kết mô hình", "summary": "\n        <h4>4.1. Kiến trúc N-Tier & Hệ sinh thái Microservices hiện đại</h4>\n        <p>Khi các nền tảng thương mại điện tử như Shopee, Tiki hay mạng xã hội phục vụ hàng chục triệu người dùng đồng thời, 3 tầng cơ bản được mở rộng thành <b>N-Tier (Đa tầng phân tán)</b> với các lớp bổ trợ chuyên dụng:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">1. Cân bằng tải (Load Balancers - Nginx / HAProxy / ALB):</b><br>\n                Điều phối hàng triệu lượt truy cập đồng thời rải đều qua hàng trăm server ứng dụng, loại bỏ nguy cơ điểm nghẽn đơn lẻ (Single Point of Failure).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">2. Tầng bộ nhớ đệm (Caching Tier - Redis / Memcached):</b><br>\n                Lưu trữ trên RAM các dữ liệu đọc thường xuyên (thông tin sản phẩm, phiên đăng nhập), giúp giảm tới 80% tải đọc cho Database.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">3. Tách cụm Đọc / Ghi (Read-Write Database Replication):</b><br>\n                Một Master DB chuyên nhận lệnh ghi (INSERT/UPDATE), đồng bộ dữ liệu sang nhiều Slave/Replica DBs chuyên phục vụ các lệnh đọc (SELECT).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">4. Hàng đợi thông điệp (Message Queue - Kafka / RabbitMQ):</b><br>\n                Xử lý giao dịch bất đồng bộ (gửi email, tính điểm thưởng, trừ kho) mà không làm người dùng phải chờ đợi lâu trên màn hình.\n            </div>\n        </div>\n\n        <h4>4.2. Bảng tổng kết 4 thế hệ kiến trúc DBMS</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Thế hệ kiến trúc</th>\n                    <th>Vị trí CSDL</th>\n                    <th>Vị trí Business Logic</th>\n                    <th>Kịch bản ứng dụng tối ưu</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>1-Tier</b></td>\n                    <td>Cục bộ trên máy trạm</td>\n                    <td>Tích hợp trong phần mềm máy trạm</td>\n                    <td>App cá nhân offline, SQLite nhúng thiết bị IoT, mobile</td>\n                </tr>\n                <tr>\n                    <td><b>2-Tier</b></td>\n                    <td>Máy chủ Database Server</td>\n                    <td>Nằm trên máy trạm (Fat Client)</td>\n                    <td>Hệ thống mạng LAN nội bộ kín, phần mềm công ty quy mô nhỏ</td>\n                </tr>\n                <tr>\n                    <td><b>3-Tier</b></td>\n                    <td>Cụm Database riêng biệt</td>\n                    <td>Nằm trên Application Server</td>\n                    <td>Web Application, Cổng thông tin doanh nghiệp, E-commerce</td>\n                </tr>\n                <tr>\n                    <td><b>N-Tier / Microservices</b></td>\n                    <td>Phân tán đa vùng + Read Replicas</td>\n                    <td>Hàng trăm microservices độc lập</td>\n                    <td>Hệ thống Big Tech, Cloud-native, FinTech toàn cầu</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Hoàn thành xuất sắc Bài 2!</b> Hãy hoàn thành câu hỏi trắc nghiệm dưới đây và xuất giấy chứng nhận để ghi nhận tiến độ học tập của bạn.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Trong một hệ thống bán vé xem ca nhạc cực kỳ hot (như concert BlackPink), việc bổ sung tầng Caching (Redis) giữa Application Server và Database Server mang lại lợi ích chủ yếu nào?", "options": ["Làm cho hình ảnh ca sĩ trên website sắc nét hơn.", "Lưu tạm thông tin ghế còn trống trên bộ nhớ RAM để hàng trăm nghìn lượt tra cứu không đổ dồn làm sập Database Server.", "Thay thế hoàn toàn sự cần thiết của CSDL quan hệ.", "Tự động xuất vé miễn phí cho khách hàng may mắn."], "correct": 1, "explanation": "Chính xác! Cache lưu dữ liệu trên RAM với tốc độ đọc cực cao (micro-giây), giải phóng gánh nặng đọc cho Database Server chính."}, {"qid": "q4_2", "text": "Câu 4.2: Cơ chế phân tách 'Read-Write Database Replication' (Master nhận ghi, Replica nhận đọc) thuộc về chiến lược tối ưu hóa kiến trúc nào sau đây?", "options": ["Kiến trúc 1-Tier đơn máy trạm.", "Kiến trúc mở rộng tải theo chiều ngang (Horizontal Scaling / Scale-out) trong các hệ thống N-Tier chịu tải lớn.", "Hủy bỏ toàn bộ quyền truy cập của người dùng quản trị.", "Chuyển đổi toàn bộ CSDL sang dạng đĩa mềm cổ điển."], "correct": 1, "explanation": "Chính xác! Read-Write Split là mô hình mở rộng tải ngang kinh điển trong các hệ thống N-Tier để đáp ứng hàng triệu lượt đọc cùng lúc."}]}];
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Kiến trúc 1 Tầng (1-Tier / Standalone Architecture)", "takeaway": "Kiến trúc 1-Tier: Tích hợp toàn bộ UI, Logic và DB trên một máy trạm. Độ trễ = 0, ứng dụng tiêu biểu SQLite nhúng.", "summary": "\n        <h4>1.1. Bản chất của Kiến trúc 1-Tier</h4>\n        <p>Kiến trúc 1-Tier (Single-Tier Architecture) là mô hình đơn giản nhất, trong đó toàn bộ 3 thành phần cốt lõi: <b>Giao diện người dùng (UI)</b>, <b>Xử lý logic nghiệp vụ (Business Logic)</b> và <b>Hệ quản trị CSDL (Database Engine)</b> cùng nằm chung trên <i>một máy tính duy nhất</i>.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-1.png\" alt=\"Kiến trúc 1-Tier Single Tier\">\n            <figcaption>Hình 2.1: Kiến trúc 1-Tier — Giao diện, Logic và CSDL tích hợp trong cùng một máy tính người dùng</figcaption>\n        </figure>\n\n        <h4>1.2. Ưu điểm và Hạn chế</h4>\n        <ul>\n            <li><b>Ưu điểm vượt trội:</b>\n                <ul>\n                    <li><i>Độ trễ bằng 0 (Zero Network Latency):</i> Mọi lệnh đọc/ghi đều diễn ra trực tiếp qua bộ nhớ RAM hoặc ổ đĩa cục bộ, không mất thời gian truyền gói tin qua mạng.</li>\n                    <li><i>Cài đặt cực kỳ tinh gọn:</i> Người dùng không cần cấu hình IP, mở cổng tường lửa (Firewall port) hay quản trị tài khoản mạng phức tạp.</li>\n                    <li><i>Hoạt động hoàn toàn Offline:</i> Ứng dụng chạy độc lập không phụ thuộc vào kết nối Internet.</li>\n                </ul>\n            </li>\n            <li><b>Hạn chế nghiêm trọng:</b>\n                <ul>\n                    <li><i>Không chia sẻ dữ liệu đồng thời:</i> Người dùng ở phòng ban khác không thể truy cập vào kho dữ liệu này.</li>\n                    <li><i>Rủi ro mất mát dữ liệu tuyệt đối:</i> Nếu máy tính bị hỏng phần cứng hoặc nhiễm mã độc mã hóa tệp (Ransomware), toàn bộ CSDL sẽ biến mất.</li>\n                </ul>\n            </li>\n        </ul>\n\n        <h4>1.3. Ứng dụng thực tế & Đại diện tiêu biểu: SQLite</h4>\n        <p>Đại diện lừng danh nhất của kiến trúc 1-Tier hiện nay là <b>SQLite</b>. SQLite là thư viện CSDL quan hệ nhúng được cài đặt trên hàng tỷ thiết bị toàn cầu (mọi điện thoại Android, iPhone, trình duyệt Chrome lưu cookies/lịch sử, game offline):</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Python Code: Sử dụng SQLite nhúng 1-Tier không cần cài Database Server</span>\n                <span>Embedded Database</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"kw\">import</span> sqlite3\n\n<span class=\"cm\"># Kết nối trực tiếp vào tệp CSDL cục bộ trên máy trạm</span>\nconn = sqlite3.connect(<span class=\"str\">'so_tay_ca_nhan.db'</span>)\ncursor = conn.cursor()\n\n<span class=\"cm\"># Tạo bảng và chèn dữ liệu không cần thông qua mạng</span>\ncursor.execute(<span class=\"str\">'''CREATE TABLE IF NOT EXISTS ghi_chu \n                  (id INTEGER PRIMARY KEY AUTOINCREMENT, tieu_de TEXT, noi_dung TEXT)'''</span>)\n\ncursor.execute(<span class=\"str\">\"INSERT INTO ghi_chu (tieu_de, noi_dung) VALUES (?, ?)\"</span>, \n               (<span class=\"str\">'Học DBMS'</span>, <span class=\"str\">'Hiểu rõ kiến trúc 1-Tier và SQLite'</span>))\nconn.commit()\nconn.close()</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Nhận diện nhanh:</b> Bất cứ phần mềm nào cài đặt mà chỉ một người mở trên máy tính cá nhân (như phần mềm sổ quỹ gia đình, kế toán nội bộ offline trên MS Access, file save game RPG) đều áp dụng kiến trúc 1-Tier.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Đặc điểm kỹ thuật nào sau đây mô tả đúng nhất về kiến trúc 1-Tier (Single-Tier)?", "options": ["Client gửi truy vấn SQL qua mạng Internet tới máy chủ đám mây của Amazon.", "Giao diện người dùng, mã logic xử lý và công cụ CSDL cùng nằm và thực thi trên một máy tính cục bộ duy nhất.", "Cần có tối thiểu 3 máy chủ vật lý riêng biệt phối hợp với nhau.", "Chỉ chạy được khi máy tính kết nối Wi-Fi tốc độ cao."], "correct": 1, "explanation": "Chính xác! Kiến trúc 1-Tier tích hợp toàn bộ giao diện, logic và CSDL trên cùng một máy đơn lẻ (như SQLite hoặc MS Access offline)."}, {"qid": "q1_2", "text": "Câu 1.2: Một chuỗi siêu thị có 200 điểm bán hàng cần các thu ngân cùng thanh toán và cập nhật số lượng tồn kho theo thời gian thực về kho tổng. Kiến trúc 1-Tier có đáp ứng được nhu cầu này không? Vì sao?", "options": ["Đáp ứng rất tốt vì 1-Tier chạy nhanh nhất do không có độ trễ mạng.", "Không đáp ứng được, vì 1-Tier không hỗ trợ chia sẻ dữ liệu tập trung qua mạng cho nhiều máy trạm đồng thời.", "Đáp ứng được nếu cài thêm phần mềm nén file WinRAR.", "Đáp ứng được nhưng phải mua thêm 200 màn hình cảm ứng."], "correct": 1, "explanation": "Chính xác! 1-Tier là kiến trúc độc lập máy đơn lẻ, hoàn toàn không hỗ trợ chia sẻ dữ liệu đồng thời giữa nhiều máy trạm qua mạng."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Kiến trúc 2 Tầng (2-Tier Client-Server Architecture)", "takeaway": "Kiến trúc 2-Tier Client-Server: Mô hình Fat Client kết nối trực tiếp DB qua ODBC/JDBC. Lỗ hổng bảo mật và gánh nặng bảo trì.", "summary": "\n        <h4>2.1. Bản chất Kiến trúc 2-Tier: Client kết nối trực tiếp DB Server</h4>\n        <p>Để giải quyết bài toán chia sẻ dữ liệu cho nhiều máy tính trong mạng nội bộ (LAN), kiến trúc 2-Tier ra đời vào đầu thập niên 1990. Hệ thống được tách làm 2 thực thể:</p>\n        <ol>\n            <li><b>Client Tier (Máy trạm):</b> Chứa Giao diện đồ họa (GUI) và toàn bộ Logic xử lý nghiệp vụ (Business Rules). Vì chứa nhiều code xử lý nên thường được gọi là <b>Fat Client (Client nặng)</b>.</li>\n            <li><b>Database Server Tier (Máy chủ CSDL):</b> Máy chủ chuyên dụng cài đặt RDBMS (như Oracle, MS SQL Server). Client kết nối trực tiếp tới DB Server thông qua giao thức mạng và driver API như <b>ODBC (Open Database Connectivity)</b> hoặc <b>JDBC (Java Database Connectivity)</b>.</li>\n        </ol>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-2.png\" alt=\"Kiến trúc 2-Tier Client Server\">\n            <figcaption>Hình 2.2: Kiến trúc 2-Tier Client-Server — Các máy trạm Fat Client kết nối trực tiếp đến Database Server qua ODBC/JDBC</figcaption>\n        </figure>\n\n        <h4>2.2. Ba hiểm họa chí mạng của Kiến trúc 2-Tier</h4>\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">1. Lỗ hổng bảo mật nghiêm trọng (Security Risk):</b><br>\n                Vì Client kết nối trực tiếp vào DB, thông tin tài khoản Database (User, Password, IP Server) phải được lưu trong ứng dụng máy trạm. Hacker có thể decompile phần mềm để lấy mật khẩu root DB.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">2. Gánh nặng triển khai & bảo trì (Deployment Nightmare):</b><br>\n                Khi thay đổi luật kinh doanh (ví dụ: công thức tính chiết khấu), lập trình viên phải đi tới từng máy trạm trong công ty để cập nhật tệp thực thi (.exe).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">3. Nghẽn cổ chai kết nối (Connection Exhaustion):</b><br>\n                Mỗi Fat Client duy trì một kết nối mở liên tục (Stateful connection). Khi số lượng máy trạm tăng lên hàng nghìn, DB Server sẽ cạn kiệt tài nguyên RAM và sập.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">4. Phụ thuộc băng thông mạng LAN:</b><br>\n                Nếu Client chạy trên mạng di động hoặc Internet chập chờn, kết nối TCP tới DB bị ngắt liên tục gây treo phần mềm.\n            </div>\n        </div>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Code Example: Nguy cơ lộ thông tin tài khoản DB trong mã nguồn Fat Client</span>\n                <span>Legacy 2-Tier Fat Client Code</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">// Lỗ hổng kinh điển: Hardcode mật khẩu DB trong ứng dụng máy trạm Windows Form</span>\n<span class=\"kw\">public void</span> KetNoiDatabase() {\n    <span class=\"kw\">string</span> dbHost = <span class=\"str\">\"192.168.1.50\"</span>;\n    <span class=\"kw\">string</span> dbUser = <span class=\"str\">\"sa\"</span>;\n    <span class=\"kw\">string</span> dbPass = <span class=\"str\">\"MatKhauAdminCucKyBiMat@2026\"</span>; <span class=\"cm\">// NGUY HIỂM: Rất dễ bị dịch ngược</span>\n    <span class=\"kw\">string</span> connString = <span class=\"str\">$\"Server={dbHost};Database=NganHang;User Id={dbUser};Password={dbPass};\"</span>;\n    \n    SqlConnection conn = <span class=\"kw\">new</span> SqlConnection(connString);\n    conn.Open(); <span class=\"cm\">// Client nắm quyền lực trực tiếp tới Database</span>\n}</code></pre>\n        </div>\n\n        <div class=\"callout warn\">\n            <div class=\"callout-icon\">⚠️</div>\n            <div>\n                <b>Bài học lịch sử:</b> Kiến trúc 2-Tier chỉ phù hợp trong các phòng thí nghiệm kín, mạng nội bộ công ty gia đình dưới 50 máy trạm, hoàn toàn không được sử dụng cho các ứng dụng Internet công cộng!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Trong kiến trúc 2-Tier truyền thống, thuật ngữ 'Fat Client' (Client nặng) dùng để chỉ điều gì?", "options": ["Máy tính client có kích thước vỏ case và màn hình rất to.", "Ứng dụng máy trạm đảm nhận cả phần giao diện người dùng và phần lớn mã nguồn logic nghiệp vụ, kết nối trực tiếp với DB.", "Máy chủ CSDL phải xử lý hàng triệu phép tính ma trận cùng lúc.", "Ứng dụng chỉ hiển thị HTML tĩnh do server trả về."], "correct": 1, "explanation": "Chính xác! Fat Client là máy trạm ôm đồm cả giao diện lẫn toàn bộ logic nghiệp vụ và kết nối trực tiếp tới DB Server."}, {"qid": "q2_2", "text": "Câu 2.2: Lý do bảo mật cốt lõi nào khiến kiến trúc 2-Tier KHÔNG ĐƯỢC PHÉP triển khai cho các ứng dụng công khai trên Internet?", "options": ["Vì ngôn ngữ SQL không thể chạy được qua mạng Internet.", "Vì ứng dụng máy trạm phải giữ chuỗi kết nối và tài khoản truy cập trực tiếp vào DB Server, tạo lỗ hổng chí mạng nếu bị lộ lọt.", "Vì các công ty viễn thông chặn tất cả các gói tin ODBC.", "Vì chi phí tiền điện của máy tính client quá lớn."], "correct": 1, "explanation": "Chính xác! Để kết nối trực tiếp, client phải nắm chuỗi kết nối (IP, user/pass DB). Khi public ra Internet, hacker có thể tấn công trực diện vào DB Server."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Kiến trúc 3 Tầng (3-Tier Web & Enterprise Architecture)", "takeaway": "Kiến trúc 3-Tier Web hiện đại: Phân tách rõ ràng Presentation (Thin Client), Application Server và Database (Private Subnet).", "summary": "\n        <h4>3.1. Cuộc cách mạng 3-Tier: Tách biệt hoàn toàn 3 lớp</h4>\n        <p>Để khắc phục toàn bộ điểm yếu bảo mật và bảo trì của 2-Tier, kiến trúc 3-Tier ra đời và trở thành chuẩn mực thống trị toàn cầu cho mọi ứng dụng Web, Mobile và Cloud hiện nay:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-3.png\" alt=\"Kiến trúc 3-Tier Architecture\">\n            <figcaption>Hình 2.3: Kiến trúc 3-Tier — Tách biệt rõ ràng Presentation Tier, Application Tier và Data Tier</figcaption>\n        </figure>\n\n        <ol>\n            <li><b>1. Presentation Tier (Tầng hiển thị / Client Tier):</b>\n                <ul>\n                    <li>Gồm trình duyệt web (React, Vue, Angular), ứng dụng di động (Flutter, Swift, Kotlin).</li>\n                    <li>Được gọi là <b>Thin Client (Client nhẹ)</b>: Chỉ tập trung vẽ giao diện, nhận tương tác người dùng và hiển thị dữ liệu nhận từ máy chủ. Tuyệt đối không chứa logic bí mật hay chuỗi kết nối Database.</li>\n                </ul>\n            </li>\n            <li><b>2. Application / Business Logic Tier (Tầng ứng dụng / Máy chủ nghiệp vụ):</b>\n                <ul>\n                    <li>Máy chủ phần mềm (Node.js, Java Spring Boot, Python FastAPI, .NET Core).</li>\n                    <li>Đóng vai trò \"Người gác cổng\": Nhận request từ Client, kiểm tra xác thực (Authentication / JWT), áp dụng quy tắc nghiệp vụ, sau đó mới quyết định gửi lệnh truy vấn tới CSDL.</li>\n                </ul>\n            </li>\n            <li><b>3. Database Tier (Tầng cơ sở dữ liệu / Data Storage Tier):</b>\n                <ul>\n                    <li>Cụm máy chủ lưu trữ dữ liệu (MySQL, PostgreSQL, MongoDB, Oracle).</li>\n                    <li>Được bảo vệ nghiêm ngặt trong <b>Mạng nội bộ riêng (Private Subnet / DMZ)</b>: Chỉ cho phép duy nhất Application Server được kết nối tới qua tường lửa.</li>\n                </ul>\n            </li>\n        </ol>\n\n        <h4>3.2. Bảng so sánh chiến lược: 2-Tier vs 3-Tier</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chuẩn kỹ thuật</th>\n                    <th>Kiến trúc 2-Tier</th>\n                    <th>Kiến trúc 3-Tier</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Phân loại Client</b></td>\n                    <td>Fat Client (Chứa GUI + Business Logic)</td>\n                    <td>Thin Client (Chỉ xử lý GUI và gửi API)</td>\n                </tr>\n                <tr>\n                    <td><b>Mức độ an toàn bảo mật</b></td>\n                    <td>Thấp: Client nắm trực tiếp tài khoản DB</td>\n                    <td>Rất cao: DB ẩn hoàn toàn sau Application Server</td>\n                </tr>\n                <tr>\n                    <td><b>Khả năng mở rộng (Scalability)</b></td>\n                    <td>Kém: Giới hạn bởi số lượng kết nối tối đa của DB</td>\n                    <td>Tuyệt vời: Dễ dàng thêm Application Server (Scale-out)</td>\n                </tr>\n                <tr>\n                    <td><b>Bảo trì & Nâng cấp logic</b></td>\n                    <td>Khó khăn: Phải cập nhật phần mềm trên từng máy trạm</td>\n                    <td>Rất dễ: Chỉ triển khai lại mã nguồn trên App Server</td>\n                </tr>\n                <tr>\n                    <td><b>Hiệu năng mạng diện rộng (WAN)</b></td>\n                    <td>Kém, dễ mất kết nối trạng thái liên tục</td>\n                    <td>Tối ưu: Sử dụng REST API / JSON phi trạng thái (Stateless)</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Luồng tương tác an toàn trong 3-Tier qua REST API JSON</span>\n                <span>Modern HTTP API Request</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">// [Bước 1: Client] Trình duyệt web gửi yêu cầu thanh toán (Không gửi lệnh SQL)</span>\n<span class=\"kw\">POST</span> /api/v1/payments/checkout HTTP/1.1\n<span class=\"kw\">Host:</span> api.myshop.com\n<span class=\"kw\">Authorization:</span> Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\n<span class=\"kw\">Content-Type:</span> application/json\n\n{\n    <span class=\"str\">\"orderId\"</span>: 98124,\n    <span class=\"str\">\"amount\"</span>: 750000,\n    <span class=\"str\">\"method\"</span>: <span class=\"str\">\"VNPAY_QR\"</span>\n}\n\n<span class=\"cm\">// [Bước 2: Application Server] Nhận JSON -> Kiểm tra JWT Token -> Validate số dư -> Mở Transaction với Database</span>\n<span class=\"cm\">// [Bước 3: Database Server] Nhận câu lệnh SQL an toàn (Prepared Statement) từ App Server -> Trả kết quả</span></code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🛡️</div>\n            <div>\n                <b>Nguyên tắc an ninh mạng tối thượng:</b> Trong kiến trúc 3-Tier, máy chủ Database <i>không bao giờ được gán địa chỉ IP công khai (Public IP)</i>. Mọi truy cập trái phép từ Internet bị chặn đứng 100% ở tầng mạng.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Trong kiến trúc 3-Tier, tầng nào đảm nhận trách nhiệm kiểm tra tính hợp lệ của dữ liệu, kiểm tra quyền người dùng (Authorization) và thực thi các quy tắc nghiệp vụ trước khi truy cập CSDL?", "options": ["Presentation Tier (Tầng hiển thị).", "Application / Business Logic Tier (Tầng ứng dụng/nghiệp vụ).", "Database Tier (Tầng cơ sở dữ liệu).", "Tầng cáp quang ngầm dưới biển."], "correct": 1, "explanation": "Chính xác! Tầng Application (Business Logic Tier) là trung tâm đầu não thực thi mọi quy tắc nghiệp vụ và kiểm tra bảo mật."}, {"qid": "q3_2", "text": "Câu 3.2: Khi một ngân hàng thay đổi quy định: 'Miễn phí chuyển tiền liên ngân hàng cho các giao dịch dưới 5 triệu', trong kiến trúc 3-Tier, đội ngũ kỹ sư cần chỉnh sửa mã nguồn ở đâu?", "options": ["Phải gửi nhân viên kỹ thuật tới từng điện thoại của hàng triệu khách hàng để cài lại app.", "Chỉ cần cập nhật mã nguồn trên các máy chủ Application Server (Business Tier) mà người dùng không cần cài đặt lại thiết bị.", "Chỉ cần format lại toàn bộ ổ cứng máy chủ Database.", "Phải đập bỏ hệ thống mạng và kéo cáp mạng mới."], "correct": 1, "explanation": "Chính xác! Toàn bộ logic tập trung tại Application Tier, việc nâng cấp quy tắc nghiệp vụ chỉ diễn ra tập trung tại cụm server ứng dụng."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Kiến trúc N-Tier, Cụm phân tán & Tổng kết mô hình", "takeaway": "Kiến trúc N-Tier & Cụm phân tán: Cân bằng tải Load Balancer, bộ nhớ đệm Caching (Redis), tách cụm Đọc/Ghi (Read Replicas).", "summary": "\n        <h4>4.1. Kiến trúc N-Tier & Hệ sinh thái Microservices hiện đại</h4>\n        <p>Khi các nền tảng thương mại điện tử như Shopee, Tiki hay mạng xã hội phục vụ hàng chục triệu người dùng đồng thời, 3 tầng cơ bản được mở rộng thành <b>N-Tier (Đa tầng phân tán)</b> với các lớp bổ trợ chuyên dụng:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">1. Cân bằng tải (Load Balancers - Nginx / HAProxy / ALB):</b><br>\n                Điều phối hàng triệu lượt truy cập đồng thời rải đều qua hàng trăm server ứng dụng, loại bỏ nguy cơ điểm nghẽn đơn lẻ (Single Point of Failure).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">2. Tầng bộ nhớ đệm (Caching Tier - Redis / Memcached):</b><br>\n                Lưu trữ trên RAM các dữ liệu đọc thường xuyên (thông tin sản phẩm, phiên đăng nhập), giúp giảm tới 80% tải đọc cho Database.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">3. Tách cụm Đọc / Ghi (Read-Write Database Replication):</b><br>\n                Một Master DB chuyên nhận lệnh ghi (INSERT/UPDATE), đồng bộ dữ liệu sang nhiều Slave/Replica DBs chuyên phục vụ các lệnh đọc (SELECT).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">4. Hàng đợi thông điệp (Message Queue - Kafka / RabbitMQ):</b><br>\n                Xử lý giao dịch bất đồng bộ (gửi email, tính điểm thưởng, trừ kho) mà không làm người dùng phải chờ đợi lâu trên màn hình.\n            </div>\n        </div>\n\n        <h4>4.2. Bảng tổng kết 4 thế hệ kiến trúc DBMS</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Thế hệ kiến trúc</th>\n                    <th>Vị trí CSDL</th>\n                    <th>Vị trí Business Logic</th>\n                    <th>Kịch bản ứng dụng tối ưu</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>1-Tier</b></td>\n                    <td>Cục bộ trên máy trạm</td>\n                    <td>Tích hợp trong phần mềm máy trạm</td>\n                    <td>App cá nhân offline, SQLite nhúng thiết bị IoT, mobile</td>\n                </tr>\n                <tr>\n                    <td><b>2-Tier</b></td>\n                    <td>Máy chủ Database Server</td>\n                    <td>Nằm trên máy trạm (Fat Client)</td>\n                    <td>Hệ thống mạng LAN nội bộ kín, phần mềm công ty quy mô nhỏ</td>\n                </tr>\n                <tr>\n                    <td><b>3-Tier</b></td>\n                    <td>Cụm Database riêng biệt</td>\n                    <td>Nằm trên Application Server</td>\n                    <td>Web Application, Cổng thông tin doanh nghiệp, E-commerce</td>\n                </tr>\n                <tr>\n                    <td><b>N-Tier / Microservices</b></td>\n                    <td>Phân tán đa vùng + Read Replicas</td>\n                    <td>Hàng trăm microservices độc lập</td>\n                    <td>Hệ thống Big Tech, Cloud-native, FinTech toàn cầu</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Hoàn thành xuất sắc Bài 2!</b> Hãy hoàn thành câu hỏi trắc nghiệm dưới đây và xuất giấy chứng nhận để ghi nhận tiến độ học tập của bạn.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Trong một hệ thống bán vé xem ca nhạc cực kỳ hot (như concert BlackPink), việc bổ sung tầng Caching (Redis) giữa Application Server và Database Server mang lại lợi ích chủ yếu nào?", "options": ["Làm cho hình ảnh ca sĩ trên website sắc nét hơn.", "Lưu tạm thông tin ghế còn trống trên bộ nhớ RAM để hàng trăm nghìn lượt tra cứu không đổ dồn làm sập Database Server.", "Thay thế hoàn toàn sự cần thiết của CSDL quan hệ.", "Tự động xuất vé miễn phí cho khách hàng may mắn."], "correct": 1, "explanation": "Chính xác! Cache lưu dữ liệu trên RAM với tốc độ đọc cực cao (micro-giây), giải phóng gánh nặng đọc cho Database Server chính."}, {"qid": "q4_2", "text": "Câu 4.2: Cơ chế phân tách 'Read-Write Database Replication' (Master nhận ghi, Replica nhận đọc) thuộc về chiến lược tối ưu hóa kiến trúc nào sau đây?", "options": ["Kiến trúc 1-Tier đơn máy trạm.", "Kiến trúc mở rộng tải theo chiều ngang (Horizontal Scaling / Scale-out) trong các hệ thống N-Tier chịu tải lớn.", "Hủy bỏ toàn bộ quyền truy cập của người dùng quản trị.", "Chuyển đổi toàn bộ CSDL sang dạng đĩa mềm cổ điển."], "correct": 1, "explanation": "Chính xác! Read-Write Split là mô hình mở rộng tải ngang kinh điển trong các hệ thống N-Tier để đáp ứng hàng triệu lượt đọc cùng lúc."}]}];
 const STORAGE_KEY = 'dbms_intro_l2_v2';
 const LESSON_TITLE = 'Bài 2: Kiến trúc Hệ quản trị Cơ sở dữ liệu (DBMS Architecture)';
+const LESSON_DESC = 'Khám phá sự tiến hóa của kiến trúc hệ thống DBMS: từ 1-Tier nhúng, 2-Tier Client-Server, 3-Tier Web hiện đại đến N-Tier phân tán chịu tải cao qua sơ đồ, phân tích bảo mật & ví dụ thực tế.';
 const LESSON_CODE = '02-dbms-system-architecture';
 const TOTAL_QUESTIONS = 8;
 
@@ -1062,121 +1063,266 @@ function exportScoreCSV() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function exportScorePNG() {
+function exportScorePNG() {{
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa nhập MSSV';
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa điền MSSV';
   const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
   const score = calculateTotalScore();
   const total = TOTAL_QUESTIONS;
-  const pct = Math.round((score / total) * 100);
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
 
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {{
+    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
+    let line = '';
+    let linesDrawn = 0;
+    for (let n = 0; n < words.length; n++) {{
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {{
+        ctx.fillText(line.trim(), x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        linesDrawn++;
+        if (linesDrawn >= maxLines - 1 && n < words.length - 1) {{
+          let remaining = words.slice(n).join(' ');
+          while (ctx.measureText(remaining + '…').width > maxWidth && remaining.length > 0) {{
+            remaining = remaining.slice(0, -1).trim();
+          }}
+          ctx.fillText(remaining + '…', x, y);
+          return y + lineHeight;
+        }}
+      }} else {{
+        line = testLine;
+      }}
+    }}
+    ctx.fillText(line.trim(), x, y);
+    return y + lineHeight;
+  }}
+
+  function cleanHtmlSummary(htmlStr) {{
+    if (!htmlStr) return '';
+    return htmlStr
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }}
+
+  const W = 960;
+  const stageCardH = 78;
+  const stagesGap = 10;
+  const H = 450 + (STAGES.length * (stageCardH + stagesGap)) + 50;
+
   const canvas = document.createElement('canvas');
-  canvas.width = 900;
-  canvas.height = 680 + (STAGES.length * 48);
+  canvas.width = W * 2;
+  canvas.height = H * 2;
   const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
 
-  // Background
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (!ctx.roundRect) {{
+    ctx.roundRect = function(x, y, w, h, r) {{
+      if (typeof r === 'undefined') r = 8;
+      if (typeof r === 'number') r = [r, r, r, r];
+      this.beginPath();
+      this.moveTo(x + r[0], y);
+      this.lineTo(x + w - r[1], y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+      this.lineTo(x + w, y + h - r[2]);
+      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+      this.lineTo(x + r[3], y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+      this.lineTo(x, y + r[0]);
+      this.quadraticCurveTo(x, y, x + r[0], y);
+      this.closePath();
+    }};
+  }}
 
-  // Top Banner
-  const grad = ctx.createLinearGradient(0, 0, canvas.width, 160);
-  grad.addColorStop(0, '#112b53');
-  grad.addColorStop(1, '#1e5bb8');
+  // Outer Background
+  ctx.fillStyle = '#f4f7fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Main Container Card
+  ctx.fillStyle = '#ffffff';
+  ctx.roundRect(16, 16, W - 32, H - 32, 16);
+  ctx.fill();
+  ctx.strokeStyle = '#d9e2ef';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Top Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#0f2952');
+  grad.addColorStop(1, '#1d54ab');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, 160);
+  ctx.roundRect(16, 16, W - 32, 110, [16, 16, 0, 0]);
+  ctx.fill();
 
-  // Banner Text
+  ctx.fillStyle = '#9cbbe8';
+  ctx.font = '700 11.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP TƯƠNG TÁC', 40, 46);
+
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.letterSpacing = '1px';
-  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP', 40, 48);
+  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 78);
 
-  ctx.font = 'bold 24px sans-serif';
-  ctx.fillText(LESSON_TITLE, 40, 88);
+  ctx.fillStyle = '#d4e4fc';
+  ctx.font = '12.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`Thời gian xuất chứng nhận: ${{dateStr}}`, 40, 104);
 
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = '#dbeafe';
-  ctx.fillText(`Thời gian hoàn thành: ${dateStr}`, 40, 122);
-
-  // Student Info Card
-  ctx.fillStyle = '#ffffff';
-  ctx.roundRect(40, 185, canvas.width - 80, 100, 12);
+  // Student Info & Score Overview Cards
+  const cardY = 142;
+  // Left: Student Info Card
+  ctx.fillStyle = '#f8fafc';
+  ctx.roundRect(40, cardY, 520, 110, 10);
   ctx.fill();
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.stroke();
 
   ctx.fillStyle = '#64748b';
-  ctx.font = '13px sans-serif';
-  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 65, 222);
-  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 400, 222);
+  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
+  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
+  ctx.fillText('MÔN HỌC / HỌC PHẦN:', 58, cardY + 76);
 
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText(name, 65, 256);
-  ctx.fillText(mssv, 400, 256);
+  ctx.font = 'bold 16.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText(name, 58, cardY + 52);
+  ctx.fillText(mssv, 310, cardY + 52);
+  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#1e3a6e';
+  ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
 
-  // Score Badge
-  const badgeColor = pct >= 80 ? '#0f845a' : (pct >= 50 ? '#b45309' : '#c02b2b');
-  ctx.fillStyle = badgeColor;
-  ctx.roundRect(canvas.width - 240, 202, 160, 66, 10);
+  // Right: Score & Rank Card
+  const scoreBoxX = 580;
+  const scoreBoxW = W - 40 - scoreBoxX;
+  const isPass = pct >= 50;
+  const isEx = pct >= 90;
+  const isGood = pct >= 80;
+  const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
+  const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
+
+  ctx.fillStyle = isEx ? '#f0fdf4' : '#f8fafc';
+  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 110, 10);
   ctx.fill();
+  ctx.strokeStyle = isEx ? '#bbf7d0' : '#e2e8f0';
+  ctx.stroke();
 
+  ctx.fillStyle = rankColor;
+  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('TỔNG ĐIỂM & ĐÁNH GIÁ:', scoreBoxX + 18, cardY + 30);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`${{score}} / ${{total}}`, scoreBoxX + 18, cardY + 68);
+
+  // Rank Badge Pill
+  ctx.fillStyle = rankColor;
+  ctx.roundRect(scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16);
+  ctx.fill();
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px sans-serif';
+  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`${score} / ${total} (${pct}%)`, canvas.width - 160, 243);
+  ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
   ctx.textAlign = 'left';
 
-  // Section Breakdown Table
-  let y = 320;
-  ctx.fillStyle = '#1e293b';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('CHI TIẾT TIẾN ĐỘ VÀ KẾT QUẢ TỪNG CHẶNG:', 40, y);
-  y += 24;
+  // Progress Bar
+  ctx.fillStyle = '#e2e8f0';
+  ctx.roundRect(scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5);
+  ctx.fill();
+  ctx.fillStyle = rankColor;
+  ctx.roundRect(scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5);
+  ctx.fill();
 
-  STAGES.forEach((s) => {
+  // Lesson Overview / Summary Box
+  const descY = 268;
+  ctx.fillStyle = '#f1f5f9';
+  ctx.roundRect(40, descY, W - 80, 80, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#1e3a6e';
+  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('📖 TỔNG QUAN NỘI DUNG & MỤC TIÊU BÀI HỌC:', 56, descY + 24);
+
+  ctx.fillStyle = '#334155';
+  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  wrapText(ctx, LESSON_DESC, 56, descY + 44, W - 112, 19, 2);
+
+  // Section Breakdown Header
+  let y = 372;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+  ctx.fillText('CHI TIẾT TIẾN ĐỘ & TÓM TẮT KIẾN THỨC TỪNG CHẶNG HỌC:', 40, y);
+  y += 18;
+
+  // Stages List with Stage Summaries
+  STAGES.forEach((s) => {{
     const done = state.completedStages.includes(s.num);
     const qCount = (s.questions || []).length;
     let sCorrect = 0;
-    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+    (s.questions || []).forEach(q => {{ if (state.scores[q.qid]) sCorrect++; }});
 
     ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, canvas.width - 80, 42, 8);
+    ctx.roundRect(40, y, W - 80, stageCardH, 8);
     ctx.fill();
-    ctx.strokeStyle = done ? '#bbf7d0' : '#e2e8f0';
+    ctx.strokeStyle = done ? '#86efac' : '#e2e8f0';
+    ctx.lineWidth = done ? 1.5 : 1;
     ctx.stroke();
 
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '600 14px sans-serif';
-    ctx.fillText(s.title, 60, y + 26);
+    // Stage Title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 13.5px system-ui, -apple-system, sans-serif';
+    ctx.fillText(s.title, 56, y + 24);
 
-    ctx.fillStyle = done ? '#0f845a' : '#64748b';
-    ctx.font = 'bold 13px sans-serif';
-    const statusText = done ? '✓ ĐÃ VƯỢT QUA' : 'CHƯA HOÀN THÀNH';
-    ctx.fillText(`${statusText} · (${sCorrect}/${qCount} câu)`, canvas.width - 270, y + 26);
+    // Status Badge Pill
+    const badgeX = W - 40 - 190;
+    ctx.fillStyle = done ? '#ecfdf5' : '#f1f5f9';
+    ctx.roundRect(badgeX, y + 10, 175, 24, 12);
+    ctx.fill();
+    ctx.strokeStyle = done ? '#a7f3d0' : '#cbd5e1';
+    ctx.stroke();
 
-    y += 50;
-  });
+    ctx.fillStyle = done ? '#059669' : '#64748b';
+    ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(done ? `✓ ĐÃ HOÀN THÀNH (${{sCorrect}}/${{qCount}})` : `⏳ CHƯA XONG (${{sCorrect}}/${{qCount}})`, badgeX + 87, y + 26);
+    ctx.textAlign = 'left';
 
-  // Footer Note
-  y += 20;
+    // Stage Summary / Key Takeaway text
+    const takeawayText = s.takeaway || cleanHtmlSummary(s.summary);
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px system-ui, -apple-system, sans-serif';
+    wrapText(ctx, `• Tóm tắt cốt lõi: ${{takeawayText}}`, 56, y + 48, W - 112, 17, 1);
+
+    y += stageCardH + stagesGap;
+  }});
+
+  // Footer
+  y += 10;
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '12px sans-serif';
-  ctx.fillText('Hệ thống học liệu tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.font = '11.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(LESSON_CODE, W - 40, y);
+  ctx.textAlign = 'left';
 
   // Trigger download
   const a = document.createElement('a');
-  a.download = `chung_nhan_${LESSON_CODE}_${mssv || 'sv'}.png`;
+  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9À-ỹ_-]+/g, '_');
+  a.download = `chung_nhan_${{LESSON_CODE}}_${{safeName}}.png`;
   a.href = canvas.toDataURL('image/png');
   document.body.appendChild(a);
   a.click();
   a.remove();
-}
+}}
 
-// Initialize
+
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderStages();

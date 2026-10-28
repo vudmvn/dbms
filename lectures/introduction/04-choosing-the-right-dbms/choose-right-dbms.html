@@ -716,9 +716,10 @@ footer {
 </footer>
 
 <script>
-const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Ma trận & Khung quyết định Lựa chọn DBMS", "summary": "\n        <h4>1.1. Tầm quan trọng của việc chọn đúng DBMS</h4>\n        <p>Lựa chọn hệ quản trị CSDL là một trong những quyết định kiến trúc quan trọng và tốn kém nhất trong vòng đời dự án phần mềm. Chọn sai DBMS sẽ dẫn tới nghẽn hiệu năng khi quy mô tăng, chi phí bản quyền đắt đỏ, và có thể phải đập bỏ viết lại toàn bộ hệ thống (Re-architecture).</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/choose-your-right-database.webp\" alt=\"Sơ đồ cây quyết định lựa chọn Database\">\n            <figcaption>Hình 4.1: Cây quyết định lựa chọn DBMS phù hợp theo đặc thù dữ liệu nghiệp vụ</figcaption>\n        </figure>\n\n        <h4>1.2. Sáu tiêu chí cốt lõi trong Ma trận Quyết định</h4>\n        <ol>\n            <li><b>1. Cấu trúc mô hình dữ liệu (Data Model):</b>\n                <ul>\n                    <li>Dữ liệu dạng bảng có cấu trúc chặt chẽ, ràng buộc khóa ngoại phức tạp? &rarr; <b>RDBMS</b> (PostgreSQL, MySQL).</li>\n                    <li>Dữ liệu dạng tài liệu JSON lồng nhau, cấu trúc động thay đổi thường xuyên? &rarr; <b>Document Store</b> (MongoDB).</li>\n                    <li>Mạng lưới liên kết nhiều tầng phức tạp (bạn của bạn, phát hiện gian lận)? &rarr; <b>Graph DB</b> (Neo4j).</li>\n                </ul>\n            </li>\n            <li><b>2. Khối lượng và Tốc độ tăng trưởng dữ liệu (Volume & Growth):</b>\n                <ul>\n                    <li>Vài Gigabytes đến vài Terabytes trên một máy chủ? &rarr; RDBMS truyền thống với mở rộng dọc (Vertical Scaling / Scale-up).</li>\n                    <li>Hàng trăm Terabytes đến Petabytes mở rộng ngang trên hàng chục máy chủ (Horizontal Scaling / Scale-out)? &rarr; Distributed NoSQL hoặc NewSQL (Spanner, CockroachDB).</li>\n                </ul>\n            </li>\n            <li><b>3. Yêu cầu về Tính nhất quán (Consistency Requirements):</b>\n                <ul>\n                    <li>Giao dịch tài chính, sổ cái ngân hàng đòi hỏi đúng tuyệt đối từng xu (ACID 100%)? &rarr; Bắt buộc dùng RDBMS/NewSQL có hỗ trợ giao dịch mạnh mẽ.</li>\n                    <li>Mạng xã hội (lượt like, bình luận) chấp nhận dữ liệu hiển thị chậm vài giây (Eventual Consistency)? &rarr; Tận dụng NoSQL để tối đa hóa tốc độ.</li>\n                </ul>\n            </li>\n            <li><b>4. Chi phí sở hữu tổng thể (TCO - Total Cost of Ownership):</b>\n                <ul>\n                    <li>Mã nguồn mở miễn phí bản quyền (Open-source: PostgreSQL, MySQL, MariaDB) giúp tiết kiệm hàng tỷ đồng tiền giấy phép.</li>\n                    <li>Bản quyền thương mại doanh nghiệp (Enterprise: Oracle, MS SQL Server) có chi phí đắt đỏ tính theo CPU core nhưng có hỗ trợ kỹ thuật 24/7 từ hãng.</li>\n                </ul>\n            </li>\n            <li><b>5. Hệ sinh thái và Năng lực đội ngũ (Ecosystem & Talent):</b>\n                <ul>\n                    <li>Đội ngũ lập trình viên đã thành thạo SQL hay có kinh nghiệm vận hành cụm phân tán NoSQL? Có cộng đồng hỏi đáp lớn trên StackOverflow không?</li>\n                </ul>\n            </li>\n            <li><b>6. Hạ tầng triển khai (Deployment Model):</b>\n                <ul>\n                    <li>On-premise (Tự quản lý phần cứng trong trung tâm dữ liệu riêng) hay Cloud-managed DB (AWS RDS, Aurora, Google Cloud SQL tự động sao lưu, nâng cấp)?</li>\n                </ul>\n            </li>\n        </ol>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Quy tắc thực tế:</b> Đối với 85% các dự án phần mềm khởi nghiệp và doanh nghiệp vừa và nhỏ, một hệ CSDL quan hệ mã nguồn mở mạnh mẽ như <b>PostgreSQL</b> hoặc <b>MySQL</b> luôn là lựa chọn an toàn, chuẩn mực và tiết kiệm chi phí nhất để bắt đầu.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Một startup công nghệ phát triển ứng dụng ví điện tử thanh toán tiền, nơi các giao dịch trừ tiền người gửi và cộng tiền người nhận phải đảm bảo chính xác 100% không được sai lệch dù một xu. Nhóm kỹ sư nên ưu tiên tiêu chí nào hàng đầu khi chọn DBMS?", "options": ["Chọn loại DB nào có giao diện quản trị màu mè đẹp nhất.", "Ưu tiên tính nhất quán giao dịch nghiêm ngặt (ACID Compliance) qua hệ quản trị RDBMS/NewSQL có cam kết giao dịch mạnh mẽ.", "Chọn DB nào có khả năng lưu trữ không cần định nghĩa kiểu dữ liệu.", "Chọn DB nào ra đời mới nhất trong tuần qua."], "correct": 1, "explanation": "Chính xác! Giao dịch tiền bạc bắt buộc phải đảm bảo thuộc tính ACID và tính nhất quán giao dịch tuyệt đối, đây là thế mạnh của RDBMS."}, {"qid": "q1_2", "text": "Câu 1.2: Thuật ngữ 'TCO' (Total Cost of Ownership) khi cân nhắc đầu tư hệ thống DBMS cho doanh nghiệp bao gồm các khoản chi phí nào?", "options": ["Chỉ duy nhất tiền mua đĩa cài đặt phần mềm ban đầu.", "Bao gồm phí bản quyền (License), chi phí phần cứng máy chủ, chi phí đào tạo/lương của đội ngũ DBA vận hành, và chi phí bảo trì hỗ trợ kỹ thuật lâu dài.", "Chỉ tính tiền cước Internet hàng tháng của văn phòng.", "Tiền điện tiêu thụ của màn hình máy tính người dùng."], "correct": 1, "explanation": "Chính xác! TCO đo lường toàn bộ chi phí từ giấy phép bản quyền, hạ tầng phần cứng, bảo trì, đến chi phí nhân sự vận hành trong suốt vòng đời hệ thống."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: OLTP vs OLAP — Hai thế giới Xử lý Dữ liệu đối lập", "summary": "\n        <h4>2.1. Bản chất phân định giữa OLTP và OLAP</h4>\n        <p>Trong kiến trúc dữ liệu doanh nghiệp hiện đại, bạn tuyệt đối không được dùng chung một cơ sở dữ liệu vừa để phục vụ khách mua hàng, vừa để giám đốc chạy báo cáo phân tích nặng nề. Hai tác vụ này thuộc về hai thế giới hoàn toàn khác biệt:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">Hệ thống OLTP (Online Transaction Processing):</b><br>\n                • <b>Mục tiêu:</b> Xử lý hàng nghìn đến hàng triệu giao dịch tác nghiệp hàng ngày (thêm đơn hàng, thanh toán, chuyển khoản, đặt chỗ).<br>\n                • <b>Đặc điểm truy vấn:</b> Rất nhiều thao tác ghi/đọc nhanh (CRUD) tác động lên một vài dòng dữ liệu cụ thể (Row-oriented).<br>\n                • <b>Thời gian phản hồi:</b> Tính bằng mili-giây (&lt; 10ms).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">Hệ thống OLAP (Online Analytical Processing):</b><br>\n                • <b>Mục tiêu:</b> Khai phá dữ liệu lịch sử để tìm quy luật kinh doanh, dự báo doanh thu và lập báo cáo quản trị (BI / Data Warehousing).<br>\n                • <b>Đặc điểm truy vấn:</b> Đọc quét hàng triệu đến hàng trăm triệu dòng bản ghi và thực thi các phép tính tổng hợp phức tạp (SUM, AVG, COUNT, GROUP BY).<br>\n                • <b>Thời gian phản hồi:</b> Tính bằng vài giây đến vài phút.\n            </div>\n        </div>\n\n        <h4>2.2. Bảng so sánh toàn diện: OLTP vs OLAP</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chuẩn so sánh</th>\n                    <th>Hệ thống OLTP</th>\n                    <th>Hệ thống OLAP</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Người dùng chính</b></td>\n                    <td>Khách hàng cuối, nhân viên bán hàng, giao dịch viên</td>\n                    <td>Ban giám đốc, chuyên viên phân tích dữ liệu (Data Analysts)</td>\n                </tr>\n                <tr>\n                    <td><b>Bản chất thao tác</b></td>\n                    <td>Đọc và Ghi liên tục (INSERT, UPDATE, DELETE)</td>\n                    <td>Chủ yếu là Đọc quy mô lớn (Heavy SELECT/Aggregations)</td>\n                </tr>\n                <tr>\n                    <td><b>Thiết kế lược đồ</b></td>\n                    <td>Chuẩn hóa cao (3NF) để tránh trùng lặp dữ liệu</td>\n                    <td>Phi chuẩn hóa (Star Schema, Snowflake Schema)</td>\n                </tr>\n                <tr>\n                    <td><b>Phạm vi dữ liệu</b></td>\n                    <td>Dữ liệu hiện hành, tức thời (Current Snapshot)</td>\n                    <td>Dữ liệu lịch sử tích lũy qua nhiều năm từ nhiều nguồn (ETL)</td>\n                </tr>\n                <tr>\n                    <td><b>Tổ chức lưu trữ</b></td>\n                    <td>Lưu trữ theo dòng (Row-oriented storage)</td>\n                    <td>Lưu trữ theo cột (Columnar storage: Parquet, ClickHouse)</td>\n                </tr>\n                <tr>\n                    <td><b>Công nghệ tiêu biểu</b></td>\n                    <td>MySQL InnoDB, PostgreSQL, SQL Server, Oracle</td>\n                    <td>Snowflake, Google BigQuery, ClickHouse, Amazon Redshift</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>So sánh trực quan: Câu lệnh truy vấn OLTP vs Câu lệnh phân tích OLAP</span>\n                <span>Workload Query Comparison</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- [TRUY VẤN OLTP]: Lấy thông tin 1 đơn hàng cụ thể (Thời gian thực thi: 1.2 ms)</span>\n<span class=\"kw\">SELECT</span> ma_don, ngay_tao, tong_tien, trang_thai \n<span class=\"kw\">FROM</span> <span class=\"tbl\">don_hang</span> \n<span class=\"kw\">WHERE</span> ma_don = 104921;\n\n<span class=\"cm\">-- [TRUY VẤN OLAP]: Quét 80 triệu dòng tính tốc độ tăng trưởng doanh thu theo nhóm hàng trong 3 năm</span>\n<span class=\"kw\">SELECT</span> \n    t.nam, \n    t.quy, \n    sp.nganh_hang, \n    <span class=\"fn\">SUM</span>(f.doanh_so) <span class=\"kw\">AS</span> tong_doanh_so,\n    <span class=\"fn\">AVG</span>(f.ty_suat_loi_nhuan) <span class=\"kw\">AS</span> loi_nhuan_tb\n<span class=\"kw\">FROM</span> <span class=\"tbl\">fact_ban_hang</span> f\n<span class=\"kw\">JOIN</span> <span class=\"tbl\">dim_thoi_gian</span> t <span class=\"kw\">ON</span> f.time_id = t.time_id\n<span class=\"kw\">JOIN</span> <span class=\"tbl\">dim_san_pham</span> sp <span class=\"kw\">ON</span> f.san_pham_id = sp.san_pham_id\n<span class=\"kw\">GROUP BY</span> t.nam, t.quy, sp.nganh_hang\n<span class=\"kw\">ORDER BY</span> t.nam <span class=\"kw\">DESC</span>, tong_doanh_so <span class=\"kw\">DESC</span>;</code></pre>\n        </div>\n\n        <div class=\"callout warn\">\n            <div class=\"callout-icon\">⚠️</div>\n            <div>\n                <b>Cảnh báo tai nạn kinh điển:</b> Nếu bạn cho phép bộ phận phân tích chạy câu lệnh OLAP quét hàng trăm triệu bản ghi trực tiếp trên máy chủ OLTP của website bán hàng, câu lệnh đó sẽ chiếm dụng toàn bộ CPU và khóa bảng dữ liệu, khiến khách hàng không thể ấn nút \"Mua hàng\" và làm sập website!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Nhận định nào sau đây mô tả chuẩn xác nhất sự khác biệt về khối lượng công việc (Workload) giữa OLTP và OLAP?", "options": ["OLTP phục vụ các giao dịch nghiệp vụ thường nhật đọc/ghi nhanh trên vài dòng; OLAP phục vụ các câu truy vấn phân tích quét khối lượng lớn dữ liệu lịch sử.", "OLTP là phần mềm miễn phí, còn OLAP là phần mềm phải trả phí bản quyền.", "OLTP chỉ dùng cho ngôn ngữ Python, còn OLAP chỉ dùng cho Java.", "OLTP và OLAP là hai phiên bản nối tiếp nhau của cùng một phần mềm MySQL."], "correct": 0, "explanation": "Chính xác! OLTP tối ưu cho giao dịch ngắn, nhanh theo thời gian thực; OLAP tối ưu cho quét khối lượng lớn dữ liệu để tổng hợp phân tích báo cáo."}, {"qid": "q2_2", "text": "Câu 2.2: Tại sao các hệ quản trị CSDL chuyên biệt cho OLAP (như ClickHouse, Snowflake, BigQuery) lại ưu tiên lưu trữ dữ liệu theo cột (Columnar Storage) thay vì lưu trữ theo dòng (Row-oriented) như MySQL thông thường?", "options": ["Vì lưu theo cột giúp màn hình máy tính hiển thị đẹp hơn.", "Vì các câu truy vấn phân tích thường chỉ cần tính toán trên một số cột nhất định (như Giá bán, Số lượng), lưu theo cột giúp ổ đĩa chỉ cần đọc đúng các cột đó mà không phải quét toàn bộ các cột khác.", "Vì lưu theo cột làm dung lượng CSDL tăng lên gấp 10 lần.", "Vì hệ điều hành Windows không hỗ trợ lưu theo dòng."], "correct": 1, "explanation": "Chính xác! Columnar Storage cho phép đọc chính xác các cột cần tính toán tổng hợp (I/O cực thấp) và đạt tỷ lệ nén dữ liệu cực kỳ cao."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Định lý CAP & Đánh đổi ACID vs BASE trong Hệ thống Phân tán", "summary": "\n        <h4>3.1. Định lý CAP (Brewer's Theorem)</h4>\n        <p>Được giáo sư Eric Brewer đề xuất năm 2000, <b>Định lý CAP</b> khẳng định một chân lý toán học trong điện toán phân tán: <i>Trong một hệ thống cơ sở dữ liệu phân tán kết nối qua mạng, bạn chỉ có thể thỏa mãn tối đa 2 trong 3 thuộc tính sau cùng một lúc</i>:</p>\n\n        <ul>\n            <li><b>1. C (Consistency - Tính nhất quán tuyệt đối):</b> Mọi nút máy chủ trong cụm đều thấy cùng một dữ liệu mới nhất tại cùng một thời điểm. Một lệnh đọc gửi tới bất kỳ node nào cũng nhận được giá trị ghi thành công gần nhất.</li>\n            <li><b>2. A (Availability - Tính sẵn sàng):</b> Mọi yêu cầu gửi tới các nút máy chủ không bị lỗi đều phải nhận được phản hồi thành công (không bị trả về lỗi hoặc timeout chờ đợi).</li>\n            <li><b>3. P (Partition Tolerance - Khả năng chịu sự cố phân vùng mạng):</b> Hệ thống vẫn tiếp tục duy trì hoạt động ngay cả khi đường dây mạng kết nối giữa các cụm máy chủ bị đứt đoạn, mất gói tin hoặc chậm trễ.</li>\n        </ul>\n\n        <h4>3.2. Sự lựa chọn bắt buộc: CP hay AP?</h4>\n        <p>Trong thế giới thực, sự cố mạng (Partitioning - P) là điều <b>chắc chắn sẽ xảy ra</b> (đứt cáp quang biển, switch mạng bị cháy). Do đó, P là thuộc tính bắt buộc phải có. Các kiến trúc sư bắt buộc phải lựa chọn giữa 2 con đường:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#c02b2b\">Lựa chọn CP (Consistency + Partition Tolerance):</b><br>\n                • <i>Chiến lược:</i> Khi mạng giữa các node bị đứt đoạn, hệ thống <b>từ chối nhận lệnh ghi</b> hoặc khóa tài khoản để bảo vệ dữ liệu không bị sai lệch giữa hai bờ phân vùng.<br>\n                • <i>Đánh đổi:</i> Hy sinh Availability (hệ thống tạm thời báo bận để bảo toàn tiền bạc khách hàng).<br>\n                • <i>Đại diện:</i> Google Cloud Spanner, MongoDB (với majority write), HBase.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">Lựa chọn AP (Availability + Partition Tolerance):</b><br>\n                • <i>Chiến lược:</i> Khi mạng đứt, mọi node vẫn tiếp tục nhận lệnh ghi từ người dùng cục bộ. Khi mạng thông trở lại, hệ thống sẽ tự động đồng bộ gộp dữ liệu sau (Reconciliation).<br>\n                • <i>Đánh đổi:</i> Hy sinh Consistency tức thời (chấp nhận người dùng ở hai nơi thấy hai phiên bản tạm thời khác nhau).<br>\n                • <i>Đại diện:</i> Apache Cassandra, Amazon DynamoDB, Couchbase.\n            </div>\n        </div>\n\n        <h4>3.3. So sánh triết lý: ACID vs BASE</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí</th>\n                    <th>Mô hình ACID (RDBMS kinh điển)</th>\n                    <th>Mô hình BASE (NoSQL phân tán)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Triết lý cốt lõi</b></td>\n                    <td>Nhất quán tức thời, bi quan, không chấp nhận sai số</td>\n                    <td>Sẵn sàng cao, lạc quan, chấp nhận trễ đồng bộ</td>\n                </tr>\n                <tr>\n                    <td><b>Viết tắt của</b></td>\n                    <td><b>A</b>tomicity, <b>C</b>onsistency, <b>I</b>solation, <b>D</b>urability</td>\n                    <td><b>B</b>asically <b>A</b>vailable, <b>S</b>oft state, <b>E</b>ventual consistency</td>\n                </tr>\n                <tr>\n                    <td><b>Thời điểm nhất quán</b></td>\n                    <td>Ngay lập tức sau câu lệnh <code>COMMIT</code></td>\n                    <td>Nhất quán cuối cùng (Eventual Consistency sau vài giây)</td>\n                </tr>\n                <tr>\n                    <td><b>Ứng dụng phù hợp</b></td>\n                    <td>Ngân hàng, tài chính, thanh toán, kho hàng chính xác</td>\n                    <td>Mạng xã hội, tin nhắn chat, giỏ hàng tạm, telemetry</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Theo Định lý CAP, tại sao một hệ thống CSDL phân tán qua mạng Internet trong thế giới thực KHÔNG THỂ đồng thời đạt được cả 3 thuộc tính Consistency, Availability và Partition Tolerance?", "options": ["Vì chi phí mua máy chủ phân tán quá đắt đỏ.", "Vì sự cố mạng phân vùng (Network Partition) là không thể tránh khỏi trong thực tế; khi mạng bị đứt, hệ thống buộc phải chọn giữa việc dừng phục vụ để giữ nhất quán (CP) hoặc tiếp tục phục vụ nhưng chấp nhận dữ liệu chưa đồng bộ (AP).", "Vì ngôn ngữ SQL không cho phép viết quá 3 mệnh đề trong một câu lệnh.", "Vì định lý CAP chỉ áp dụng cho máy tính lượng tử."], "correct": 1, "explanation": "Chính xác! Khi phân vùng mạng xảy ra, hệ thống bắt buộc phải đánh đổi giữa việc từ chối phản hồi để giữ dữ liệu đúng (CP) hoặc tiếp tục trả lời nhưng dữ liệu bị lệch (AP)."}, {"qid": "q3_2", "text": "Câu 3.2: Khái niệm 'Eventual Consistency' (Nhất quán cuối cùng) trong mô hình BASE của các hệ thống NoSQL phân tán được hiểu như thế nào?", "options": ["Dữ liệu sẽ không bao giờ được đồng bộ và sẽ bị mất hoàn toàn.", "Hệ thống không cam kết dữ liệu trên mọi nút giống nhau ngay lập tức, nhưng đảm bảo sau một khoảng thời gian nhất định (nếu không có cập nhật mới), tất cả các nút sẽ đồng nhất trạng thái.", "Dữ liệu được mã hóa thành chuỗi ngẫu nhiên không thể đọc được.", "Người dùng chỉ được phép đọc dữ liệu vào ngày cuối cùng của tháng."], "correct": 1, "explanation": "Chính xác! Eventual consistency chấp nhận độ trễ đồng bộ nhất định, nhưng cam kết cuối cùng mọi nút phân tán sẽ hội tụ về cùng một phiên bản dữ liệu."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Khảo sát các Dòng Database Chuyên biệt (Specialized DBs)", "summary": "\n        <h4>4.1. Phổ phân loại các Dòng CSDL Hiện đại</h4>\n        <p>Bên cạnh RDBMS truyền thống, làn sóng dữ liệu lớn (Big Data) đã khai sinh ra các họ CSDL chuyên biệt để giải quyết từng bài toán cụ thể:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/types-of-databases.webp\" alt=\"Phân loại các dòng CSDL hiện đại\">\n            <figcaption>Hình 4.2: Các dòng cơ sở dữ liệu chuyên biệt: Relational, Document, Key-Value, Graph, Time-Series</figcaption>\n        </figure>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">1. Document Databases (MongoDB, CouchDB):</b><br>\n                • Lưu trữ dữ liệu dạng tài liệu JSON/BSON linh hoạt, không cần định nghĩa trước schema cố định.<br>\n                • <i>Thích hợp nhất:</i> Danh mục sản phẩm e-commerce (mỗi mặt hàng có thuộc tính riêng: áo có size/màu, điện thoại có RAM/pin), hệ quản trị nội dung (CMS).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#c02b2b\">2. Key-Value Stores (Redis, Memcached, DynamoDB):</b><br>\n                • Lưu cặp Khóa - Giá trị với tốc độ đọc/ghi siêu tốc trên bộ nhớ RAM (độ trễ dưới 1ms).<br>\n                • <i>Thích hợp nhất:</i> Caching tầng đệm, quản lý phiên đăng nhập người dùng (Session Storage), bộ đếm giới hạn tốc độ (Rate Limiter).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">3. Graph Databases (Neo4j, Amazon Neptune):</b><br>\n                • Dữ liệu tổ chức thành các Đỉnh (Nodes) và Cạnh quan hệ (Edges) có thuộc tính.<br>\n                • <i>Thích hợp nhất:</i> Mạng xã hội (gợi ý bạn bè), phát hiện đường dây gian lận rửa tiền ngân hàng, công cụ tìm đường đi tối ưu trong logistics.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">4. Time-Series Databases (InfluxDB, TimescaleDB):</b><br>\n                • Tối ưu chuyên biệt cho chuỗi dữ liệu gắn liền với dấu mốc thời gian (Timestamp).<br>\n                • <i>Thích hợp nhất:</i> Thu thập cảm biến IoT công nghiệp, theo dõi số liệu máy chủ (CPU/RAM metrics), bảng giá chứng khoán thời gian thực.\n            </div>\n        </div>\n\n        <h4>4.2. Bảng ma trận so sánh ứng dụng các dòng CSDL</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Loại Database</th>\n                    <th>Định dạng dữ liệu</th>\n                    <th>Điểm mạnh nổi bật</th>\n                    <th>Sản phẩm tiêu biểu</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Relational (RDBMS)</b></td>\n                    <td>Bảng 2 chiều (Hàng & Cột)</td>\n                    <td>Quan hệ logic chặt chẽ, ACID toàn vẹn, SQL chuẩn</td>\n                    <td>PostgreSQL, MySQL, Oracle</td>\n                </tr>\n                <tr>\n                    <td><b>Document</b></td>\n                    <td>Tài liệu JSON / BSON</td>\n                    <td>Lược đồ linh hoạt, phát triển phần mềm nhanh</td>\n                    <td>MongoDB, Couchbase</td>\n                </tr>\n                <tr>\n                    <td><b>Key-Value</b></td>\n                    <td>Cặp Khóa - Giá trị</td>\n                    <td>Tốc độ đọc trên RAM cực nhanh, độ trễ cực thấp</td>\n                    <td>Redis, AWS DynamoDB</td>\n                </tr>\n                <tr>\n                    <td><b>Graph</b></td>\n                    <td>Đỉnh (Nodes) & Cạnh (Edges)</td>\n                    <td>Truy vấn quan hệ nhiều tầng cực kỳ hiệu quả</td>\n                    <td>Neo4j, ArangoDB</td>\n                </tr>\n                <tr>\n                    <td><b>Time-Series</b></td>\n                    <td>Mốc thời gian (Timestamped)</td>\n                    <td>Nén dữ liệu thời gian cao, truy vấn khoảng thời gian</td>\n                    <td>InfluxDB, TimescaleDB</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Một ứng dụng mạng xã hội cần triển khai tính năng: 'Tìm bạn chung của bạn bè' và 'Gợi ý những người bạn có thể quen' qua mạng lưới quan hệ 3-4 tầng. Loại cơ sở dữ liệu nào giải quyết bài toán này với hiệu năng vượt trội nhất?", "options": ["Key-Value Store (Redis).", "Graph Database (như Neo4j).", "Time-Series Database (InfluxDB).", "Hệ thống tệp văn bản CSV."], "correct": 1, "explanation": "Chính xác! Graph Database lưu trữ các mối quan hệ dưới dạng các cạnh liên kết trực tiếp, duyệt qua nhiều bậc quan hệ cực nhanh mà không cần các phép JOIN đắt đỏ."}, {"qid": "q4_2", "text": "Câu 4.2: Một nhà máy thông minh lắp đặt 10.000 cảm biến nhiệt độ và độ ẩm, mỗi cảm biến gửi dữ liệu về máy chủ 5 giây một lần liên tục trong 5 năm. Dòng CSDL nào là sự lựa chọn tối ưu nhất cho khối lượng công việc này?", "options": ["Time-Series Database (như InfluxDB hoặc TimescaleDB).", "Graph Database (như Neo4j).", "Document Database chỉ chạy trên điện thoại.", "Một tệp Microsoft Word duy nhất."], "correct": 0, "explanation": "Chính xác! Time-Series Database tối ưu cho các luồng ghi liên tục kèm mốc thời gian, nén dữ liệu dung lượng cao và truy vấn theo khoảng thời gian cực nhanh."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Kiến trúc Đa CSDL (Polyglot Persistence) & Tổng kết", "summary": "\n        <h4>5.1. Khái niệm Polyglot Persistence</h4>\n        <p>Trong thực tế phát triển phần mềm hiện đại của các tập đoàn lớn (như Shopee, Grab, Netflix, Amazon), <b>không có một hệ CSDL duy nhất nào có thể đáp ứng hoàn hảo mọi nhu cầu</b>. Khái niệm <b>Polyglot Persistence (Đa CSDL chuyên biệt)</b> ra đời:</p>\n        <p style=\"font-style:italic;color:#1e3a6e\">\"Sử dụng đúng loại cơ sở dữ liệu cho đúng tác vụ nghiệp vụ mà nó làm tốt nhất trong cùng một hệ thống tổng thể.\"</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Case Study: Kiến trúc Polyglot Persistence trong nền tảng Thương mại điện tử</span>\n                <span>Production Architecture</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">┌────────────────────────────────────────────────────────────────────────┐</span>\n<span class=\"cm\">│                HỆ SINH THÁI ỨNG DỤNG E-COMMERCE HIỆN ĐẠI               │</span>\n<span class=\"cm\">└────────────────────────────────────────────────────────────────────────┘</span>\n  │\n  ├── <b>[1. PostgreSQL / MySQL]</b>: Quản lý Tài khoản người dùng, Đơn hàng, Thanh toán tiền (ACID tuyệt đối)\n  │\n  ├── <b>[2. Redis (Key-Value RAM)]</b>: Lưu Session đăng nhập, Giỏ hàng mua sắm tạm thời, Token xác thực JWT\n  │\n  ├── <b>[3. MongoDB (Document Store)]</b>: Lưu Danh mục hàng triệu sản phẩm với các thuộc tính linh hoạt\n  │\n  ├── <b>[4. Elasticsearch / OpenSearch]</b>: Công cụ tìm kiếm sản phẩm toàn văn thông minh (Fuzzy Search, Auto-complete)\n  │\n  ├── <b>[5. Neo4j (Graph DB)]</b>: Động cơ phát hiện gian lận hoàn tiền và gợi ý sản phẩm mua kèm\n  │\n  └── <b>[6. ClickHouse / BigQuery (OLAP)]</b>: Kho dữ liệu phân tích doanh thu và xu hướng thị trường cho Ban giám đốc</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Chúc mừng bạn đã hoàn thành trọn vẹn cả 4 bài học Nhập môn CSDL!</b> Bạn đã trang bị nền tảng kiến thức vững chắc từ khái niệm CSDL, kiến trúc hệ thống, kiến trúc 3 mức ANSI/SPARC đến tư duy chiến lược lựa chọn công nghệ CSDL. Hãy làm câu hỏi cuối cùng và xuất chứng nhận PNG!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q5_1", "text": "Câu 5.1: Thuật ngữ 'Polyglot Persistence' trong thiết kế hệ thống phần mềm hiện đại thể hiện triết lý kỹ thuật nào sau đây?", "options": ["Bắt buộc tất cả các bảng dữ liệu trong toàn công ty phải viết bằng tiếng Pháp.", "Kết hợp sử dụng nhiều loại CSDL chuyên biệt khác nhau (RDBMS, Cache, Document, Graph, Search engine) trong cùng một hệ sinh thái để mỗi công nghệ giải quyết bài toán mà nó làm tốt nhất.", "Chỉ sử dụng duy nhất một loại CSDL MySQL từ đầu đến cuối cho mọi tác vụ.", "Xóa bỏ hoàn toàn cơ sở dữ liệu và chỉ lưu dữ liệu trong bộ nhớ RAM tạm thời."], "correct": 1, "explanation": "Chính xác! Polyglot Persistence là sự kết hợp linh hoạt các công nghệ CSDL chuyên biệt để đạt hiệu năng tối ưu trên từng phân hệ nghiệp vụ."}, {"qid": "q5_2", "text": "Câu 5.2: Trong kiến trúc Polyglot của một ứng dụng thương mại điện tử, công nghệ CSDL nào thường được chọn để đảm nhận chức năng 'Tìm kiếm sản phẩm toàn văn gõ sai chính tả vẫn tìm ra' (Full-text / Fuzzy search)?", "options": ["Elasticsearch / OpenSearch.", "SQLite phiên bản 1-Tier.", "MS Access chạy offline trên máy để bàn.", "Chỉ mục B-Tree cơ bản của bảng tạm thời."], "correct": 0, "explanation": "Chính xác! Elasticsearch/OpenSearch là các công cụ tìm kiếm và phân tích phân tán chuyên dụng dựa trên Apache Lucene, tối ưu cho tìm kiếm toàn văn và mờ (fuzzy search)."}]}];
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Ma trận & Khung quyết định Lựa chọn DBMS", "takeaway": "Ma trận 6 tiêu chí chọn DBMS: Mô hình dữ liệu, Khối lượng & Tốc độ tăng trưởng, Tính nhất quán, TCO, Nhân lực và Hạ tầng.", "summary": "\n        <h4>1.1. Tầm quan trọng của việc chọn đúng DBMS</h4>\n        <p>Lựa chọn hệ quản trị CSDL là một trong những quyết định kiến trúc quan trọng và tốn kém nhất trong vòng đời dự án phần mềm. Chọn sai DBMS sẽ dẫn tới nghẽn hiệu năng khi quy mô tăng, chi phí bản quyền đắt đỏ, và có thể phải đập bỏ viết lại toàn bộ hệ thống (Re-architecture).</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/choose-your-right-database.webp\" alt=\"Sơ đồ cây quyết định lựa chọn Database\">\n            <figcaption>Hình 4.1: Cây quyết định lựa chọn DBMS phù hợp theo đặc thù dữ liệu nghiệp vụ</figcaption>\n        </figure>\n\n        <h4>1.2. Sáu tiêu chí cốt lõi trong Ma trận Quyết định</h4>\n        <ol>\n            <li><b>1. Cấu trúc mô hình dữ liệu (Data Model):</b>\n                <ul>\n                    <li>Dữ liệu dạng bảng có cấu trúc chặt chẽ, ràng buộc khóa ngoại phức tạp? &rarr; <b>RDBMS</b> (PostgreSQL, MySQL).</li>\n                    <li>Dữ liệu dạng tài liệu JSON lồng nhau, cấu trúc động thay đổi thường xuyên? &rarr; <b>Document Store</b> (MongoDB).</li>\n                    <li>Mạng lưới liên kết nhiều tầng phức tạp (bạn của bạn, phát hiện gian lận)? &rarr; <b>Graph DB</b> (Neo4j).</li>\n                </ul>\n            </li>\n            <li><b>2. Khối lượng và Tốc độ tăng trưởng dữ liệu (Volume & Growth):</b>\n                <ul>\n                    <li>Vài Gigabytes đến vài Terabytes trên một máy chủ? &rarr; RDBMS truyền thống với mở rộng dọc (Vertical Scaling / Scale-up).</li>\n                    <li>Hàng trăm Terabytes đến Petabytes mở rộng ngang trên hàng chục máy chủ (Horizontal Scaling / Scale-out)? &rarr; Distributed NoSQL hoặc NewSQL (Spanner, CockroachDB).</li>\n                </ul>\n            </li>\n            <li><b>3. Yêu cầu về Tính nhất quán (Consistency Requirements):</b>\n                <ul>\n                    <li>Giao dịch tài chính, sổ cái ngân hàng đòi hỏi đúng tuyệt đối từng xu (ACID 100%)? &rarr; Bắt buộc dùng RDBMS/NewSQL có hỗ trợ giao dịch mạnh mẽ.</li>\n                    <li>Mạng xã hội (lượt like, bình luận) chấp nhận dữ liệu hiển thị chậm vài giây (Eventual Consistency)? &rarr; Tận dụng NoSQL để tối đa hóa tốc độ.</li>\n                </ul>\n            </li>\n            <li><b>4. Chi phí sở hữu tổng thể (TCO - Total Cost of Ownership):</b>\n                <ul>\n                    <li>Mã nguồn mở miễn phí bản quyền (Open-source: PostgreSQL, MySQL, MariaDB) giúp tiết kiệm hàng tỷ đồng tiền giấy phép.</li>\n                    <li>Bản quyền thương mại doanh nghiệp (Enterprise: Oracle, MS SQL Server) có chi phí đắt đỏ tính theo CPU core nhưng có hỗ trợ kỹ thuật 24/7 từ hãng.</li>\n                </ul>\n            </li>\n            <li><b>5. Hệ sinh thái và Năng lực đội ngũ (Ecosystem & Talent):</b>\n                <ul>\n                    <li>Đội ngũ lập trình viên đã thành thạo SQL hay có kinh nghiệm vận hành cụm phân tán NoSQL? Có cộng đồng hỏi đáp lớn trên StackOverflow không?</li>\n                </ul>\n            </li>\n            <li><b>6. Hạ tầng triển khai (Deployment Model):</b>\n                <ul>\n                    <li>On-premise (Tự quản lý phần cứng trong trung tâm dữ liệu riêng) hay Cloud-managed DB (AWS RDS, Aurora, Google Cloud SQL tự động sao lưu, nâng cấp)?</li>\n                </ul>\n            </li>\n        </ol>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Quy tắc thực tế:</b> Đối với 85% các dự án phần mềm khởi nghiệp và doanh nghiệp vừa và nhỏ, một hệ CSDL quan hệ mã nguồn mở mạnh mẽ như <b>PostgreSQL</b> hoặc <b>MySQL</b> luôn là lựa chọn an toàn, chuẩn mực và tiết kiệm chi phí nhất để bắt đầu.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Một startup công nghệ phát triển ứng dụng ví điện tử thanh toán tiền, nơi các giao dịch trừ tiền người gửi và cộng tiền người nhận phải đảm bảo chính xác 100% không được sai lệch dù một xu. Nhóm kỹ sư nên ưu tiên tiêu chí nào hàng đầu khi chọn DBMS?", "options": ["Chọn loại DB nào có giao diện quản trị màu mè đẹp nhất.", "Ưu tiên tính nhất quán giao dịch nghiêm ngặt (ACID Compliance) qua hệ quản trị RDBMS/NewSQL có cam kết giao dịch mạnh mẽ.", "Chọn DB nào có khả năng lưu trữ không cần định nghĩa kiểu dữ liệu.", "Chọn DB nào ra đời mới nhất trong tuần qua."], "correct": 1, "explanation": "Chính xác! Giao dịch tiền bạc bắt buộc phải đảm bảo thuộc tính ACID và tính nhất quán giao dịch tuyệt đối, đây là thế mạnh của RDBMS."}, {"qid": "q1_2", "text": "Câu 1.2: Thuật ngữ 'TCO' (Total Cost of Ownership) khi cân nhắc đầu tư hệ thống DBMS cho doanh nghiệp bao gồm các khoản chi phí nào?", "options": ["Chỉ duy nhất tiền mua đĩa cài đặt phần mềm ban đầu.", "Bao gồm phí bản quyền (License), chi phí phần cứng máy chủ, chi phí đào tạo/lương của đội ngũ DBA vận hành, và chi phí bảo trì hỗ trợ kỹ thuật lâu dài.", "Chỉ tính tiền cước Internet hàng tháng của văn phòng.", "Tiền điện tiêu thụ của màn hình máy tính người dùng."], "correct": 1, "explanation": "Chính xác! TCO đo lường toàn bộ chi phí từ giấy phép bản quyền, hạ tầng phần cứng, bảo trì, đến chi phí nhân sự vận hành trong suốt vòng đời hệ thống."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: OLTP vs OLAP — Hai thế giới Xử lý Dữ liệu đối lập", "takeaway": "Phân định OLTP vs OLAP: OLTP phục vụ giao dịch ghi/đọc dòng nhanh (< 10ms); OLAP quét hàng triệu dòng theo cột (Columnar) phục vụ BI.", "summary": "\n        <h4>2.1. Bản chất phân định giữa OLTP và OLAP</h4>\n        <p>Trong kiến trúc dữ liệu doanh nghiệp hiện đại, bạn tuyệt đối không được dùng chung một cơ sở dữ liệu vừa để phục vụ khách mua hàng, vừa để giám đốc chạy báo cáo phân tích nặng nề. Hai tác vụ này thuộc về hai thế giới hoàn toàn khác biệt:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">Hệ thống OLTP (Online Transaction Processing):</b><br>\n                • <b>Mục tiêu:</b> Xử lý hàng nghìn đến hàng triệu giao dịch tác nghiệp hàng ngày (thêm đơn hàng, thanh toán, chuyển khoản, đặt chỗ).<br>\n                • <b>Đặc điểm truy vấn:</b> Rất nhiều thao tác ghi/đọc nhanh (CRUD) tác động lên một vài dòng dữ liệu cụ thể (Row-oriented).<br>\n                • <b>Thời gian phản hồi:</b> Tính bằng mili-giây (&lt; 10ms).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#1c52b8\">Hệ thống OLAP (Online Analytical Processing):</b><br>\n                • <b>Mục tiêu:</b> Khai phá dữ liệu lịch sử để tìm quy luật kinh doanh, dự báo doanh thu và lập báo cáo quản trị (BI / Data Warehousing).<br>\n                • <b>Đặc điểm truy vấn:</b> Đọc quét hàng triệu đến hàng trăm triệu dòng bản ghi và thực thi các phép tính tổng hợp phức tạp (SUM, AVG, COUNT, GROUP BY).<br>\n                • <b>Thời gian phản hồi:</b> Tính bằng vài giây đến vài phút.\n            </div>\n        </div>\n\n        <h4>2.2. Bảng so sánh toàn diện: OLTP vs OLAP</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chuẩn so sánh</th>\n                    <th>Hệ thống OLTP</th>\n                    <th>Hệ thống OLAP</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Người dùng chính</b></td>\n                    <td>Khách hàng cuối, nhân viên bán hàng, giao dịch viên</td>\n                    <td>Ban giám đốc, chuyên viên phân tích dữ liệu (Data Analysts)</td>\n                </tr>\n                <tr>\n                    <td><b>Bản chất thao tác</b></td>\n                    <td>Đọc và Ghi liên tục (INSERT, UPDATE, DELETE)</td>\n                    <td>Chủ yếu là Đọc quy mô lớn (Heavy SELECT/Aggregations)</td>\n                </tr>\n                <tr>\n                    <td><b>Thiết kế lược đồ</b></td>\n                    <td>Chuẩn hóa cao (3NF) để tránh trùng lặp dữ liệu</td>\n                    <td>Phi chuẩn hóa (Star Schema, Snowflake Schema)</td>\n                </tr>\n                <tr>\n                    <td><b>Phạm vi dữ liệu</b></td>\n                    <td>Dữ liệu hiện hành, tức thời (Current Snapshot)</td>\n                    <td>Dữ liệu lịch sử tích lũy qua nhiều năm từ nhiều nguồn (ETL)</td>\n                </tr>\n                <tr>\n                    <td><b>Tổ chức lưu trữ</b></td>\n                    <td>Lưu trữ theo dòng (Row-oriented storage)</td>\n                    <td>Lưu trữ theo cột (Columnar storage: Parquet, ClickHouse)</td>\n                </tr>\n                <tr>\n                    <td><b>Công nghệ tiêu biểu</b></td>\n                    <td>MySQL InnoDB, PostgreSQL, SQL Server, Oracle</td>\n                    <td>Snowflake, Google BigQuery, ClickHouse, Amazon Redshift</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>So sánh trực quan: Câu lệnh truy vấn OLTP vs Câu lệnh phân tích OLAP</span>\n                <span>Workload Query Comparison</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- [TRUY VẤN OLTP]: Lấy thông tin 1 đơn hàng cụ thể (Thời gian thực thi: 1.2 ms)</span>\n<span class=\"kw\">SELECT</span> ma_don, ngay_tao, tong_tien, trang_thai \n<span class=\"kw\">FROM</span> <span class=\"tbl\">don_hang</span> \n<span class=\"kw\">WHERE</span> ma_don = 104921;\n\n<span class=\"cm\">-- [TRUY VẤN OLAP]: Quét 80 triệu dòng tính tốc độ tăng trưởng doanh thu theo nhóm hàng trong 3 năm</span>\n<span class=\"kw\">SELECT</span> \n    t.nam, \n    t.quy, \n    sp.nganh_hang, \n    <span class=\"fn\">SUM</span>(f.doanh_so) <span class=\"kw\">AS</span> tong_doanh_so,\n    <span class=\"fn\">AVG</span>(f.ty_suat_loi_nhuan) <span class=\"kw\">AS</span> loi_nhuan_tb\n<span class=\"kw\">FROM</span> <span class=\"tbl\">fact_ban_hang</span> f\n<span class=\"kw\">JOIN</span> <span class=\"tbl\">dim_thoi_gian</span> t <span class=\"kw\">ON</span> f.time_id = t.time_id\n<span class=\"kw\">JOIN</span> <span class=\"tbl\">dim_san_pham</span> sp <span class=\"kw\">ON</span> f.san_pham_id = sp.san_pham_id\n<span class=\"kw\">GROUP BY</span> t.nam, t.quy, sp.nganh_hang\n<span class=\"kw\">ORDER BY</span> t.nam <span class=\"kw\">DESC</span>, tong_doanh_so <span class=\"kw\">DESC</span>;</code></pre>\n        </div>\n\n        <div class=\"callout warn\">\n            <div class=\"callout-icon\">⚠️</div>\n            <div>\n                <b>Cảnh báo tai nạn kinh điển:</b> Nếu bạn cho phép bộ phận phân tích chạy câu lệnh OLAP quét hàng trăm triệu bản ghi trực tiếp trên máy chủ OLTP của website bán hàng, câu lệnh đó sẽ chiếm dụng toàn bộ CPU và khóa bảng dữ liệu, khiến khách hàng không thể ấn nút \"Mua hàng\" và làm sập website!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Nhận định nào sau đây mô tả chuẩn xác nhất sự khác biệt về khối lượng công việc (Workload) giữa OLTP và OLAP?", "options": ["OLTP phục vụ các giao dịch nghiệp vụ thường nhật đọc/ghi nhanh trên vài dòng; OLAP phục vụ các câu truy vấn phân tích quét khối lượng lớn dữ liệu lịch sử.", "OLTP là phần mềm miễn phí, còn OLAP là phần mềm phải trả phí bản quyền.", "OLTP chỉ dùng cho ngôn ngữ Python, còn OLAP chỉ dùng cho Java.", "OLTP và OLAP là hai phiên bản nối tiếp nhau của cùng một phần mềm MySQL."], "correct": 0, "explanation": "Chính xác! OLTP tối ưu cho giao dịch ngắn, nhanh theo thời gian thực; OLAP tối ưu cho quét khối lượng lớn dữ liệu để tổng hợp phân tích báo cáo."}, {"qid": "q2_2", "text": "Câu 2.2: Tại sao các hệ quản trị CSDL chuyên biệt cho OLAP (như ClickHouse, Snowflake, BigQuery) lại ưu tiên lưu trữ dữ liệu theo cột (Columnar Storage) thay vì lưu trữ theo dòng (Row-oriented) như MySQL thông thường?", "options": ["Vì lưu theo cột giúp màn hình máy tính hiển thị đẹp hơn.", "Vì các câu truy vấn phân tích thường chỉ cần tính toán trên một số cột nhất định (như Giá bán, Số lượng), lưu theo cột giúp ổ đĩa chỉ cần đọc đúng các cột đó mà không phải quét toàn bộ các cột khác.", "Vì lưu theo cột làm dung lượng CSDL tăng lên gấp 10 lần.", "Vì hệ điều hành Windows không hỗ trợ lưu theo dòng."], "correct": 1, "explanation": "Chính xác! Columnar Storage cho phép đọc chính xác các cột cần tính toán tổng hợp (I/O cực thấp) và đạt tỷ lệ nén dữ liệu cực kỳ cao."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Định lý CAP & Đánh đổi ACID vs BASE trong Hệ thống Phân tán", "takeaway": "Định lý CAP trong hệ thống phân tán: Đánh đổi bắt buộc giữa CP vs AP khi mạng phân vùng; So sánh mô hình ACID vs BASE.", "summary": "\n        <h4>3.1. Định lý CAP (Brewer's Theorem)</h4>\n        <p>Được giáo sư Eric Brewer đề xuất năm 2000, <b>Định lý CAP</b> khẳng định một chân lý toán học trong điện toán phân tán: <i>Trong một hệ thống cơ sở dữ liệu phân tán kết nối qua mạng, bạn chỉ có thể thỏa mãn tối đa 2 trong 3 thuộc tính sau cùng một lúc</i>:</p>\n\n        <ul>\n            <li><b>1. C (Consistency - Tính nhất quán tuyệt đối):</b> Mọi nút máy chủ trong cụm đều thấy cùng một dữ liệu mới nhất tại cùng một thời điểm. Một lệnh đọc gửi tới bất kỳ node nào cũng nhận được giá trị ghi thành công gần nhất.</li>\n            <li><b>2. A (Availability - Tính sẵn sàng):</b> Mọi yêu cầu gửi tới các nút máy chủ không bị lỗi đều phải nhận được phản hồi thành công (không bị trả về lỗi hoặc timeout chờ đợi).</li>\n            <li><b>3. P (Partition Tolerance - Khả năng chịu sự cố phân vùng mạng):</b> Hệ thống vẫn tiếp tục duy trì hoạt động ngay cả khi đường dây mạng kết nối giữa các cụm máy chủ bị đứt đoạn, mất gói tin hoặc chậm trễ.</li>\n        </ul>\n\n        <h4>3.2. Sự lựa chọn bắt buộc: CP hay AP?</h4>\n        <p>Trong thế giới thực, sự cố mạng (Partitioning - P) là điều <b>chắc chắn sẽ xảy ra</b> (đứt cáp quang biển, switch mạng bị cháy). Do đó, P là thuộc tính bắt buộc phải có. Các kiến trúc sư bắt buộc phải lựa chọn giữa 2 con đường:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#c02b2b\">Lựa chọn CP (Consistency + Partition Tolerance):</b><br>\n                • <i>Chiến lược:</i> Khi mạng giữa các node bị đứt đoạn, hệ thống <b>từ chối nhận lệnh ghi</b> hoặc khóa tài khoản để bảo vệ dữ liệu không bị sai lệch giữa hai bờ phân vùng.<br>\n                • <i>Đánh đổi:</i> Hy sinh Availability (hệ thống tạm thời báo bận để bảo toàn tiền bạc khách hàng).<br>\n                • <i>Đại diện:</i> Google Cloud Spanner, MongoDB (với majority write), HBase.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">Lựa chọn AP (Availability + Partition Tolerance):</b><br>\n                • <i>Chiến lược:</i> Khi mạng đứt, mọi node vẫn tiếp tục nhận lệnh ghi từ người dùng cục bộ. Khi mạng thông trở lại, hệ thống sẽ tự động đồng bộ gộp dữ liệu sau (Reconciliation).<br>\n                • <i>Đánh đổi:</i> Hy sinh Consistency tức thời (chấp nhận người dùng ở hai nơi thấy hai phiên bản tạm thời khác nhau).<br>\n                • <i>Đại diện:</i> Apache Cassandra, Amazon DynamoDB, Couchbase.\n            </div>\n        </div>\n\n        <h4>3.3. So sánh triết lý: ACID vs BASE</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí</th>\n                    <th>Mô hình ACID (RDBMS kinh điển)</th>\n                    <th>Mô hình BASE (NoSQL phân tán)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Triết lý cốt lõi</b></td>\n                    <td>Nhất quán tức thời, bi quan, không chấp nhận sai số</td>\n                    <td>Sẵn sàng cao, lạc quan, chấp nhận trễ đồng bộ</td>\n                </tr>\n                <tr>\n                    <td><b>Viết tắt của</b></td>\n                    <td><b>A</b>tomicity, <b>C</b>onsistency, <b>I</b>solation, <b>D</b>urability</td>\n                    <td><b>B</b>asically <b>A</b>vailable, <b>S</b>oft state, <b>E</b>ventual consistency</td>\n                </tr>\n                <tr>\n                    <td><b>Thời điểm nhất quán</b></td>\n                    <td>Ngay lập tức sau câu lệnh <code>COMMIT</code></td>\n                    <td>Nhất quán cuối cùng (Eventual Consistency sau vài giây)</td>\n                </tr>\n                <tr>\n                    <td><b>Ứng dụng phù hợp</b></td>\n                    <td>Ngân hàng, tài chính, thanh toán, kho hàng chính xác</td>\n                    <td>Mạng xã hội, tin nhắn chat, giỏ hàng tạm, telemetry</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Theo Định lý CAP, tại sao một hệ thống CSDL phân tán qua mạng Internet trong thế giới thực KHÔNG THỂ đồng thời đạt được cả 3 thuộc tính Consistency, Availability và Partition Tolerance?", "options": ["Vì chi phí mua máy chủ phân tán quá đắt đỏ.", "Vì sự cố mạng phân vùng (Network Partition) là không thể tránh khỏi trong thực tế; khi mạng bị đứt, hệ thống buộc phải chọn giữa việc dừng phục vụ để giữ nhất quán (CP) hoặc tiếp tục phục vụ nhưng chấp nhận dữ liệu chưa đồng bộ (AP).", "Vì ngôn ngữ SQL không cho phép viết quá 3 mệnh đề trong một câu lệnh.", "Vì định lý CAP chỉ áp dụng cho máy tính lượng tử."], "correct": 1, "explanation": "Chính xác! Khi phân vùng mạng xảy ra, hệ thống bắt buộc phải đánh đổi giữa việc từ chối phản hồi để giữ dữ liệu đúng (CP) hoặc tiếp tục trả lời nhưng dữ liệu bị lệch (AP)."}, {"qid": "q3_2", "text": "Câu 3.2: Khái niệm 'Eventual Consistency' (Nhất quán cuối cùng) trong mô hình BASE của các hệ thống NoSQL phân tán được hiểu như thế nào?", "options": ["Dữ liệu sẽ không bao giờ được đồng bộ và sẽ bị mất hoàn toàn.", "Hệ thống không cam kết dữ liệu trên mọi nút giống nhau ngay lập tức, nhưng đảm bảo sau một khoảng thời gian nhất định (nếu không có cập nhật mới), tất cả các nút sẽ đồng nhất trạng thái.", "Dữ liệu được mã hóa thành chuỗi ngẫu nhiên không thể đọc được.", "Người dùng chỉ được phép đọc dữ liệu vào ngày cuối cùng của tháng."], "correct": 1, "explanation": "Chính xác! Eventual consistency chấp nhận độ trễ đồng bộ nhất định, nhưng cam kết cuối cùng mọi nút phân tán sẽ hội tụ về cùng một phiên bản dữ liệu."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Khảo sát các Dòng Database Chuyên biệt (Specialized DBs)", "takeaway": "Khảo sát các dòng Database chuyên biệt: RDBMS, Document (MongoDB), Key-Value (Redis), Graph (Neo4j), Time-Series (InfluxDB).", "summary": "\n        <h4>4.1. Phổ phân loại các Dòng CSDL Hiện đại</h4>\n        <p>Bên cạnh RDBMS truyền thống, làn sóng dữ liệu lớn (Big Data) đã khai sinh ra các họ CSDL chuyên biệt để giải quyết từng bài toán cụ thể:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/types-of-databases.webp\" alt=\"Phân loại các dòng CSDL hiện đại\">\n            <figcaption>Hình 4.2: Các dòng cơ sở dữ liệu chuyên biệt: Relational, Document, Key-Value, Graph, Time-Series</figcaption>\n        </figure>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">1. Document Databases (MongoDB, CouchDB):</b><br>\n                • Lưu trữ dữ liệu dạng tài liệu JSON/BSON linh hoạt, không cần định nghĩa trước schema cố định.<br>\n                • <i>Thích hợp nhất:</i> Danh mục sản phẩm e-commerce (mỗi mặt hàng có thuộc tính riêng: áo có size/màu, điện thoại có RAM/pin), hệ quản trị nội dung (CMS).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#c02b2b\">2. Key-Value Stores (Redis, Memcached, DynamoDB):</b><br>\n                • Lưu cặp Khóa - Giá trị với tốc độ đọc/ghi siêu tốc trên bộ nhớ RAM (độ trễ dưới 1ms).<br>\n                • <i>Thích hợp nhất:</i> Caching tầng đệm, quản lý phiên đăng nhập người dùng (Session Storage), bộ đếm giới hạn tốc độ (Rate Limiter).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f845a\">3. Graph Databases (Neo4j, Amazon Neptune):</b><br>\n                • Dữ liệu tổ chức thành các Đỉnh (Nodes) và Cạnh quan hệ (Edges) có thuộc tính.<br>\n                • <i>Thích hợp nhất:</i> Mạng xã hội (gợi ý bạn bè), phát hiện đường dây gian lận rửa tiền ngân hàng, công cụ tìm đường đi tối ưu trong logistics.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">4. Time-Series Databases (InfluxDB, TimescaleDB):</b><br>\n                • Tối ưu chuyên biệt cho chuỗi dữ liệu gắn liền với dấu mốc thời gian (Timestamp).<br>\n                • <i>Thích hợp nhất:</i> Thu thập cảm biến IoT công nghiệp, theo dõi số liệu máy chủ (CPU/RAM metrics), bảng giá chứng khoán thời gian thực.\n            </div>\n        </div>\n\n        <h4>4.2. Bảng ma trận so sánh ứng dụng các dòng CSDL</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Loại Database</th>\n                    <th>Định dạng dữ liệu</th>\n                    <th>Điểm mạnh nổi bật</th>\n                    <th>Sản phẩm tiêu biểu</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Relational (RDBMS)</b></td>\n                    <td>Bảng 2 chiều (Hàng & Cột)</td>\n                    <td>Quan hệ logic chặt chẽ, ACID toàn vẹn, SQL chuẩn</td>\n                    <td>PostgreSQL, MySQL, Oracle</td>\n                </tr>\n                <tr>\n                    <td><b>Document</b></td>\n                    <td>Tài liệu JSON / BSON</td>\n                    <td>Lược đồ linh hoạt, phát triển phần mềm nhanh</td>\n                    <td>MongoDB, Couchbase</td>\n                </tr>\n                <tr>\n                    <td><b>Key-Value</b></td>\n                    <td>Cặp Khóa - Giá trị</td>\n                    <td>Tốc độ đọc trên RAM cực nhanh, độ trễ cực thấp</td>\n                    <td>Redis, AWS DynamoDB</td>\n                </tr>\n                <tr>\n                    <td><b>Graph</b></td>\n                    <td>Đỉnh (Nodes) & Cạnh (Edges)</td>\n                    <td>Truy vấn quan hệ nhiều tầng cực kỳ hiệu quả</td>\n                    <td>Neo4j, ArangoDB</td>\n                </tr>\n                <tr>\n                    <td><b>Time-Series</b></td>\n                    <td>Mốc thời gian (Timestamped)</td>\n                    <td>Nén dữ liệu thời gian cao, truy vấn khoảng thời gian</td>\n                    <td>InfluxDB, TimescaleDB</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Một ứng dụng mạng xã hội cần triển khai tính năng: 'Tìm bạn chung của bạn bè' và 'Gợi ý những người bạn có thể quen' qua mạng lưới quan hệ 3-4 tầng. Loại cơ sở dữ liệu nào giải quyết bài toán này với hiệu năng vượt trội nhất?", "options": ["Key-Value Store (Redis).", "Graph Database (như Neo4j).", "Time-Series Database (InfluxDB).", "Hệ thống tệp văn bản CSV."], "correct": 1, "explanation": "Chính xác! Graph Database lưu trữ các mối quan hệ dưới dạng các cạnh liên kết trực tiếp, duyệt qua nhiều bậc quan hệ cực nhanh mà không cần các phép JOIN đắt đỏ."}, {"qid": "q4_2", "text": "Câu 4.2: Một nhà máy thông minh lắp đặt 10.000 cảm biến nhiệt độ và độ ẩm, mỗi cảm biến gửi dữ liệu về máy chủ 5 giây một lần liên tục trong 5 năm. Dòng CSDL nào là sự lựa chọn tối ưu nhất cho khối lượng công việc này?", "options": ["Time-Series Database (như InfluxDB hoặc TimescaleDB).", "Graph Database (như Neo4j).", "Document Database chỉ chạy trên điện thoại.", "Một tệp Microsoft Word duy nhất."], "correct": 0, "explanation": "Chính xác! Time-Series Database tối ưu cho các luồng ghi liên tục kèm mốc thời gian, nén dữ liệu dung lượng cao và truy vấn theo khoảng thời gian cực nhanh."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Kiến trúc Đa CSDL (Polyglot Persistence) & Tổng kết", "takeaway": "Chiến lược Đa CSDL (Polyglot Persistence): Kết hợp các công nghệ chuyên biệt để giải quyết tối ưu từng bài toán nghiệp vụ.", "summary": "\n        <h4>5.1. Khái niệm Polyglot Persistence</h4>\n        <p>Trong thực tế phát triển phần mềm hiện đại của các tập đoàn lớn (như Shopee, Grab, Netflix, Amazon), <b>không có một hệ CSDL duy nhất nào có thể đáp ứng hoàn hảo mọi nhu cầu</b>. Khái niệm <b>Polyglot Persistence (Đa CSDL chuyên biệt)</b> ra đời:</p>\n        <p style=\"font-style:italic;color:#1e3a6e\">\"Sử dụng đúng loại cơ sở dữ liệu cho đúng tác vụ nghiệp vụ mà nó làm tốt nhất trong cùng một hệ thống tổng thể.\"</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Case Study: Kiến trúc Polyglot Persistence trong nền tảng Thương mại điện tử</span>\n                <span>Production Architecture</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">┌────────────────────────────────────────────────────────────────────────┐</span>\n<span class=\"cm\">│                HỆ SINH THÁI ỨNG DỤNG E-COMMERCE HIỆN ĐẠI               │</span>\n<span class=\"cm\">└────────────────────────────────────────────────────────────────────────┘</span>\n  │\n  ├── <b>[1. PostgreSQL / MySQL]</b>: Quản lý Tài khoản người dùng, Đơn hàng, Thanh toán tiền (ACID tuyệt đối)\n  │\n  ├── <b>[2. Redis (Key-Value RAM)]</b>: Lưu Session đăng nhập, Giỏ hàng mua sắm tạm thời, Token xác thực JWT\n  │\n  ├── <b>[3. MongoDB (Document Store)]</b>: Lưu Danh mục hàng triệu sản phẩm với các thuộc tính linh hoạt\n  │\n  ├── <b>[4. Elasticsearch / OpenSearch]</b>: Công cụ tìm kiếm sản phẩm toàn văn thông minh (Fuzzy Search, Auto-complete)\n  │\n  ├── <b>[5. Neo4j (Graph DB)]</b>: Động cơ phát hiện gian lận hoàn tiền và gợi ý sản phẩm mua kèm\n  │\n  └── <b>[6. ClickHouse / BigQuery (OLAP)]</b>: Kho dữ liệu phân tích doanh thu và xu hướng thị trường cho Ban giám đốc</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Chúc mừng bạn đã hoàn thành trọn vẹn cả 4 bài học Nhập môn CSDL!</b> Bạn đã trang bị nền tảng kiến thức vững chắc từ khái niệm CSDL, kiến trúc hệ thống, kiến trúc 3 mức ANSI/SPARC đến tư duy chiến lược lựa chọn công nghệ CSDL. Hãy làm câu hỏi cuối cùng và xuất chứng nhận PNG!\n            </div>\n        </div>\n        ", "questions": [{"qid": "q5_1", "text": "Câu 5.1: Thuật ngữ 'Polyglot Persistence' trong thiết kế hệ thống phần mềm hiện đại thể hiện triết lý kỹ thuật nào sau đây?", "options": ["Bắt buộc tất cả các bảng dữ liệu trong toàn công ty phải viết bằng tiếng Pháp.", "Kết hợp sử dụng nhiều loại CSDL chuyên biệt khác nhau (RDBMS, Cache, Document, Graph, Search engine) trong cùng một hệ sinh thái để mỗi công nghệ giải quyết bài toán mà nó làm tốt nhất.", "Chỉ sử dụng duy nhất một loại CSDL MySQL từ đầu đến cuối cho mọi tác vụ.", "Xóa bỏ hoàn toàn cơ sở dữ liệu và chỉ lưu dữ liệu trong bộ nhớ RAM tạm thời."], "correct": 1, "explanation": "Chính xác! Polyglot Persistence là sự kết hợp linh hoạt các công nghệ CSDL chuyên biệt để đạt hiệu năng tối ưu trên từng phân hệ nghiệp vụ."}, {"qid": "q5_2", "text": "Câu 5.2: Trong kiến trúc Polyglot của một ứng dụng thương mại điện tử, công nghệ CSDL nào thường được chọn để đảm nhận chức năng 'Tìm kiếm sản phẩm toàn văn gõ sai chính tả vẫn tìm ra' (Full-text / Fuzzy search)?", "options": ["Elasticsearch / OpenSearch.", "SQLite phiên bản 1-Tier.", "MS Access chạy offline trên máy để bàn.", "Chỉ mục B-Tree cơ bản của bảng tạm thời."], "correct": 0, "explanation": "Chính xác! Elasticsearch/OpenSearch là các công cụ tìm kiếm và phân tích phân tán chuyên dụng dựa trên Apache Lucene, tối ưu cho tìm kiếm toàn văn và mờ (fuzzy search)."}]}];
 const STORAGE_KEY = 'dbms_intro_l4_v2';
 const LESSON_TITLE = 'Bài 4: Tiêu chí Lựa chọn Hệ quản trị CSDL phù hợp';
+const LESSON_DESC = 'Xây dựng khung tư duy chiến lược lựa chọn DBMS: Ma trận phân tích, phân biệt thấu đáo OLTP vs OLAP, bản chất định lý CAP, đánh đổi ACID vs BASE và kiến trúc Polyglot Persistence.';
 const LESSON_CODE = '04-choosing-the-right-dbms';
 const TOTAL_QUESTIONS = 10;
 
@@ -1062,121 +1063,266 @@ function exportScoreCSV() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function exportScorePNG() {
+function exportScorePNG() {{
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa nhập MSSV';
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa điền MSSV';
   const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
   const score = calculateTotalScore();
   const total = TOTAL_QUESTIONS;
-  const pct = Math.round((score / total) * 100);
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
 
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {{
+    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
+    let line = '';
+    let linesDrawn = 0;
+    for (let n = 0; n < words.length; n++) {{
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {{
+        ctx.fillText(line.trim(), x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        linesDrawn++;
+        if (linesDrawn >= maxLines - 1 && n < words.length - 1) {{
+          let remaining = words.slice(n).join(' ');
+          while (ctx.measureText(remaining + '…').width > maxWidth && remaining.length > 0) {{
+            remaining = remaining.slice(0, -1).trim();
+          }}
+          ctx.fillText(remaining + '…', x, y);
+          return y + lineHeight;
+        }}
+      }} else {{
+        line = testLine;
+      }}
+    }}
+    ctx.fillText(line.trim(), x, y);
+    return y + lineHeight;
+  }}
+
+  function cleanHtmlSummary(htmlStr) {{
+    if (!htmlStr) return '';
+    return htmlStr
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }}
+
+  const W = 960;
+  const stageCardH = 78;
+  const stagesGap = 10;
+  const H = 450 + (STAGES.length * (stageCardH + stagesGap)) + 50;
+
   const canvas = document.createElement('canvas');
-  canvas.width = 900;
-  canvas.height = 680 + (STAGES.length * 48);
+  canvas.width = W * 2;
+  canvas.height = H * 2;
   const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
 
-  // Background
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (!ctx.roundRect) {{
+    ctx.roundRect = function(x, y, w, h, r) {{
+      if (typeof r === 'undefined') r = 8;
+      if (typeof r === 'number') r = [r, r, r, r];
+      this.beginPath();
+      this.moveTo(x + r[0], y);
+      this.lineTo(x + w - r[1], y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+      this.lineTo(x + w, y + h - r[2]);
+      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+      this.lineTo(x + r[3], y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+      this.lineTo(x, y + r[0]);
+      this.quadraticCurveTo(x, y, x + r[0], y);
+      this.closePath();
+    }};
+  }}
 
-  // Top Banner
-  const grad = ctx.createLinearGradient(0, 0, canvas.width, 160);
-  grad.addColorStop(0, '#112b53');
-  grad.addColorStop(1, '#1e5bb8');
+  // Outer Background
+  ctx.fillStyle = '#f4f7fc';
+  ctx.fillRect(0, 0, W, H);
+
+  // Main Container Card
+  ctx.fillStyle = '#ffffff';
+  ctx.roundRect(16, 16, W - 32, H - 32, 16);
+  ctx.fill();
+  ctx.strokeStyle = '#d9e2ef';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Top Header Gradient Banner
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#0f2952');
+  grad.addColorStop(1, '#1d54ab');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, 160);
+  ctx.roundRect(16, 16, W - 32, 110, [16, 16, 0, 0]);
+  ctx.fill();
 
-  // Banner Text
+  ctx.fillStyle = '#9cbbe8';
+  ctx.font = '700 11.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP TƯƠNG TÁC', 40, 46);
+
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.letterSpacing = '1px';
-  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP', 40, 48);
+  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 78);
 
-  ctx.font = 'bold 24px sans-serif';
-  ctx.fillText(LESSON_TITLE, 40, 88);
+  ctx.fillStyle = '#d4e4fc';
+  ctx.font = '12.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`Thời gian xuất chứng nhận: ${{dateStr}}`, 40, 104);
 
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = '#dbeafe';
-  ctx.fillText(`Thời gian hoàn thành: ${dateStr}`, 40, 122);
-
-  // Student Info Card
-  ctx.fillStyle = '#ffffff';
-  ctx.roundRect(40, 185, canvas.width - 80, 100, 12);
+  // Student Info & Score Overview Cards
+  const cardY = 142;
+  // Left: Student Info Card
+  ctx.fillStyle = '#f8fafc';
+  ctx.roundRect(40, cardY, 520, 110, 10);
   ctx.fill();
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.stroke();
 
   ctx.fillStyle = '#64748b';
-  ctx.font = '13px sans-serif';
-  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 65, 222);
-  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 400, 222);
+  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
+  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
+  ctx.fillText('MÔN HỌC / HỌC PHẦN:', 58, cardY + 76);
 
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText(name, 65, 256);
-  ctx.fillText(mssv, 400, 256);
+  ctx.font = 'bold 16.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText(name, 58, cardY + 52);
+  ctx.fillText(mssv, 310, cardY + 52);
+  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#1e3a6e';
+  ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
 
-  // Score Badge
-  const badgeColor = pct >= 80 ? '#0f845a' : (pct >= 50 ? '#b45309' : '#c02b2b');
-  ctx.fillStyle = badgeColor;
-  ctx.roundRect(canvas.width - 240, 202, 160, 66, 10);
+  // Right: Score & Rank Card
+  const scoreBoxX = 580;
+  const scoreBoxW = W - 40 - scoreBoxX;
+  const isPass = pct >= 50;
+  const isEx = pct >= 90;
+  const isGood = pct >= 80;
+  const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
+  const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
+
+  ctx.fillStyle = isEx ? '#f0fdf4' : '#f8fafc';
+  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 110, 10);
   ctx.fill();
+  ctx.strokeStyle = isEx ? '#bbf7d0' : '#e2e8f0';
+  ctx.stroke();
 
+  ctx.fillStyle = rankColor;
+  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('TỔNG ĐIỂM & ĐÁNH GIÁ:', scoreBoxX + 18, cardY + 30);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`${{score}} / ${{total}}`, scoreBoxX + 18, cardY + 68);
+
+  // Rank Badge Pill
+  ctx.fillStyle = rankColor;
+  ctx.roundRect(scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16);
+  ctx.fill();
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px sans-serif';
+  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`${score} / ${total} (${pct}%)`, canvas.width - 160, 243);
+  ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
   ctx.textAlign = 'left';
 
-  // Section Breakdown Table
-  let y = 320;
-  ctx.fillStyle = '#1e293b';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('CHI TIẾT TIẾN ĐỘ VÀ KẾT QUẢ TỪNG CHẶNG:', 40, y);
-  y += 24;
+  // Progress Bar
+  ctx.fillStyle = '#e2e8f0';
+  ctx.roundRect(scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5);
+  ctx.fill();
+  ctx.fillStyle = rankColor;
+  ctx.roundRect(scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5);
+  ctx.fill();
 
-  STAGES.forEach((s) => {
+  // Lesson Overview / Summary Box
+  const descY = 268;
+  ctx.fillStyle = '#f1f5f9';
+  ctx.roundRect(40, descY, W - 80, 80, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#1e3a6e';
+  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('📖 TỔNG QUAN NỘI DUNG & MỤC TIÊU BÀI HỌC:', 56, descY + 24);
+
+  ctx.fillStyle = '#334155';
+  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  wrapText(ctx, LESSON_DESC, 56, descY + 44, W - 112, 19, 2);
+
+  // Section Breakdown Header
+  let y = 372;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+  ctx.fillText('CHI TIẾT TIẾN ĐỘ & TÓM TẮT KIẾN THỨC TỪNG CHẶNG HỌC:', 40, y);
+  y += 18;
+
+  // Stages List with Stage Summaries
+  STAGES.forEach((s) => {{
     const done = state.completedStages.includes(s.num);
     const qCount = (s.questions || []).length;
     let sCorrect = 0;
-    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+    (s.questions || []).forEach(q => {{ if (state.scores[q.qid]) sCorrect++; }});
 
     ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, canvas.width - 80, 42, 8);
+    ctx.roundRect(40, y, W - 80, stageCardH, 8);
     ctx.fill();
-    ctx.strokeStyle = done ? '#bbf7d0' : '#e2e8f0';
+    ctx.strokeStyle = done ? '#86efac' : '#e2e8f0';
+    ctx.lineWidth = done ? 1.5 : 1;
     ctx.stroke();
 
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '600 14px sans-serif';
-    ctx.fillText(s.title, 60, y + 26);
+    // Stage Title
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 13.5px system-ui, -apple-system, sans-serif';
+    ctx.fillText(s.title, 56, y + 24);
 
-    ctx.fillStyle = done ? '#0f845a' : '#64748b';
-    ctx.font = 'bold 13px sans-serif';
-    const statusText = done ? '✓ ĐÃ VƯỢT QUA' : 'CHƯA HOÀN THÀNH';
-    ctx.fillText(`${statusText} · (${sCorrect}/${qCount} câu)`, canvas.width - 270, y + 26);
+    // Status Badge Pill
+    const badgeX = W - 40 - 190;
+    ctx.fillStyle = done ? '#ecfdf5' : '#f1f5f9';
+    ctx.roundRect(badgeX, y + 10, 175, 24, 12);
+    ctx.fill();
+    ctx.strokeStyle = done ? '#a7f3d0' : '#cbd5e1';
+    ctx.stroke();
 
-    y += 50;
-  });
+    ctx.fillStyle = done ? '#059669' : '#64748b';
+    ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(done ? `✓ ĐÃ HOÀN THÀNH (${{sCorrect}}/${{qCount}})` : `⏳ CHƯA XONG (${{sCorrect}}/${{qCount}})`, badgeX + 87, y + 26);
+    ctx.textAlign = 'left';
 
-  // Footer Note
-  y += 20;
+    // Stage Summary / Key Takeaway text
+    const takeawayText = s.takeaway || cleanHtmlSummary(s.summary);
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px system-ui, -apple-system, sans-serif';
+    wrapText(ctx, `• Tóm tắt cốt lõi: ${{takeawayText}}`, 56, y + 48, W - 112, 17, 1);
+
+    y += stageCardH + stagesGap;
+  }});
+
+  // Footer
+  y += 10;
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '12px sans-serif';
-  ctx.fillText('Hệ thống học liệu tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.font = '11.5px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(LESSON_CODE, W - 40, y);
+  ctx.textAlign = 'left';
 
   // Trigger download
   const a = document.createElement('a');
-  a.download = `chung_nhan_${LESSON_CODE}_${mssv || 'sv'}.png`;
+  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9À-ỹ_-]+/g, '_');
+  a.download = `chung_nhan_${{LESSON_CODE}}_${{safeName}}.png`;
   a.href = canvas.toDataURL('image/png');
   document.body.appendChild(a);
   a.click();
   a.remove();
-}
+}}
 
-// Initialize
+
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderStages();
