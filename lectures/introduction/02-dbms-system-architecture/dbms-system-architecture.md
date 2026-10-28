@@ -58,7 +58,7 @@ Trong kiến trúc **1 tầng** (*1-Tier Architecture*), người dùng làm vi�
 đều nằm trong cùng một ứng dụng hoặc cùng một máy tính.
 
 Người dùng có thể mở ứng dụng, nhập dữ liệu, xử lý dữ liệu và lưu trữ dữ liệu trực tiếp mà không cần máy chủ riêng hoặc kết nối mạng.
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 ### 3.2. Ví dụ
 
 Một ví dụ phổ biến của kiến trúc 1 tầng là **Microsoft Access**.
@@ -155,7 +155,7 @@ Phía server chịu trách nhiệm:
 - Quản lý giao dịch.
 - Lưu trữ dữ liệu.
 - Trả kết quả về cho client.
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 ### 4.2. Ví dụ
 
 Một ví dụ điển hình của kiến trúc 2 tầng là **hệ thống quản lý thư viện** trong trường học hoặc tổ chức nhỏ.
@@ -267,7 +267,7 @@ Trong mô hình này, client không giao tiếp trực tiếp với cơ sở d�
 Tầng trung gian đóng vai trò là cầu nối giữa người dùng và cơ sở dữ liệu.
 
 Kiến trúc này thường được sử dụng trong các ứng dụng web lớn, hệ thống doanh nghiệp, thương mại điện tử, ngân hàng trực tuyến và các hệ thống cần nhiều người dùng truy cập đồng thời.
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 ### 5.2. Ví dụ: Cửa hàng thương mại điện tử
 
 Giả sử người dùng truy cập một cửa hàng trực tuyến.

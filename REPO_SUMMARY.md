@@ -83,23 +83,17 @@ Current homepage sections:
   - Shared cover images in `assets/images/`
 
 - Introduction
-  - `introduction/gioi_thieu_csdl_vi/gioi_thieu_csdl_vi.md`
+  - `introduction/01-introduction-to-dbms/introduction-to-dbms.md`
     - Slides: `gioi_thieu_csdl_vi_beamer.pdf`
     - Slides: `gioi_thieu_csdl_en_beamer.pdf`
-  - `introduction/gioi_thieu_dbms_vi/gioi_thieu_dbms_vi.md`
-  - `introduction/nhu_cau_su_dung_dbms_vi/nhu_cau_su_dung_dbms_vi.md`
-  - `introduction/kien_truc_dbms_vi/kien_truc_dbms_vi.md`
+    - Web: `introduction.html`
+  - `introduction/02-dbms-system-architecture/dbms-system-architecture.md`
     - Slides: `kien_truc_dbms_vi.pdf`
     - Slides: `kien_truc_dbms_en.pdf`
-  - `introduction/data-abstraction/data-abstraction.md`
-  - `introduction/data-independence/data-independence.md`
+  - `introduction/03-three-schema-architecture/three-schema-architecture.md`
     - Slides: `data_independence_beamer_pdflatex.pdf`
     - Slides: `data_independence_beamer_english_pdflatex.pdf`
-  - `introduction/physical-logical-independence/physical-logical-independence.md`
-    - Present in the repo and linked in the English homepage table, but hidden
-      in the Vietnamese homepage table as of this review.
-  - `introduction/database-schema/database-schema.md`
-  - `introduction/choose-right-dbms/choose-right-dbms.md`
+  - `introduction/04-choosing-the-right-dbms/choose-right-dbms.md`
     - Slides: `choose-right-dbms-vi.pdf`
     - Slides: `choose-right-dbms-en.pdf`
 
