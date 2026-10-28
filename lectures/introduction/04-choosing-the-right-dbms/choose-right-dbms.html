@@ -1087,9 +1087,9 @@ function exportScorePNG() {
   const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
 
-  // Kích thước chuẩn đẹp: Rộng 880px, cao tùy biến theo số phần
+  // Kích thước chuẩn: Rộng 880px, chiều cao tính theo số chặng
   const W = 880;
-  const rowH = 44;
+  const rowH = 46;
   const rowGap = 8;
   const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
 
@@ -1099,22 +1099,35 @@ function exportScorePNG() {
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
-  if (!ctx.roundRect) {
-    ctx.roundRect = function(x, y, w, h, r) {
-      if (typeof r === 'undefined') r = 8;
-      if (typeof r === 'number') r = [r, r, r, r];
-      this.beginPath();
-      this.moveTo(x + r[0], y);
-      this.lineTo(x + w - r[1], y);
-      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
-      this.lineTo(x + w, y + h - r[2]);
-      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
-      this.lineTo(x + r[3], y + h);
-      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
-      this.lineTo(x, y + r[0]);
-      this.quadraticCurveTo(x, y, x + r[0], y);
-      this.closePath();
-    };
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
   }
 
   // Khung nền chính
@@ -1122,89 +1135,78 @@ function exportScorePNG() {
   ctx.fillRect(0, 0, W, H);
 
   // Thẻ chứa viền bo góc
-  ctx.fillStyle = '#ffffff';
-  ctx.roundRect(16, 16, W - 32, H - 32, 16);
-  ctx.fill();
-  ctx.strokeStyle = '#dae3f0';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
 
   // Header Gradient Banner
   const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
   grad.addColorStop(0, '#102c59');
   grad.addColorStop(1, '#235cba');
-  ctx.fillStyle = grad;
-  ctx.roundRect(16, 16, W - 32, 96, [16, 16, 0, 0]);
-  ctx.fill();
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
 
+  ctx.save();
   ctx.fillStyle = '#9cb8e8';
-  ctx.font = '600 12px system-ui, -apple-system, sans-serif';
+  ctx.font = '600 12px Arial, sans-serif';
   ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 22px Arial, sans-serif';
   ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
 
   // Card Thông tin Sinh viên (Trái)
   const cardY = 132;
-  ctx.fillStyle = '#f8fafc';
-  ctx.roundRect(40, cardY, 460, 115, 10);
-  ctx.fill();
-  ctx.strokeStyle = '#e2e8f0';
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
 
-  ctx.font = '13px system-ui, -apple-system, sans-serif';
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
   ctx.fillStyle = '#64748b';
   ctx.fillText('Họ và tên:', 56, cardY + 30);
   ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
   ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
 
-  ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 14px Arial, sans-serif';
   ctx.fillStyle = '#0f172a';
   ctx.fillText(name, 220, cardY + 30);
   ctx.fillText(mssv, 220, cardY + 62);
-  ctx.font = '13px system-ui, -apple-system, sans-serif';
+  ctx.font = '13px Arial, sans-serif';
   ctx.fillStyle = '#334155';
   ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
 
   // Card Tổng kết Tiến độ & Điểm số (Phải)
   const scoreBoxX = 520;
   const scoreBoxW = 320;
   const isDoneAll = completedParts === totalParts && totalParts > 0;
-  ctx.fillStyle = isDoneAll ? '#f0fdf4' : '#eff6ff';
-  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 115, 10);
-  ctx.fill();
-  ctx.strokeStyle = isDoneAll ? '#bbf7d0' : '#bfdbfe';
-  ctx.stroke();
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
 
+  ctx.save();
   ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
-  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 12px Arial, sans-serif';
   ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
 
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 22px Arial, sans-serif';
   ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
 
-  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 13px Arial, sans-serif';
   ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
   ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
 
   // Thanh tiến độ đồ họa
-  ctx.fillStyle = '#cbd5e1';
-  ctx.roundRect(scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5);
-  ctx.fill();
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
   if (completedParts > 0 && totalParts > 0) {
-    ctx.fillStyle = isDoneAll ? '#16a34a' : '#2563eb';
-    ctx.roundRect(scoreBoxX + 18, cardY + 92, Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts)), 10, 5);
-    ctx.fill();
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
   }
 
   // Tiêu đề bảng chi tiết điểm từng phần
   let y = 274;
+  ctx.save();
   ctx.fillStyle = '#1e293b';
-  ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 15px Arial, sans-serif';
   ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
   y += 18;
 
   // Render từng phần bài học
@@ -1214,43 +1216,38 @@ function exportScorePNG() {
     let sCorrect = 0;
     (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
 
-    ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, W - 80, rowH, 8);
-    ctx.fill();
-    ctx.strokeStyle = isStageDone ? '#bbf7d0' : '#e2e8f0';
-    ctx.lineWidth = isStageDone ? 1.5 : 1;
-    ctx.stroke();
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
 
-    // Tên phần/chặng
+    ctx.save();
     ctx.fillStyle = '#1e293b';
-    ctx.font = '600 13.5px system-ui, -apple-system, sans-serif';
-    const label = s.title.length > 58 ? s.title.slice(0, 57) + '…' : s.title;
-    ctx.fillText(label, 56, y + 27);
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '…' : s.title;
+    ctx.fillText(label, 56, y + 28);
 
-    // Trạng thái hoàn thành & Điểm số
     ctx.textAlign = 'right';
     if (isStageDone) {
       ctx.fillStyle = '#16a34a';
-      ctx.font = 'bold 12.5px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
     } else {
       ctx.fillStyle = '#64748b';
-      ctx.font = '600 12.5px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
     }
-    ctx.textAlign = 'left';
+    ctx.restore();
 
     y += rowH + rowGap;
   });
 
   // Footer ghi chú
-  y += 12;
+  y += 14;
+  ctx.save();
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '11.5px system-ui, -apple-system, sans-serif';
+  ctx.font = '11.5px Arial, sans-serif';
   ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
   ctx.textAlign = 'right';
   ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
-  ctx.textAlign = 'left';
+  ctx.restore();
 
   // Kích hoạt tải ảnh PNG
   const a = document.createElement('a');

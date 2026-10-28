@@ -504,47 +504,25 @@ function exportMasterCertificatePNG() {
 
   const lessons = LESSON_METADATA.map(l => {
     const prog = getStoredLessonData(l);
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
     return {
-      ...l,
-      doneStages: prog.doneStages,
-      score: prog.score
+      num: l.num,
+      title: l.title,
+      summary: l.summary,
+      stagesCount: l.stagesCount,
+      qCount: l.qCount,
+      doneStages: (prog.completedStages || []).length,
+      score: score
     };
   });
 
-  const totalQuestions = lessons.reduce((sum, l) => sum + l.qCount, 0);
-  const totalScore = lessons.reduce((sum, l) => sum + l.score, 0);
-  const totalStages = lessons.reduce((sum, l) => sum + l.stagesCount, 0);
-  const totalDoneStages = lessons.reduce((sum, l) => sum + l.doneStages, 0);
+  const totalStages = lessons.reduce((acc, l) => acc + l.stagesCount, 0);
+  const doneStages = lessons.reduce((acc, l) => acc + l.doneStages, 0);
+  const totalQuestions = lessons.reduce((acc, l) => acc + l.qCount, 0);
+  const totalScore = lessons.reduce((acc, l) => acc + l.score, 0);
   const pct = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
-
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {
-    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
-    let line = '';
-    let linesDrawn = 0;
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {
-        ctx.fillText(line.trim(), x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-        linesDrawn++;
-        if (linesDrawn >= maxLines - 1 && n < words.length - 1) {
-          let remaining = words.slice(n).join(' ');
-          while (ctx.measureText(remaining + '…').width > maxWidth && remaining.length > 0) {
-            remaining = remaining.slice(0, -1).trim();
-          }
-          ctx.fillText(remaining + '…', x, y);
-          return y + lineHeight;
-        }
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line.trim(), x, y);
-    return y + lineHeight;
-  }
 
   const W = 960;
   const cardH = 88;
@@ -557,22 +535,62 @@ function exportMasterCertificatePNG() {
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
-  if (!ctx.roundRect) {
-    ctx.roundRect = function(x, y, w, h, r) {
-      if (typeof r === 'undefined') r = 8;
-      if (typeof r === 'number') r = [r, r, r, r];
-      this.beginPath();
-      this.moveTo(x + r[0], y);
-      this.lineTo(x + w - r[1], y);
-      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
-      this.lineTo(x + w, y + h - r[2]);
-      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
-      this.lineTo(x + r[3], y + h);
-      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
-      this.lineTo(x, y + r[0]);
-      this.quadraticCurveTo(x, y, x + r[0], y);
-      this.closePath();
-    };
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') {
+      r = [r, r, r, r];
+    } else if (!r) {
+      r = [0, 0, 0, 0];
+    }
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) {
+      c.fillStyle = fillColor;
+      c.fill();
+    }
+    if (strokeColor) {
+      c.strokeStyle = strokeColor;
+      c.lineWidth = lineWidth || 1;
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  function wrapText(c, text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = text.split(' ');
+    let line = '';
+    let lineCount = 0;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = c.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        c.fillText(line.trim(), x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        lineCount++;
+        if (maxLines && lineCount >= maxLines - 1) {
+          let rem = words.slice(n).join(' ');
+          while (rem.length > 0 && c.measureText(rem + '…').width > maxWidth) {
+            rem = rem.slice(0, -1);
+          }
+          c.fillText(rem + '…', x, y);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    c.fillText(line.trim(), x, y);
   }
 
   // Outer Background
@@ -580,55 +598,48 @@ function exportMasterCertificatePNG() {
   ctx.fillRect(0, 0, W, H);
 
   // Main Container
-  ctx.fillStyle = '#ffffff';
-  ctx.roundRect(16, 16, W - 32, H - 32, 16);
-  ctx.fill();
-  ctx.strokeStyle = '#d9e2ef';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#d9e2ef', 1.5);
 
   // Top Header Banner
   const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
   grad.addColorStop(0, '#0f2952');
   grad.addColorStop(1, '#1d54ab');
-  ctx.fillStyle = grad;
-  ctx.roundRect(16, 16, W - 32, 110, [16, 16, 0, 0]);
-  ctx.fill();
+  drawRoundedRect(ctx, 16, 16, W - 32, 110, [16, 16, 0, 0], grad, null, 0);
 
+  ctx.save();
   ctx.fillStyle = '#9cbbe8';
-  ctx.font = '700 11.5px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 11.5px Arial, sans-serif';
   ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN TỔNG THỂ TOÀN CHƯƠNG', 40, 46);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 22px Arial, sans-serif';
   ctx.fillText('CHƯƠNG 1: TỔNG QUAN HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU', 40, 78);
 
   ctx.fillStyle = '#d4e4fc';
-  ctx.font = '12.5px system-ui, -apple-system, sans-serif';
+  ctx.font = '12.5px Arial, sans-serif';
   ctx.fillText(`Thời gian xuất chứng nhận: ${dateStr}`, 40, 104);
+  ctx.restore();
 
   // Student & Score Block
   const cardY = 142;
   // Student card
-  ctx.fillStyle = '#f8fafc';
-  ctx.roundRect(40, cardY, 520, 110, 10);
-  ctx.fill();
-  ctx.strokeStyle = '#e2e8f0';
-  ctx.stroke();
+  drawRoundedRect(ctx, 40, cardY, 520, 110, 10, '#f8fafc', '#e2e8f0', 1);
 
+  ctx.save();
   ctx.fillStyle = '#64748b';
-  ctx.font = '12px system-ui, sans-serif';
+  ctx.font = '12px Arial, sans-serif';
   ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
   ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
   ctx.fillText('HỌC PHẦN ĐÀO TẠO:', 58, cardY + 76);
 
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 16.5px system-ui, sans-serif';
+  ctx.font = 'bold 16.5px Arial, sans-serif';
   ctx.fillText(name, 58, cardY + 52);
   ctx.fillText(mssv, 310, cardY + 52);
-  ctx.font = '600 13px system-ui, sans-serif';
+  ctx.font = 'bold 13px Arial, sans-serif';
   ctx.fillStyle = '#1e3a6e';
   ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
+  ctx.restore();
 
   // Score & Rank card
   const scoreBoxX = 580;
@@ -639,86 +650,70 @@ function exportMasterCertificatePNG() {
   const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
   const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
 
-  ctx.fillStyle = isEx ? '#f0fdf4' : '#f8fafc';
-  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 110, 10);
-  ctx.fill();
-  ctx.strokeStyle = isEx ? '#bbf7d0' : '#e2e8f0';
-  ctx.stroke();
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 110, 10, isEx ? '#f0fdf4' : '#f8fafc', isEx ? '#bbf7d0' : '#e2e8f0', 1);
 
+  ctx.save();
   ctx.fillStyle = rankColor;
-  ctx.font = '700 12px system-ui, sans-serif';
+  ctx.font = 'bold 12px Arial, sans-serif';
   ctx.fillText('KẾT QUẢ TỔNG QUAN 4 BÀI:', scoreBoxX + 18, cardY + 30);
 
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 30px system-ui, sans-serif';
+  ctx.font = 'bold 30px Arial, sans-serif';
   ctx.fillText(`${totalScore} / ${totalQuestions}`, scoreBoxX + 18, cardY + 68);
 
   // Rank Pill
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16);
-  ctx.fill();
+  drawRoundedRect(ctx, scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16, rankColor, null, 0);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.font = 'bold 12px Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
   ctx.textAlign = 'left';
 
   // Progress Bar
-  ctx.fillStyle = '#e2e8f0';
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5);
-  ctx.fill();
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5);
-  ctx.fill();
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5, '#e2e8f0', null, 0);
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5, rankColor, null, 0);
+  ctx.restore();
 
   // Module Overview Box
   const descY = 268;
-  ctx.fillStyle = '#f1f5f9';
-  ctx.roundRect(40, descY, W - 80, 80, 10);
-  ctx.fill();
-  ctx.strokeStyle = '#cbd5e1';
-  ctx.stroke();
+  drawRoundedRect(ctx, 40, descY, W - 80, 80, 10, '#f1f5f9', '#cbd5e1', 1);
 
+  ctx.save();
   ctx.fillStyle = '#1e3a6e';
-  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.font = 'bold 12px Arial, sans-serif';
   ctx.fillText('📖 MỤC TIÊU NĂNG LỰC TOÀN CHƯƠNG NHẬP MÔN CƠ SỞ DỮ LIỆU:', 56, descY + 24);
 
   ctx.fillStyle = '#334155';
-  ctx.font = '12px system-ui, sans-serif';
+  ctx.font = '12px Arial, sans-serif';
   wrapText(ctx, 'Học viên đã trải qua 4 bài giảng tương tác chuẩn quốc tế: thấu hiểu bản chất CSDL và vai trò DBMS; phân biệt 4 mô hình kiến trúc vật lý (1/2/3/N-tier); kiến trúc 3 tầng lược đồ ANSI/SPARC và tính độc lập dữ liệu; cùng tư duy chiến lược lựa chọn DBMS, định lý CAP và kiến trúc Polyglot Persistence.', 56, descY + 44, W - 112, 19, 2);
+  ctx.restore();
 
   // Section Breakdown Header
   let y = 372;
+  ctx.save();
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.font = 'bold 15px Arial, sans-serif';
   ctx.fillText('CHI TIẾT KẾT QUẢ & THÔNG TIN TÓM TẮT CHO TỪNG BÀI HỌC (4 BÀI HỌC):', 40, y);
+  ctx.restore();
   y += 18;
 
   // Render EACH LESSON with its SUMMARY INFORMATION
   lessons.forEach((l) => {
     const isLessonAllDone = l.doneStages === l.stagesCount && l.stagesCount > 0;
-    ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, W - 80, cardH, 8);
-    ctx.fill();
-    ctx.strokeStyle = isLessonAllDone ? '#86efac' : '#e2e8f0';
-    ctx.lineWidth = isLessonAllDone ? 1.5 : 1;
-    ctx.stroke();
+    drawRoundedRect(ctx, 40, y, W - 80, cardH, 8, '#ffffff', isLessonAllDone ? '#86efac' : '#e2e8f0', isLessonAllDone ? 1.5 : 1);
 
+    ctx.save();
     // Top Line: Lesson Name
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.font = 'bold 14px Arial, sans-serif';
     ctx.fillText(`${l.num}. ${l.title}`, 56, y + 25);
 
     // Status Pill
     const badgeX = W - 40 - 200;
-    ctx.fillStyle = isLessonAllDone ? '#ecfdf5' : '#f1f5f9';
-    ctx.roundRect(badgeX, y + 10, 185, 24, 12);
-    ctx.fill();
-    ctx.strokeStyle = isLessonAllDone ? '#a7f3d0' : '#cbd5e1';
-    ctx.stroke();
+    drawRoundedRect(ctx, badgeX, y + 10, 185, 24, 12, isLessonAllDone ? '#ecfdf5' : '#f1f5f9', isLessonAllDone ? '#a7f3d0' : '#cbd5e1', 1);
 
     ctx.fillStyle = isLessonAllDone ? '#059669' : '#64748b';
-    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.font = 'bold 11px Arial, sans-serif';
     ctx.textAlign = 'center';
     const statusStr = isLessonAllDone ? '✓ HOÀN THÀNH' : `${l.doneStages}/${l.stagesCount} chặng`;
     ctx.fillText(`${statusStr} · Điểm: ${l.score}/${l.qCount}`, badgeX + 92, y + 26);
@@ -726,23 +721,26 @@ function exportMasterCertificatePNG() {
 
     // Summary Information for each lesson
     ctx.fillStyle = '#475569';
-    ctx.font = '12px system-ui, sans-serif';
+    ctx.font = '12px Arial, sans-serif';
     wrapText(ctx, `• Tóm tắt nội dung: ${l.summary}`, 56, y + 50, W - 112, 17, 2);
+    ctx.restore();
 
     y += cardH + gap;
   });
 
   // Footer
   y += 10;
+  ctx.save();
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '11.5px system-ui, sans-serif';
+  ctx.font = '11.5px Arial, sans-serif';
   ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Bảng chứng nhận tự động.', 40, y);
   ctx.textAlign = 'right';
-  ctx.fillText('MODULE: INTRODUCTION TO DBMS', W - 40, y);
+  ctx.fillText('Khoa Công nghệ Thông tin', W - 40, y);
   ctx.textAlign = 'left';
+  ctx.restore();
 
   const a = document.createElement('a');
-  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9À-ỹ_-]+/g, '_');
+  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9A-Za-z0-9_-]+/g, '_');
   a.download = `chung_nhan_tong_quan_intro_${safeName}.png`;
   a.href = canvas.toDataURL('image/png');
   document.body.appendChild(a);
