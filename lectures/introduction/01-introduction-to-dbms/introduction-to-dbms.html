@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 1: Tổng quan về Cơ sở dữ liệu và Hệ quản trị CSDL | DBMS Interactive</title>
+<meta name="description" content="Khóa học tương tác từng chặng. Vượt qua nhiệm vụ và câu hỏi trắc nghiệm của từng phần để mở khóa các chặng tiếp theo và nhận chứng nhận hoàn thành.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">DBMS · NHẬP MÔN CƠ SỞ DỮ LIỆU · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 1: Tổng quan về Cơ sở dữ liệu và Hệ quản trị CSDL</h1>
+    <p>Khóa học tương tác từng chặng. Vượt qua nhiệm vụ và câu hỏi trắc nghiệm của từng phần để mở khóa các chặng tiếp theo và nhận chứng nhận hoàn thành.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất chứng nhận PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 1 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất chứng nhận kết quả ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Chứng nhận Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 01. Bài 1: Tổng quan về Cơ sở dữ liệu và Hệ quản trị CSDL · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Khởi động & Khái niệm CSDL, DBMS, RDBMS", "summary": "\n        <h4>Kiến thức cốt lõi:</h4>\n        <ul>\n            <li><b>Database (Cơ sở dữ liệu):</b> Là một tập hợp dữ liệu có tổ chức, có cấu trúc và có mối liên hệ logic với nhau, được lưu trữ trên các thiết bị nhớ máy tính để nhiều người/ứng dụng có thể cùng khai thác.</li>\n            <li><b>DBMS (Database Management System):</b> Là <i>phần mềm</i> trung gian cho phép người dùng định nghĩa (create), thao tác (query/update) và kiểm soát truy cập (security/concurrency) vào cơ sở dữ liệu.</li>\n            <li><b>RDBMS (Relational DBMS):</b> Hệ quản trị CSDL quan hệ, tổ chức dữ liệu thành các <b>bảng (tables)</b> gồm các hàng (records) và cột (attributes), liên kết với nhau qua các khóa (Primary Key - Foreign Key), ví dụ: MySQL, PostgreSQL, Oracle, SQL Server.</li>\n        </ul>\n        <div class=\"notice\"><b>Ghi nhớ nhanh:</b> Database = Dữ liệu được tổ chức. DBMS = Phần mềm quản lý dữ liệu đó. Không nhầm lẫn giữa dữ liệu và công cụ quản lý dữ liệu!</div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Phát biểu nào phân biệt chính xác nhất giữa Database và DBMS?", "options": ["Database là phần mềm; DBMS là tập hợp các tệp dữ liệu trên đĩa.", "Database là tập dữ liệu có tổ chức; DBMS là phần mềm quản lý tập dữ liệu đó.", "Database và DBMS luôn là hai tên gọi khác nhau của cùng một phần mềm.", "DBMS chỉ là một loại thiết bị lưu trữ phần cứng chuyên dụng."], "correct": 1, "explanation": "Chính xác! Database là kho dữ liệu được cấu trúc, còn DBMS là phần mềm trung gian để quản trị và truy xuất kho dữ liệu đó."}, {"qid": "q1_2", "text": "Câu 1.2: Một trường đại học cần cho sinh viên xem lịch học, giảng viên nhập điểm và phòng đào tạo xếp lớp cùng lúc. Nhu cầu này thể hiện vai trò cốt lõi nào của DBMS?", "options": ["Chỉ tăng dung lượng ổ cứng lưu trữ tệp Excel.", "Hỗ trợ đồng thời nhiều người dùng truy cập dữ liệu an toàn theo các phân quyền khác nhau.", "Thay thế hoàn toàn người lập trình giao diện ứng dụng.", "Tự động giải quyết bài tập cho sinh viên."], "correct": 1, "explanation": "Chính xác! Khả năng kiểm soát truy cập đồng thời (concurrency control) và phân quyền bảo mật nhiều người dùng là ưu điểm vượt trội của DBMS."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Hệ thống tệp truyền thống vs DBMS — Vì sao cần DBMS?", "summary": "\n        <h4>Hệ thống tệp (File System) truyền thống gặp các vấn đề nghiêm trọng gì?</h4>\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b>1. Dư thừa dữ liệu (Data Redundancy):</b> Cùng một thông tin sinh viên bị sao chép ở nhiều tệp của các phòng ban khác nhau, gây lãng phí bộ nhớ.\n            </div>\n            <div class=\"card-mini\">\n                <b>2. Không nhất quán (Data Inconsistency):</b> Khi sinh viên đổi số điện thoại, chỉ tệp của phòng đào tạo cập nhật còn tệp ký túc xá thì không.\n            </div>\n            <div class=\"card-mini\">\n                <b>3. Bảo mật yếu & Khó chia sẻ:</b> Rất khó phân quyền chi tiết (ví dụ: nhân viên chỉ được xem lương của phòng mình).\n            </div>\n            <div class=\"card-mini\">\n                <b>4. Tranh chấp truy cập đồng thời:</b> Hai người cùng mở một file sửa cùng lúc sẽ ghi đè và làm mất dữ liệu của nhau.\n            </div>\n        </div>\n        <p style=\"margin-top:10px\"><b>Khi nào vẫn dùng File System?</b> Lưu file tĩnh cá nhân (NTFS, ext4), log nhúng trên thiết bị IoT, hoặc phục vụ media streaming (video, ảnh tĩnh qua NFS/S3) nơi không cần giao dịch bảng.</p>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Một sinh viên cập nhật địa chỉ mới nhưng thư báo vẫn gửi về địa chỉ cũ do phòng tài chính chưa nhận được thông tin mới từ phòng đào tạo. Đây là biểu hiện của vấn đề gì trong hệ thống tệp?", "options": ["Dữ liệu không nhất quán (Data Inconsistency) do lưu trữ phân tán.", "Hệ thống đã mã hóa bảo mật thành công.", "Dữ liệu đã tự động backup sang server dự phòng.", "Hiệu năng truy vấn của hệ thống tăng lên."], "correct": 0, "explanation": "Chính xác! Khi dữ liệu bị sao chép ở nhiều tệp riêng rẽ, việc cập nhật không đồng bộ sẽ dẫn tới tình trạng dữ liệu không nhất quán (Data Inconsistency)."}, {"qid": "q2_2", "text": "Câu 2.2: Trong trường hợp nào sau đây, việc sử dụng hệ thống tệp (File System) truyền thống vẫn là lựa chọn tự nhiên và phù hợp nhất?", "options": ["Hệ thống giao dịch rút tiền liên ngân hàng 24/7.", "Lưu trữ và phục vụ streaming các tệp video và hình ảnh tĩnh dung lượng lớn.", "Hệ thống đăng ký vé máy bay với hàng nghìn người đặt chỗ cùng giây.", "Cơ sở dữ liệu bệnh án điện tử cần kiểm soát quyền truy cập chi tiết từng bác sĩ."], "correct": 1, "explanation": "Chính xác! Phân phối tệp tĩnh và video streaming thường dùng hệ thống tệp hoặc Object Storage vì không đòi hỏi liên kết bảng hay ACID phức tạp."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Sáu thành phần của ứng dụng DBMS & Mini Case Study", "summary": "\n        <h4>Hệ thống ứng dụng DBMS gồm 6 thành phần hữu cơ:</h4>\n        <ol>\n            <li><b>Hardware (Phần cứng):</b> Máy chủ, ổ đĩa lưu trữ (SSD/HDD), mạng, máy trạm.</li>\n            <li><b>Software (Phần mềm):</b> Bản thân DBMS (MySQL Engine), hệ điều hành, phần mềm ứng dụng giao diện.</li>\n            <li><b>Data (Dữ liệu):</b> Gồm <i>dữ liệu nghiệp vụ</i> (Operational Data) và <i>siêu dữ liệu</i> (Metadata - dữ liệu mô tả cấu trúc, kiểu dữ liệu, ràng buộc).</li>\n            <li><b>Procedures (Quy trình):</b> Các quy tắc, hướng dẫn vận hành, lịch sao lưu (backup) định kỳ, kịch bản khôi phục (recovery) khi gặp sự cố.</li>\n            <li><b>Database Access Language (Ngôn ngữ truy cập):</b> Ngôn ngữ giao tiếp với CSDL (phổ biến nhất là SQL).</li>\n            <li><b>People (Con người):</b> DBA (quản trị viên CSDL), System Analyst, Lập trình viên ứng dụng và Người dùng cuối (End users).</li>\n        </ol>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Lịch sao lưu dữ liệu tự động lúc 02:00 sáng mỗi ngày và tài liệu hướng dẫn quy trình khôi phục khi máy chủ gặp sự cố thuộc về thành phần nào?", "options": ["Hardware (Phần cứng)", "Procedures (Quy trình)", "Operational Data (Dữ liệu hoạt động)", "End Users (Người dùng cuối)"], "correct": 1, "explanation": "Chính xác! Lịch backup, quy trình vận hành, chính sách đăng ký và khôi phục sự cố thuộc về thành phần Procedures (Quy trình)."}, {"qid": "q3_2", "text": "Câu 3.2: Thông tin mô tả kiểu dữ liệu của cột 'ngay_sinh' là DATE, độ dài chuỗi 'ho_ten' tối đa 50 ký tự được gọi là gì trong CSDL?", "options": ["Metadata (Siêu dữ liệu - dữ liệu mô tả dữ liệu)", "Operating System (Hệ điều hành)", "Data Redundancy (Dư thừa dữ liệu)", "Hardware Cache (Bộ nhớ đệm phần cứng)"], "correct": 0, "explanation": "Chính xác! Metadata là dữ liệu mô tả cấu trúc, định dạng và các ràng buộc của dữ liệu lưu trong DBMS (thường được lưu trong Data Dictionary/Catalog)."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Phân loại DBMS & Các nhóm ngôn ngữ CSDL (SQL Languages)", "summary": "\n        <h4>1. Phân loại DBMS theo mô hình dữ liệu:</h4>\n        <ul>\n            <li><b>Relational (Quan hệ):</b> Dữ liệu dạng bảng liên kết (MySQL, PostgreSQL, Oracle). Rất mạnh về tính toàn vẹn (ACID).</li>\n            <li><b>Document (Tài liệu):</b> Lưu JSON/BSON linh hoạt, schema-free (MongoDB).</li>\n            <li><b>Key-Value:</b> Cặp khóa-giá trị siêu nhanh, phù hợp lưu session, cache (Redis).</li>\n            <li><b>Graph (Đồ thị):</b> Tối ưu cho các quan hệ phức tạp, mạng xã hội (Neo4j).</li>\n        </ul>\n        <h4>2. Năm nhóm lệnh trong ngôn ngữ SQL:</h4>\n        <ul>\n            <li><b>DDL (Data Definition Language):</b> <code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>, <code>TRUNCATE</code> (Định nghĩa cấu trúc).</li>\n            <li><b>DML (Data Manipulation Language):</b> <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code> (Thao tác dữ liệu).</li>\n            <li><b>DQL (Data Query Language):</b> <code>SELECT</code> (Truy vấn dữ liệu).</li>\n            <li><b>DCL (Data Control Language):</b> <code>GRANT</code>, <code>REVOKE</code> (Phân quyền bảo mật).</li>\n            <li><b>TCL (Transaction Control Language):</b> <code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVEPOINT</code> (Quản lý giao dịch).</li>\n        </ul>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Câu lệnh 'CREATE TABLE sinh_vien (id INT PRIMARY KEY, ho_ten VARCHAR(100));' thuộc nhóm ngôn ngữ nào trong SQL?", "options": ["DQL (Data Query Language)", "DML (Data Manipulation Language)", "DDL (Data Definition Language)", "DCL (Data Control Language)"], "correct": 2, "explanation": "Chính xác! Lệnh CREATE dùng để tạo và định nghĩa cấu trúc bảng mới, thuộc nhóm DDL (Data Definition Language)."}, {"qid": "q4_2", "text": "Câu 4.2: Một ứng dụng thương mại điện tử cần hệ thống cache lưu trữ giỏ hàng và phiên đăng nhập (session) của người dùng với tốc độ truy xuất mili-giây. Lựa chọn DBMS nào phù hợp nhất?", "options": ["Key-Value Store (ví dụ: Redis)", "Mô hình phân cấp cổ điển (Hierarchical)", "Lưu trong tệp văn bản Word", "CSDL XML tĩnh"], "correct": 0, "explanation": "Chính xác! Key-Value Store như Redis hoạt động trên RAM với độ trễ siêu thấp, là giải pháp lý tưởng cho bộ nhớ đệm (cache) và session người dùng."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Ứng dụng thực tế & Thử thách tổng kết", "summary": "\n        <h4>Ứng dụng thực tế của DBMS trong các lĩnh vực:</h4>\n        <ul>\n            <li><b>Ngân hàng (Banking):</b> Đảm bảo tính toán vẹn tuyệt đối qua ACID transactions (không thể xảy ra trường hợp tài khoản A đã trừ tiền mà tài khoản B chưa nhận).</li>\n            <li><b>Thương mại điện tử (E-Commerce):</b> Quản lý hàng triệu sản phẩm, giỏ hàng, đặt hàng, xử lý tồn kho đồng thời.</li>\n            <li><b>Y tế (Healthcare):</b> Bảo mật hồ sơ bệnh án, quyền truy cập nghiêm ngặt theo chức danh y bác sĩ.</li>\n            <li><b>Giáo dục (Education):</b> Quản lý sinh viên, đăng ký tín chỉ đồng thời trong giờ cao điểm.</li>\n        </ul>\n        <div class=\"notice ok\"><b>🎉 Chúc mừng:</b> Khi vượt qua các câu hỏi thử thách dưới đây, bạn sẽ hoàn thành toàn bộ Bài 1 và được cấp Chứng nhận hoàn thành!</div>\n        ", "questions": [{"qid": "q5_1", "text": "Câu 5.1: Trong giao dịch ngân hàng, khi chuyển 1.000.000đ từ tài khoản X sang tài khoản Y, điều gì sẽ xảy ra nếu xảy ra mất điện ngay sau khi trừ tiền tài khoản X nhưng chưa kịp cộng tiền tài khoản Y?", "options": ["Số tiền 1.000.000đ sẽ vĩnh viễn bị mất khỏi hệ thống.", "Cơ chế Transaction (Giao dịch) của DBMS sẽ tự động ROLLBACK đưa toàn bộ trạng thái về trước khi chuyển tiền, bảo đảm tiền trong tài khoản X còn nguyên.", "DBMS sẽ tự động in tiền mới để bù vào tài khoản Y.", "Hệ thống tệp sẽ tạo một bản sao mới của tài khoản Y."], "correct": 1, "explanation": "Chính xác! Tính nguyên tố (Atomicity) trong tính chất ACID của DBMS đảm bảo: 'Hoặc tất cả các thao tác trong giao dịch thành công, hoặc không có thao tác nào diễn ra' (Tự động Rollback khi có lỗi)."}, {"qid": "q5_2", "text": "Câu 5.2: Khẳng định nào sau đây là SAI về Hệ quản trị cơ sở dữ liệu (DBMS)?", "options": ["DBMS cung cấp cơ chế bảo mật và phân quyền truy cập chi tiết đến từng bảng, từng cột.", "DBMS giúp loại bỏ sự dư thừa dữ liệu không kiểm soát so với hệ thống tệp.", "DBMS tự động phân tích và sinh ra các quy tắc nghiệp vụ đúng đắn mà con người không cần thiết kế.", "DBMS hỗ trợ tối ưu hóa việc thực thi các câu truy vấn phức tạp."], "correct": 2, "explanation": "Chính xác! Khẳng định C sai vì DBMS chỉ là công cụ thực thi và quản lý; quy tắc nghiệp vụ (Business Rules) và thiết kế CSDL đúng đắn bắt buộc phải do con người phân tích và thiết lập."}]}];
+const STORAGE_KEY = 'dbms_intro_l1_v1';
+const LESSON_TITLE = 'Bài 1: Tổng quan về Cơ sở dữ liệu và Hệ quản trị CSDL';
+const LESSON_CODE = '01';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${Math.round((correctScore/TOTAL_QUESTIONS)*100)}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    pill.className = 'nav-pill' + (isCompleted ? ' completed' : (isUnlocked ? ' active' : ' locked'));
+    pill.innerHTML = (isCompleted ? '✓ ' : (isUnlocked ? '▶ ' : '🔒 ')) + `Chặng ${s.num}`;
+    if (isUnlocked) {
+      pill.onclick = () => {
+        const el = document.getElementById('stage-' + s.num);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isCompleted = state.completedStages.includes(s.num);
+
+    const section = document.createElement('section');
+    section.id = 'stage-' + s.num;
+    section.className = 'stage ' + (isCompleted ? 'completed' : (isUnlocked ? 'active' : 'locked'));
+
+    let badgeText = isCompleted ? '✓ Đã hoàn thành' : (isUnlocked ? 'Đang học' : '🔒 Đang khóa');
+    let badgeClass = isCompleted ? 'done' : (isUnlocked ? 'in-progress' : 'locked');
+
+    let lockBanner = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng ${s.num} đang bị khóa</h3>
+        <p>Vui lòng vượt qua bài kiểm tra của <b>Chặng ${s.num - 1}</b> để mở khóa nội dung này!</p>
+      </div>
+    `;
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIndex) => {
+      const answered = state.answers[q.qid];
+      const isCorrect = state.scores[q.qid];
+      const feedbackClass = answered !== undefined ? (isCorrect ? 'correct' : 'incorrect') : '';
+      const feedbackText = answered !== undefined ? (isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt và thử lại nhé.') : '';
+
+      let optionsHtml = '';
+      q.options.forEach((opt, optIndex) => {
+        const checked = answered === optIndex ? 'checked' : '';
+        let labelClass = 'option-label';
+        if (answered === optIndex) {
+          labelClass += (isCorrect ? ' is-correct' : ' is-wrong');
+        } else if (answered !== undefined && optIndex === q.correct) {
+          labelClass += ' is-correct';
+        }
+        optionsHtml += `
+          <label class="${labelClass}" id="label_${q.qid}_${optIndex}">
+            <input type="radio" name="radio_${q.qid}" value="${optIndex}" ${checked} onchange="selectOption('${q.qid}', ${optIndex}, ${s.num})">
+            <span><b>${String.fromCharCode(65 + optIndex)}.</b> ${opt}</span>
+          </label>
+        `;
+      });
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">
+            ${optionsHtml}
+          </div>
+          <div class="feedback-box ${feedbackClass} ${answered !== undefined ? 'show' : ''}" id="fb_${q.qid}">
+            ${feedbackText}
+          </div>
+        </div>
+      `;
+    });
+
+    let actionsHtml = '';
+    if (s.num < STAGES.length) {
+      actionsHtml = `
+        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra &amp; Mở khóa Chặng ${s.num + 1}</button>
+        <button class="btn-success btn-next" onclick="scrollToStage(${s.num + 1})" id="btnNext_${s.num}" style="display:${isCompleted ? 'inline-block' : 'none'}">Tiếp tục sang Chặng ${s.num + 1} ➔</button>
+      `;
+    } else {
+      actionsHtml = `
+        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra bài tập Chặng ${s.num}</button>
+      `;
+    }
+
+    section.innerHTML = `
+      ${lockBanner}
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="stage-badge ${badgeClass}" id="badge_${s.num}">${badgeText}</span>
+        </div>
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cpBox_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Thử thách Checkpoint Chặng ${s.num}</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Đạt tất cả câu đúng để mở khóa chặng sau</span>
+          </div>
+          ${questionsHtml}
+          <div class="stage-actions">
+            ${actionsHtml}
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(section);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  // Clear wrong class styling immediately on new selection
+  const stage = STAGES.find(s => s.num === stageNum);
+  const q = stage.questions.find(item => item.qid === qid);
+  q.options.forEach((_, idx) => {
+    const el = document.getElementById(`label_${qid}_${idx}`);
+    if (el) el.className = 'option-label' + (idx === optIndex ? ' selected' : '');
+  });
+  saveState();
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const q of (stage.questions || [])) {
+    const chosen = state.answers[q.qid];
+    if (chosen === undefined) {
+      allAnswered = false;
+      continue;
+    }
+    const isCorrect = (chosen === q.correct);
+    state.scores[q.qid] = isCorrect;
+    if (!isCorrect) allCorrect = false;
+
+    // Update label classes
+    q.options.forEach((_, idx) => {
+      const el = document.getElementById(`label_${q.qid}_${idx}`);
+      if (el) {
+        el.className = 'option-label';
+        if (idx === chosen) {
+          el.className += (isCorrect ? ' is-correct' : ' is-wrong');
+        } else if (idx === q.correct) {
+          el.className += ' is-correct';
+        }
+      }
+    });
+
+    // Update feedback box
+    const fb = document.getElementById(`fb_${q.qid}`);
+    if (fb) {
+      fb.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'incorrect');
+      fb.innerHTML = isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt phía trên và chọn lại.';
+    }
+  }
+
+  if (!allAnswered) {
+    alert(`Vui lòng chọn đáp án cho tất cả câu hỏi trong Chặng ${stageNum} trước khi kiểm tra.`);
+    return;
+  }
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (stageNum === state.unlockedUntil && state.unlockedUntil < STAGES.length) {
+      state.unlockedUntil++;
+    }
+
+    saveState();
+    updateScorecard();
+
+    // Update current stage visuals
+    const section = document.getElementById('stage-' + stageNum);
+    if (section) section.className = 'stage completed';
+    const badge = document.getElementById('badge_' + stageNum);
+    if (badge) {
+      badge.textContent = '✓ Đã hoàn thành';
+      badge.className = 'stage-badge done';
+    }
+    const cpBox = document.getElementById('cpBox_' + stageNum);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const nextBtn = document.getElementById('btnNext_' + stageNum);
+    if (nextBtn) nextBtn.style.display = 'inline-block';
+
+    // Unlock next stage section if exists
+    if (stageNum < STAGES.length) {
+      const nextSection = document.getElementById('stage-' + (stageNum + 1));
+      if (nextSection) {
+        nextSection.className = 'stage active';
+        const nextBadge = document.getElementById('badge_' + (stageNum + 1));
+        if (nextBadge) {
+          nextBadge.textContent = 'Đang học';
+          nextBadge.className = 'stage-badge in-progress';
+        }
+      }
+      // Smooth scroll to next stage after slight pause
+      setTimeout(() => {
+        const nextSection = document.getElementById('stage-' + (stageNum + 1));
+        if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
+  } else {
+    saveState();
+    updateScorecard();
+    alert('Có câu trả lời chưa chính xác. Hãy xem kỹ phần giải thích tô đỏ/xanh và chọn lại nhé!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById('stage-' + stageNum);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (!confirm('Bạn có chắc chắn muốn làm lại từ đầu? Tất cả chặng đã mở và điểm số sẽ được đặt lại.')) return;
+  state.unlockedUntil = 1;
+  state.completedStages = [];
+  state.answers = {};
+  state.scores = {};
+  saveState();
+  updateScorecard();
+  renderStages();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'N/A';
+  const name = (document.getElementById('studentName')?.value || '').trim() || 'Sinh viên';
+  
+  const rows = [
+    ['MSSV', 'Ho va ten', 'Bai hoc', 'Chang', 'Cau hoi', 'Ket qua', 'Diem'],
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const ok = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        `Chặng ${s.num}`,
+        q.qid,
+        ok ? 'Dung' : 'Sai',
+        ok ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const tag = (mssv || name).replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
+  a.download = `diem_${LESSON_CODE}_${tag}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa nhập MSSV';
+  const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = Math.round((score / total) * 100);
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 680 + (STAGES.length * 48);
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Top Banner
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, 160);
+  grad.addColorStop(0, '#112b53');
+  grad.addColorStop(1, '#1e5bb8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, 160);
+
+  // Banner Text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 88);
+
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = '#dbeafe';
+  ctx.fillText(`Thời gian hoàn thành: ${dateStr}`, 40, 122);
+
+  // Student Info Card
+  ctx.fillStyle = '#ffffff';
+  ctx.roundRect(40, 185, canvas.width - 80, 100, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '13px sans-serif';
+  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 65, 222);
+  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 400, 222);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText(name, 65, 256);
+  ctx.fillText(mssv, 400, 256);
+
+  // Score Badge
+  const badgeColor = pct >= 80 ? '#0f845a' : (pct >= 50 ? '#b45309' : '#c02b2b');
+  ctx.fillStyle = badgeColor;
+  ctx.roundRect(canvas.width - 240, 202, 160, 66, 10);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${score} / ${total} (${pct}%)`, canvas.width - 160, 243);
+  ctx.textAlign = 'left';
+
+  // Section Breakdown Table
+  let y = 320;
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('CHI TIẾT TIẾN ĐỘ VÀ KẾT QUẢ TỪNG CHẶNG:', 40, y);
+  y += 24;
+
+  STAGES.forEach((s) => {
+    const done = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    ctx.fillStyle = '#ffffff';
+    ctx.roundRect(40, y, canvas.width - 80, 42, 8);
+    ctx.fill();
+    ctx.strokeStyle = done ? '#bbf7d0' : '#e2e8f0';
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '600 14px sans-serif';
+    ctx.fillText(s.title, 60, y + 26);
+
+    ctx.fillStyle = done ? '#0f845a' : '#64748b';
+    ctx.font = 'bold 13px sans-serif';
+    const statusText = done ? '✓ ĐÃ VƯỢT QUA' : 'CHƯA HOÀN THÀNH';
+    ctx.fillText(`${statusText} · (${sCorrect}/${qCount} câu)`, canvas.width - 270, y + 26);
+
+    y += 50;
+  });
+
+  // Footer Note
+  y += 20;
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px sans-serif';
+  ctx.fillText('Hệ thống học liệu tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+
+  // Trigger download
+  const a = document.createElement('a');
+  a.download = `chung_nhan_${LESSON_CODE}_${mssv || 'sv'}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  const idIn = document.getElementById('studentId');
+  const nameIn = document.getElementById('studentName');
+  if (idIn) idIn.addEventListener('input', saveState);
+  if (nameIn) nameIn.addEventListener('input', saveState);
+
+  document.getElementById('exportPng').addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv').addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg').addEventListener('click', resetProgress);
+});
+</script>
+</body>
+</html>

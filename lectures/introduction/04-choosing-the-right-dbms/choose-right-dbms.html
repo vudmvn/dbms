@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 4: Phân loại và Lựa chọn Hệ quản trị CSDL phù hợp | DBMS Interactive</title>
+<meta name="description" content="Khám phá khung tiêu chí chọn DBMS: Phân tích Workload (OLTP vs OLAP), Định lý CAP & PACELC, So sánh RDBMS vs NoSQL vs NewSQL và các mô hình triển khai Cloud. Vượt qua từng chặng để mở khóa.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #112b53 0%, #204ea8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+}
+.student-inputs input:focus {
+  outline: 2px solid var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  background: var(--blue-sub);
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #1a428a;
+  font-weight: 600;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn-group {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active {
+  border-left: 6px solid var(--blue);
+}
+.stage.completed {
+  border-left: 6px solid var(--green);
+}
+.stage.locked {
+  background: #fbfcfe;
+}
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner {
+  display: none;
+}
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.stage-lock-banner h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+}
+.stage-lock-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 {
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
+}
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #1e3a6e;
+}
+.concept-box ul, .concept-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.concept-box li {
+  margin-bottom: 6px;
+}
+.notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  font-size: 13.5px;
+  color: #1e3a6e;
+}
+.notice.ok {
+  background: var(--green-sub);
+  border-left-color: var(--green);
+  color: #0b593a;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+.card-mini {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+}
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.checkpoint-box.passed {
+  border-color: var(--green);
+  background: #fbfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #0f2d59;
+}
+.question-item {
+  border-top: 1px dashed #e2e8f0;
+  padding: 14px 0 10px;
+}
+.question-item:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.q-text {
+  font-weight: 650;
+  margin-bottom: 10px;
+  font-size: 14.5px;
+  color: #1e293b;
+}
+.options-list {
+  display: grid;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+/* Action buttons at stage bottom */
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Final Celebration Modal / Section */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show {
+  display: block;
+}
+.congrats-card h2 {
+  font-size: 26px;
+  margin: 0 0 10px;
+}
+.congrats-card p {
+  font-size: 15px;
+  margin: 0 0 20px;
+  color: #e2fdf1;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">DBMS · TƯ VẤN KIẾN TRÚC & QUYẾT ĐỊNH · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 4: Phân loại và Lựa chọn Hệ quản trị CSDL phù hợp</h1>
+    <p>Khám phá khung tiêu chí chọn DBMS: Phân tích Workload (OLTP vs OLAP), Định lý CAP & PACELC, So sánh RDBMS vs NoSQL vs NewSQL và các mô hình triển khai Cloud. Vượt qua từng chặng để mở khóa.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất chứng nhận PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 1 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất chứng nhận kết quả ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Chứng nhận Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 04. Bài 4: Phân loại và Lựa chọn Hệ quản trị CSDL phù hợp · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Quyết định kiến trúc & Phân biệt Data Model, DBMS, Deployment", "summary": "\n        <h4>1. Lựa chọn database là một quyết định kiến trúc chiến lược:</h4>\n        <p>Chọn sai CSDL có thể dẫn đến hệ thống bị nghẽn cổ chai (bottleneck), chi phí vận hành tăng vọt và việc chuyển đổi sau này cực kỳ tốn kém và rủi ro.</p>\n        <h4>2. Phân biệt ba khái niệm dễ nhầm lẫn:</h4>\n        <ul>\n            <li><b>Data Model (Mô hình dữ liệu):</b> Cách tổ chức dữ liệu về mặt toán học/logic: Relational (quan hệ bảng), Document (JSON), Key-Value, Graph (đỉnh/cạnh), Time-series.</li>\n            <li><b>DBMS (Hệ quản trị CSDL):</b> Phần mềm cụ thể hiện thực hóa mô hình dữ liệu: MySQL, PostgreSQL, MongoDB, Redis, Cassandra.</li>\n            <li><b>Deployment Model (Mô hình triển khai):</b> Nơi và cách CSDL vận hành: Tự quản trị trên máy chủ nội bộ (Self-hosted on-premise), Máy ảo Cloud (EC2/GCE), Managed Database (AWS RDS, Cloud SQL) hay Serverless (Aurora Serverless, DynamoDB).</li>\n        </ul>\n        ", "questions": [{"qid": "l4_q1_1", "text": "Câu 1.1: Khi một nhóm phát triển nói 'Chúng tôi sử dụng mô hình Document và triển khai trên dịch vụ MongoDB Atlas (Managed Cloud)', đâu là Data Model và đâu là Deployment Model?", "options": ["Data Model là Document; Deployment Model là Managed Cloud (MongoDB Atlas).", "Data Model là MongoDB Atlas; Deployment Model là Document.", "Cả hai đều là tên của phần cứng máy tính.", "Không thể phân biệt được trong điện toán đám mây."], "correct": 0, "explanation": "Chính xác! Document là mô hình tổ chức dữ liệu (Data Model), còn Managed Cloud (MongoDB Atlas) là hình thức triển khai và vận hành (Deployment Model)."}, {"qid": "l4_q1_2", "text": "Câu 1.2: Phát biểu nào sau đây là ĐÚNG về các hệ quản trị CSDL hiện đại?", "options": ["Một hệ CSDL chỉ có thể hỗ trợ duy nhất 1 kiểu dữ liệu số nguyên.", "Nhiều CSDL hiện đại (như PostgreSQL, MySQL 8.0+) hỗ trợ Multi-model: vừa lưu trữ quan hệ dạng bảng chuẩn vừa hỗ trợ lưu trữ và truy vấn JSON tài liệu linh hoạt.", "CSDL NoSQL hoàn toàn không bao giờ có bất kỳ cấu trúc dữ liệu nào.", "Chọn CSDL nào cũng như nhau vì tất cả đều có hiệu năng ngang bằng nhau trong mọi tình huống."], "correct": 1, "explanation": "Chính xác! Xu hướng hiện đại là Multi-model DBMS, cho phép kết hợp sức mạnh giao dịch quan hệ với tính linh hoạt của kiểu dữ liệu JSON."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Bắt đầu từ Workload: OLTP vs OLAP vs HTAP", "summary": "\n        <h4>Phân loại bản chất công việc (Workload Analysis):</h4>\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b>OLTP (Online Transaction Processing):</b><br>\n                - <b>Mục tiêu:</b> Phục vụ các giao dịch thường nhật của người dùng cuối (mua hàng, chuyển tiền, đặt vé).<br>\n                - <b>Đặc điểm truy vấn:</b> Hàng triệu truy vấn nhỏ, đọc/ghi nhanh từng bản ghi theo khóa chính (Primary Key).<br>\n                - <b>Độ trễ:</b> Cực thấp (<10-50ms), yêu cầu nghiêm ngặt về tính nhất quán <b>ACID</b>.<br>\n                - <b>Lựa chọn tối ưu:</b> MySQL, PostgreSQL, Oracle, SQL Server.\n            </div>\n            <div class=\"card-mini\">\n                <b>OLAP (Online Analytical Processing):</b><br>\n                - <b>Mục tiêu:</b> Phục vụ báo cáo, phân tích xu hướng kinh doanh, Business Intelligence (BI).<br>\n                - <b>Đặc điểm truy vấn:</b> Quét (scan) và tính toán tổng hợp (SUM, AVG) trên hàng chục triệu đến hàng tỷ dòng qua ít cột.<br>\n                - <b>Lưu trữ:</b> Thường dùng dạng cột (Columnar Storage: ClickHouse, Snowflake, BigQuery, AWS Redshift).\n            </div>\n        </div>\n        ", "questions": [{"qid": "l4_q2_1", "text": "Câu 2.1: Một sàn thương mại điện tử cần xử lý việc người dùng bấm 'Thanh toán đơn hàng' trong 50ms và trừ tồn kho ngay lập tức. Đây là loại workload nào?", "options": ["OLAP (Online Analytical Processing)", "OLTP (Online Transaction Processing)", "Batch MapReduce Processing", "Offline Archival Storage"], "correct": 1, "explanation": "Chính xác! Thao tác thanh toán đơn hàng là giao dịch thường nhật ngắn, yêu cầu phản hồi tức thời và bảo toàn tính toàn vẹn (ACID), thuộc loại hình OLTP."}, {"qid": "l4_q2_2", "text": "Câu 2.2: Ban giám đốc cần một báo cáo: 'Tổng doanh thu theo từng ngành hàng trong 3 năm qua và so sánh tỷ lệ tăng trưởng theo quý'. Loại workload và hệ thống CSDL nào thích hợp nhất?", "options": ["Workload OLAP — sử dụng Data Warehouse hoặc Columnar Database (như ClickHouse, Snowflake, BigQuery).", "Workload OLTP trên SQLite cài đặt ở điện thoại giám đốc.", "Lưu trong clipboard của Windows.", "Dùng CSDL đồ thị Neo4j chỉ để đếm số sản phẩm."], "correct": 0, "explanation": "Chính xác! Phân tích tổng hợp số liệu lịch sử qua hàng năm là bài toán kinh điển của OLAP, tối ưu nhất khi chạy trên các hệ thống lưu trữ theo cột (Columnar Data Warehouse)."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Định lý CAP & Đánh đổi trong Hệ thống phân tán", "summary": "\n        <h4>1. Định lý CAP (Brewer's Theorem):</h4>\n        <p>Trong một hệ thống dữ liệu phân tán qua mạng, khi xảy ra sự cố phân vùng mạng (<b>Partition Tolerance - P</b>), hệ thống <b>chỉ có thể chọn 1 trong 2</b> thuộc tính còn lại:</p>\n        <ul>\n            <li><b>CP (Consistency + Partition Tolerance):</b> Ưu tiên tính nhất quán dữ liệu tuyệt đối. Nếu mạng bị đứt giữa các nút, hệ thống thà từ chối yêu cầu (Error/Timeout) chứ không trả về dữ liệu cũ (ví dụ: Hệ thống ngân hàng, etcd, MongoDB configured write concern).</li>\n            <li><b>AP (Availability + Partition Tolerance):</b> Ưu tiên tính sẵn sàng phục vụ. Khi mạng bị đứt, mọi nút vẫn trả lời người dùng nhưng chấp nhận dữ liệu có thể tạm thời chưa được đồng bộ (ví dụ: DNS, bảng tin mạng xã hội Facebook, Cassandra, DynamoDB).</li>\n        </ul>\n        <h4>2. ACID vs BASE:</h4>\n        <p>RDBMS truyền thống theo mô hình <b>ACID</b> (chặt chẽ, nhất quán tức thì). Nhiều hệ thống NoSQL phân tán chọn mô hình <b>BASE</b> (Basically Available, Soft state, Eventual consistency - tính nhất quán cuối cùng).</p>\n        ", "questions": [{"qid": "l4_q3_1", "text": "Câu 3.1: Một mạng xã hội hiển thị số lượt Like của một bài viết. Khi hai trung tâm dữ liệu bị gián đoạn đường truyền cáp quang, hệ thống vẫn cho phép người dùng bấm Like và chấp nhận người ở Mỹ và người ở Việt Nam có thể thấy số Like chênh lệch nhau trong vài giây trước khi đồng bộ xong. Đây là hướng tiếp cận nào theo CAP?", "options": ["Hệ thống CP (Consistency over Availability)", "Hệ thống AP (Availability over Consistency / Eventual Consistency)", "Hệ thống không hỗ trợ mạng Internet", "Mô hình lưu trữ băng từ tape cổ điển"], "correct": 1, "explanation": "Chính xác! Hệ thống ưu tiên luôn sẵn sàng phục vụ người dùng (Availability) và chấp nhận tính nhất quán cuối cùng (Eventual Consistency), thuộc nhóm AP."}, {"qid": "l4_q3_2", "text": "Câu 3.2: Định lý CAP khẳng định điều gì về 3 yếu tố: Tính nhất quán (C), Tính sẵn sàng (A) và Khả năng chịu lỗi phân vùng mạng (P)?", "options": ["Một hệ thống phân tán có thể đạt được trọn vẹn 100% cả 3 yếu tố trong mọi điều kiện mạng đứt gãy.", "Vì sự cố phân vùng mạng (P) là thực tế khách quan luôn có thể xảy ra trong thế giới mạng, hệ thống phân tán buộc phải đánh đổi giữa C (nhất quán) hoặc A (sẵn sàng) khi có phân vùng.", "Không có hệ thống nào cần đến tính sẵn sàng.", "Tính nhất quán chỉ quan trọng khi máy tính tắt nguồn."], "correct": 1, "explanation": "Chính xác! Trong mạng phân tán, lỗi mạng (P) là không thể tránh khỏi, do đó các kiến trúc sư buộc phải lựa chọn giữa tính nhất quán (CP) hoặc tính sẵn sàng (AP)."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Khung tiêu chí ra quyết định lựa chọn DBMS", "summary": "\n        <h4>Khung tiêu chí chọn CSDL theo mô hình nghiệp vụ:</h4>\n        <div style=\"overflow-x:auto\">\n            <table style=\"width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px\">\n                <tr style=\"background:#eef3fa;border-bottom:1px solid #c9d5e8\">\n                    <th style=\"padding:8px;text-align:left\">Đặc thù bài toán</th>\n                    <th style=\"padding:8px;text-align:left\">Mô hình tối ưu</th>\n                    <th style=\"padding:8px;text-align:left\">Ví dụ sản phẩm</th>\n                </tr>\n                <tr style=\"border-bottom:1px solid #e2e8f0\">\n                    <td style=\"padding:7px\">Dữ liệu có cấu trúc chặt, quan hệ phức tạp, cần toàn vẹn ACID</td>\n                    <td>Relational (RDBMS)</td>\n                    <td>PostgreSQL, MySQL, Oracle</td>\n                </tr>\n                <tr style=\"border-bottom:1px solid #e2e8f0\">\n                    <td style=\"padding:7px\">Cấu trúc linh hoạt, tài liệu dạng cây JSON, phát triển tính năng nhanh</td>\n                    <td>Document Store</td>\n                    <td>MongoDB</td>\n                </tr>\n                <tr style=\"border-bottom:1px solid #e2e8f0\">\n                    <td style=\"padding:7px\">Tốc độ đọc/ghi siêu cao mili-giây, lưu cache, session, leaderboard</td>\n                    <td>Key-Value Store</td>\n                    <td>Redis, Memcached</td>\n                </tr>\n                <tr style=\"border-bottom:1px solid #e2e8f0\">\n                    <td style=\"padding:7px\">Mạng lưới kết nối nhiều-nhiều, phát hiện gian lận, mạng xã hội, gợi ý bạn bè</td>\n                    <td>Graph Database</td>\n                    <td>Neo4j, Amazon Neptune</td>\n                </tr>\n                <tr>\n                    <td style=\"padding:7px\">Dữ liệu cảm biến IoT, chuỗi thời gian, ghi log máy chủ liên tục</td>\n                    <td>Time-Series Database</td>\n                    <td>TimescaleDB, InfluxDB</td>\n                </tr>\n            </table>\n        </div>\n        ", "questions": [{"qid": "l4_q4_1", "text": "Câu 4.1: Một ứng dụng mạng xã hội cần tính năng: 'Tìm tất cả những người là bạn chung của bạn của bạn trong phạm vi 3 bước kết nối để đưa ra gợi ý kết bạn'. Mô hình CSDL nào giải quyết bài toán này với hiệu năng cao nhất?", "options": ["Relational Database với 10 phép JOIN lồng nhau gây quá tải.", "Graph Database (CSDL Đồ thị, ví dụ: Neo4j) tối ưu duyệt đỉnh và cạnh.", "File text CSV tĩnh.", "Hệ thống tệp nén zip."], "correct": 1, "explanation": "Chính xác! Graph Database lưu trữ các mối quan hệ dưới dạng các cạnh (edges) kết nối các đỉnh (nodes), cho phép duyệt đồ thị nhiều bước với tốc độ vượt trội so với phép JOIN phức tạp trong RDBMS."}, {"qid": "l4_q4_2", "text": "Câu 4.2: Một nhà máy thông minh triển khai 10.000 cảm biến nhiệt độ và độ ẩm, mỗi cảm biến gửi dữ liệu 1 giây/lần kèm theo nhãn thời gian (timestamp). Loại CSDL nào được thiết kế chuyên biệt cho tải công việc này?", "options": ["Time-Series Database (CSDL chuỗi thời gian, ví dụ: InfluxDB, TimescaleDB)", "MS Word văn bản", "CSDL đồ thị Neo4j", "Hệ thống tệp Windows FAT32"], "correct": 0, "explanation": "Chính xác! Time-Series Database được tối ưu hóa đặc biệt cho việc ghi lượng lớn dữ liệu nối tiếp theo thời gian và nén dữ liệu chuỗi thời gian cực kỳ hiệu quả."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Đồ án thực chiến & Quyết định kiến trúc cho dự án", "summary": "\n        <h4>Quy tắc vàng: Kiến trúc Đa cơ sở dữ liệu (Polyglot Persistence):</h4>\n        <p>Trong các ứng dụng doanh nghiệp thực tế quy mô lớn, <b>không có một CSDL nào là viên đạn bạc</b> giải quyết tốt tất cả mọi việc. Các hệ thống hiện đại thường kết hợp nhiều loại CSDL phù hợp với từng dịch vụ:</p>\n        <ul>\n            <li><b>RDBMS (PostgreSQL/MySQL):</b> Quản lý tài khoản, đơn hàng, hóa đơn, thanh toán (bảo đảm an toàn giao dịch).</li>\n            <li><b>Redis:</b> Bộ nhớ đệm giỏ hàng tạm, danh sách token đăng nhập.</li>\n            <li><b>Elasticsearch:</b> Tìm kiếm toàn văn (Full-text search) sản phẩm siêu tốc với tự động gợi ý từ khóa.</li>\n            <li><b>ClickHouse / BigQuery:</b> Phân tích dữ liệu hành vi người dùng và xuất báo cáo kinh doanh.</li>\n        </ul>\n        <div class=\"notice ok\"><b>🎉 Chúc mừng bạn:</b> Hoàn thành bài kiểm tra cuối cùng này để khép lại toàn bộ học phần Introduction to DBMS!</div>\n        ", "questions": [{"qid": "l4_q5_1", "text": "Câu 5.1: Khái niệm 'Polyglot Persistence' trong kiến trúc phần mềm hiện đại có nghĩa là gì?", "options": ["Chỉ được phép sử dụng duy nhất một CSDL cho tất cả các loại dữ liệu của toàn công ty.", "Sử dụng kết hợp nhiều loại công nghệ CSDL khác nhau trong cùng một hệ thống, trong đó mỗi CSDL đảm nhiệm loại dữ liệu và tải công việc mà nó tối ưu nhất.", "Lưu trữ dữ liệu bằng cách in ra giấy để lưu kho.", "Xóa bỏ hoàn toàn CSDL và chỉ dùng biến tạm thời trong code."], "correct": 1, "explanation": "Chính xác! Polyglot Persistence là chiến lược kiến trúc kết hợp linh hoạt các hệ CSDL phù hợp nhất cho từng thành phần (RDBMS cho giao dịch, Redis cho cache, Search Engine cho tìm kiếm...)."}, {"qid": "l4_q5_2", "text": "Câu 5.2: Một startup công nghệ có đội ngũ nhỏ, cần ra mắt sản phẩm MVP nhanh trong 2 tháng, tải truy cập ban đầu thấp nhưng cần mở rộng tự động khi có nhiều người dùng mà không có kỹ sư DevOps chuyên trách. Mô hình triển khai CSDL nào là hợp lý nhất?", "options": ["Tự mua server vật lý về đặt tại phòng làm việc và tự cài đặt hệ điều hành, tự backup thủ công mỗi đêm.", "Sử dụng Managed Database hoặc Serverless Cloud Database (như AWS RDS / Aurora Serverless / Firebase / Supabase) để nhà cung cấp Cloud lo toàn bộ việc backup, vá lỗi bảo mật và mở rộng tự động.", "Không dùng bất kỳ CSDL nào.", "Thuê máy tính bảng cũ để chạy server."], "correct": 1, "explanation": "Chính xác! Managed và Serverless Cloud Database giúp các đội ngũ nhỏ tập trung vào phát triển tính năng sản phẩm mà không tốn công sức quản trị hạ tầng phần cứng."}]}];
+const STORAGE_KEY = 'dbms_intro_l4_v1';
+const LESSON_TITLE = 'Bài 4: Phân loại và Lựa chọn Hệ quản trị CSDL phù hợp';
+const LESSON_CODE = '04';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1, // stage number unlocked (1 to STAGES.length)
+  completedStages: [], // list of completed stage numbers
+  answers: {}, // { qid: selectedOptionIndex }
+  scores: {} // { qid: isCorrectBoolean }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+  
+  const pct = Math.round((completedCount / totalStages) * 100);
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${Math.round((correctScore/TOTAL_QUESTIONS)*100)}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // Toggle congrats card
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  // Update stage nav pills
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    pill.className = 'nav-pill' + (isCompleted ? ' completed' : (isUnlocked ? ' active' : ' locked'));
+    pill.innerHTML = (isCompleted ? '✓ ' : (isUnlocked ? '▶ ' : '🔒 ')) + `Chặng ${s.num}`;
+    if (isUnlocked) {
+      pill.onclick = () => {
+        const el = document.getElementById('stage-' + s.num);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isCompleted = state.completedStages.includes(s.num);
+
+    const section = document.createElement('section');
+    section.id = 'stage-' + s.num;
+    section.className = 'stage ' + (isCompleted ? 'completed' : (isUnlocked ? 'active' : 'locked'));
+
+    let badgeText = isCompleted ? '✓ Đã hoàn thành' : (isUnlocked ? 'Đang học' : '🔒 Đang khóa');
+    let badgeClass = isCompleted ? 'done' : (isUnlocked ? 'in-progress' : 'locked');
+
+    let lockBanner = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng ${s.num} đang bị khóa</h3>
+        <p>Vui lòng vượt qua bài kiểm tra của <b>Chặng ${s.num - 1}</b> để mở khóa nội dung này!</p>
+      </div>
+    `;
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q, qIndex) => {
+      const answered = state.answers[q.qid];
+      const isCorrect = state.scores[q.qid];
+      const feedbackClass = answered !== undefined ? (isCorrect ? 'correct' : 'incorrect') : '';
+      const feedbackText = answered !== undefined ? (isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt và thử lại nhé.') : '';
+
+      let optionsHtml = '';
+      q.options.forEach((opt, optIndex) => {
+        const checked = answered === optIndex ? 'checked' : '';
+        let labelClass = 'option-label';
+        if (answered === optIndex) {
+          labelClass += (isCorrect ? ' is-correct' : ' is-wrong');
+        } else if (answered !== undefined && optIndex === q.correct) {
+          labelClass += ' is-correct';
+        }
+        optionsHtml += `
+          <label class="${labelClass}" id="label_${q.qid}_${optIndex}">
+            <input type="radio" name="radio_${q.qid}" value="${optIndex}" ${checked} onchange="selectOption('${q.qid}', ${optIndex}, ${s.num})">
+            <span><b>${String.fromCharCode(65 + optIndex)}.</b> ${opt}</span>
+          </label>
+        `;
+      });
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">
+            ${optionsHtml}
+          </div>
+          <div class="feedback-box ${feedbackClass} ${answered !== undefined ? 'show' : ''}" id="fb_${q.qid}">
+            ${feedbackText}
+          </div>
+        </div>
+      `;
+    });
+
+    let actionsHtml = '';
+    if (s.num < STAGES.length) {
+      actionsHtml = `
+        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra &amp; Mở khóa Chặng ${s.num + 1}</button>
+        <button class="btn-success btn-next" onclick="scrollToStage(${s.num + 1})" id="btnNext_${s.num}" style="display:${isCompleted ? 'inline-block' : 'none'}">Tiếp tục sang Chặng ${s.num + 1} ➔</button>
+      `;
+    } else {
+      actionsHtml = `
+        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra bài tập Chặng ${s.num}</button>
+      `;
+    }
+
+    section.innerHTML = `
+      ${lockBanner}
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="stage-badge ${badgeClass}" id="badge_${s.num}">${badgeText}</span>
+        </div>
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cpBox_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Thử thách Checkpoint Chặng ${s.num}</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Đạt tất cả câu đúng để mở khóa chặng sau</span>
+          </div>
+          ${questionsHtml}
+          <div class="stage-actions">
+            ${actionsHtml}
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(section);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  // Clear wrong class styling immediately on new selection
+  const stage = STAGES.find(s => s.num === stageNum);
+  const q = stage.questions.find(item => item.qid === qid);
+  q.options.forEach((_, idx) => {
+    const el = document.getElementById(`label_${qid}_${idx}`);
+    if (el) el.className = 'option-label' + (idx === optIndex ? ' selected' : '');
+  });
+  saveState();
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const q of (stage.questions || [])) {
+    const chosen = state.answers[q.qid];
+    if (chosen === undefined) {
+      allAnswered = false;
+      continue;
+    }
+    const isCorrect = (chosen === q.correct);
+    state.scores[q.qid] = isCorrect;
+    if (!isCorrect) allCorrect = false;
+
+    // Update label classes
+    q.options.forEach((_, idx) => {
+      const el = document.getElementById(`label_${q.qid}_${idx}`);
+      if (el) {
+        el.className = 'option-label';
+        if (idx === chosen) {
+          el.className += (isCorrect ? ' is-correct' : ' is-wrong');
+        } else if (idx === q.correct) {
+          el.className += ' is-correct';
+        }
+      }
+    });
+
+    // Update feedback box
+    const fb = document.getElementById(`fb_${q.qid}`);
+    if (fb) {
+      fb.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'incorrect');
+      fb.innerHTML = isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt phía trên và chọn lại.';
+    }
+  }
+
+  if (!allAnswered) {
+    alert(`Vui lòng chọn đáp án cho tất cả câu hỏi trong Chặng ${stageNum} trước khi kiểm tra.`);
+    return;
+  }
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (stageNum === state.unlockedUntil && state.unlockedUntil < STAGES.length) {
+      state.unlockedUntil++;
+    }
+
+    saveState();
+    updateScorecard();
+
+    // Update current stage visuals
+    const section = document.getElementById('stage-' + stageNum);
+    if (section) section.className = 'stage completed';
+    const badge = document.getElementById('badge_' + stageNum);
+    if (badge) {
+      badge.textContent = '✓ Đã hoàn thành';
+      badge.className = 'stage-badge done';
+    }
+    const cpBox = document.getElementById('cpBox_' + stageNum);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const nextBtn = document.getElementById('btnNext_' + stageNum);
+    if (nextBtn) nextBtn.style.display = 'inline-block';
+
+    // Unlock next stage section if exists
+    if (stageNum < STAGES.length) {
+      const nextSection = document.getElementById('stage-' + (stageNum + 1));
+      if (nextSection) {
+        nextSection.className = 'stage active';
+        const nextBadge = document.getElementById('badge_' + (stageNum + 1));
+        if (nextBadge) {
+          nextBadge.textContent = 'Đang học';
+          nextBadge.className = 'stage-badge in-progress';
+        }
+      }
+      // Smooth scroll to next stage after slight pause
+      setTimeout(() => {
+        const nextSection = document.getElementById('stage-' + (stageNum + 1));
+        if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 600);
+    }
+  } else {
+    saveState();
+    updateScorecard();
+    alert('Có câu trả lời chưa chính xác. Hãy xem kỹ phần giải thích tô đỏ/xanh và chọn lại nhé!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById('stage-' + stageNum);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (!confirm('Bạn có chắc chắn muốn làm lại từ đầu? Tất cả chặng đã mở và điểm số sẽ được đặt lại.')) return;
+  state.unlockedUntil = 1;
+  state.completedStages = [];
+  state.answers = {};
+  state.scores = {};
+  saveState();
+  updateScorecard();
+  renderStages();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'N/A';
+  const name = (document.getElementById('studentName')?.value || '').trim() || 'Sinh viên';
+  
+  const rows = [
+    ['MSSV', 'Ho va ten', 'Bai hoc', 'Chang', 'Cau hoi', 'Ket qua', 'Diem'],
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const ok = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        `Chặng ${s.num}`,
+        q.qid,
+        ok ? 'Dung' : 'Sai',
+        ok ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const tag = (mssv || name).replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
+  a.download = `diem_${LESSON_CODE}_${tag}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa nhập MSSV';
+  const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = Math.round((score / total) * 100);
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 680 + (STAGES.length * 48);
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Top Banner
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, 160);
+  grad.addColorStop(0, '#112b53');
+  grad.addColorStop(1, '#1e5bb8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, 160);
+
+  // Banner Text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 88);
+
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = '#dbeafe';
+  ctx.fillText(`Thời gian hoàn thành: ${dateStr}`, 40, 122);
+
+  // Student Info Card
+  ctx.fillStyle = '#ffffff';
+  ctx.roundRect(40, 185, canvas.width - 80, 100, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '13px sans-serif';
+  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 65, 222);
+  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 400, 222);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText(name, 65, 256);
+  ctx.fillText(mssv, 400, 256);
+
+  // Score Badge
+  const badgeColor = pct >= 80 ? '#0f845a' : (pct >= 50 ? '#b45309' : '#c02b2b');
+  ctx.fillStyle = badgeColor;
+  ctx.roundRect(canvas.width - 240, 202, 160, 66, 10);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${score} / ${total} (${pct}%)`, canvas.width - 160, 243);
+  ctx.textAlign = 'left';
+
+  // Section Breakdown Table
+  let y = 320;
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('CHI TIẾT TIẾN ĐỘ VÀ KẾT QUẢ TỪNG CHẶNG:', 40, y);
+  y += 24;
+
+  STAGES.forEach((s) => {
+    const done = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    ctx.fillStyle = '#ffffff';
+    ctx.roundRect(40, y, canvas.width - 80, 42, 8);
+    ctx.fill();
+    ctx.strokeStyle = done ? '#bbf7d0' : '#e2e8f0';
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '600 14px sans-serif';
+    ctx.fillText(s.title, 60, y + 26);
+
+    ctx.fillStyle = done ? '#0f845a' : '#64748b';
+    ctx.font = 'bold 13px sans-serif';
+    const statusText = done ? '✓ ĐÃ VƯỢT QUA' : 'CHƯA HOÀN THÀNH';
+    ctx.fillText(`${statusText} · (${sCorrect}/${qCount} câu)`, canvas.width - 270, y + 26);
+
+    y += 50;
+  });
+
+  // Footer Note
+  y += 20;
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px sans-serif';
+  ctx.fillText('Hệ thống học liệu tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+
+  // Trigger download
+  const a = document.createElement('a');
+  a.download = `chung_nhan_${LESSON_CODE}_${mssv || 'sv'}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  const idIn = document.getElementById('studentId');
+  const nameIn = document.getElementById('studentName');
+  if (idIn) idIn.addEventListener('input', saveState);
+  if (nameIn) nameIn.addEventListener('input', saveState);
+
+  document.getElementById('exportPng').addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv').addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg').addEventListener('click', resetProgress);
+});
+</script>
+</body>
+</html>
