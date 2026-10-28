@@ -454,7 +454,6 @@ figcaption::before {
 }
 
 /* Codebox */
-/* Codebox */
 .codebox {
   background: #0f172a;
   color: #e2e8f0;
@@ -467,11 +466,8 @@ figcaption::before {
   overflow-x: auto;
   border: 1px solid #334155;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 .codebox-title {
-  white-space: normal;
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -509,7 +505,6 @@ figcaption::before {
 .codebox .str { color: #a3e635; }
 .codebox .cm { color: #64748b; font-style: italic; }
 .codebox .fn { color: #fbbf24; }
-
 
 /* Checkpoint Box */
 .checkpoint-box {
@@ -663,7 +658,7 @@ footer {
       <span>Tương tác từng phần</span>
       <span>Khóa &amp; Mở chặng</span>
       <span>Tự chấm điểm Quiz</span>
-      <span>Xuất chứng nhận PNG</span>
+      <span>Xuất báo cáo kết quả PNG</span>
       <span>Lưu tiến trình Local</span>
     </div>
   </div>
@@ -678,11 +673,11 @@ footer {
         <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
       </div>
       <div class="stats-group">
-        <div class="stat-pill" id="stageStat">Chặng: 1 / 5</div>
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
         <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
       </div>
       <div class="btn-group">
-        <button class="btn-secondary" id="exportPng" title="Xuất chứng nhận kết quả ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
         <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
         <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
       </div>
@@ -703,7 +698,7 @@ footer {
     <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
     <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
     <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
-      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Chứng nhận Kết quả (.PNG)</button>
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
       <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
     </div>
   </div>
@@ -719,7 +714,6 @@ footer {
 const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Kiến trúc 3 Lược đồ ANSI/SPARC (Three-Schema Architecture)", "takeaway": "Kiến trúc 3 mức ANSI/SPARC: External Level (Khung nhìn), Conceptual Level (Lược đồ logic), Internal Level (Lưu trữ vật lý).", "summary": "\n        <h4>1.1. Bối cảnh ra đời của chuẩn ANSI/SPARC</h4>\n        <p>Năm 1975, Ủy ban tiêu chuẩn quốc gia Hoa Kỳ (ANSI/X3/SPARC) đã công bố bản thiết kế kiến trúc 3 tầng cho hệ thống CSDL. Mục tiêu tối thượng của kiến trúc này là: <b>Tách rời hoàn toàn góc nhìn của người dùng ứng dụng khỏi cách thức lưu trữ vật lý thực tế trên đĩa cứng</b>.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/db.png\" alt=\"Kiến trúc 3 mức ANSI SPARC\">\n            <figcaption>Hình 3.1: Kiến trúc 3 mức ANSI/SPARC gồm External, Conceptual và Internal Levels cùng các lớp ánh xạ Mapping</figcaption>\n        </figure>\n\n        <h4>1.2. Ba mức lược đồ trong hệ thống</h4>\n        <ol>\n            <li><b>1. External Level (Mức ngoài / Khung nhìn - View Level):</b>\n                <ul>\n                    <li>Là mức gần người dùng nhất. Mỗi nhóm người dùng khác nhau chỉ nhìn thấy một phần CSDL liên quan trực tiếp đến nghiệp vụ của họ (gọi là <b>User View</b>).</li>\n                    <li><i>Ví dụ thực tế:</i> Sinh viên chỉ xem được bảng điểm của chính mình; Giảng viên xem được danh sách lớp và nhập điểm; Phòng Tài chính chỉ thấy thông tin đóng học phí mà không thấy bệnh án sinh viên.</li>\n                </ul>\n            </li>\n            <li><b>2. Conceptual Level (Mức quan niệm / Mức logic - Conceptual Schema):</b>\n                <ul>\n                    <li>Mô tả <i>toàn bộ cấu trúc logic</i> của toàn thể CSDL: các thực thể (bảng), kiểu dữ liệu, các thuộc tính, mối quan hệ ràng buộc (Foreign Key), quy tắc toàn vẹn nghiệp vụ.</li>\n                    <li>Mức này hoàn toàn độc lập với phần cứng và công nghệ đĩa lưu trữ bên dưới (chỉ quan tâm: \"Dữ liệu gì được lưu và chúng quan hệ với nhau thế nào?\").</li>\n                </ul>\n            </li>\n            <li><b>3. Internal Level (Mức trong / Mức vật lý - Physical/Internal Schema):</b>\n                <ul>\n                    <li>Mô tả <i>cách dữ liệu thực sự được lưu trữ</i> trên các phiến đĩa máy chủ: cấu trúc tệp dữ liệu (.ibd trong InnoDB của MySQL), cách đánh chỉ mục B+Tree, thuật toán băm (Hash), kỹ thuật nén byte dữ liệu và phương pháp mã hóa khối.</li>\n                </ul>\n            </li>\n        </ol>\n\n        <h4>1.3. Ánh xạ (Mapping) giữa các mức</h4>\n        <p>DBMS chịu trách nhiệm duy trì 2 bộ ánh xạ tự động để chuyển đổi câu truy vấn qua lại giữa các tầng:</p>\n        <ul>\n            <li><b>External / Conceptual Mapping:</b> Ánh xạ các trường dữ liệu trên khung nhìn của người dùng vào các cột trong bảng logic.</li>\n            <li><b>Conceptual / Internal Mapping:</b> Ánh xạ bảng logic và các dòng bản ghi thành các khối byte (Blocks/Pages) trên ổ đĩa.</li>\n        </ul>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Tóm lược trực giác:</b> Mức Ngoài = <i>\"Mỗi người nhìn thấy gì?\"</i>; Mức Quan niệm = <i>\"Toàn bộ hệ thống có những gì và quan hệ ra sao?\"</i>; Mức Trong = <i>\"Lưu từng byte nhị phân lên đĩa như thế nào?\"</i>.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Trong kiến trúc 3 mức ANSI/SPARC, mức nào mô tả toàn bộ cấu trúc logic của CSDL (bao gồm mọi bảng, thuộc tính, ràng buộc và mối quan hệ) mà không quan tâm đến cách tổ chức lưu trữ vật lý trên đĩa?", "options": ["External Level (Mức ngoài).", "Conceptual Level (Mức quan niệm / Mức logic).", "Internal Level (Mức trong / Mức vật lý).", "Network Level (Mức mạng)."], "correct": 1, "explanation": "Chính xác! Mức Conceptual (quan niệm) định nghĩa toàn bộ mô hình logic của CSDL độc lập với phần cứng lưu trữ vật lý."}, {"qid": "q1_2", "text": "Câu 1.2: Một nhân viên kế toán truy cập phần mềm chỉ nhìn thấy cột Lương cơ bản và Phụ cấp, nhưng hoàn toàn bị ẩn cột Mật khẩu và Lịch sử y tế của nhân viên. Góc nhìn phân quyền này thuộc về mức nào trong kiến trúc ANSI/SPARC?", "options": ["Internal Level.", "Conceptual Level.", "External Level (Khung nhìn người dùng).", "Storage Level."], "correct": 2, "explanation": "Chính xác! Khung nhìn dành riêng cho từng nhóm đối tượng người dùng với các quyền hạn khác nhau là biểu hiện của External Level."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Schema (Lược đồ) vs Instance (Thể hiện CSDL)", "takeaway": "Phân biệt Schema vs Instance: Schema là bản thiết kế cố định (DDL), Instance là dữ liệu thực tế tại thời điểm (DML).", "summary": "\n        <h4>2.1. Phân biệt bản chất Schema và Instance</h4>\n        <p>Hai khái niệm này rất hay bị sinh viên nhầm lẫn trong các kỳ thi học thuật và phỏng vấn kỹ thuật:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/database_instance.webp\" alt=\"Sự khác biệt giữa Schema và Instance\">\n            <figcaption>Hình 3.2: Schema là bản vẽ thiết kế cố định (trên), Instance là dữ liệu cụ thể tại một thời điểm (dưới)</figcaption>\n        </figure>\n\n        <ul>\n            <li><b>Database Schema (Lược đồ CSDL / Khung sườn):</b>\n                <ul>\n                    <li>Là <i>bản thiết kế tổng thể</i> mô tả tên bảng, tên các cột, kiểu dữ liệu (INT, VARCHAR, DATE) và các ràng buộc toàn vẹn (PRIMARY KEY, NOT NULL, FOREIGN KEY).</li>\n                    <li>Schema được thiết kế trước khi đưa hệ thống vào chạy thật và <b>rất hiếm khi thay đổi</b> trong suốt vòng đời phần mềm (Intension).</li>\n                    <li>Được tạo ra và sửa đổi bằng các câu lệnh <b>DDL</b> (Data Definition Language: <code>CREATE TABLE</code>, <code>ALTER TABLE</code>).</li>\n                </ul>\n            </li>\n            <li><b>Database Instance / State (Thể hiện / Trạng thái CSDL):</b>\n                <ul>\n                    <li>Là <i>tập hợp dữ liệu thực tế</i> được lưu trữ bên trong các bảng tại một thời điểm xác định (Snapshot/Extension).</li>\n                    <li>Instance <b>thay đổi liên tục theo từng giây, từng mili-giây</b> khi người dùng thêm bản ghi mới, chỉnh sửa hoặc xóa dữ liệu.</li>\n                    <li>Được cập nhật thông qua các câu lệnh <b>DML</b> (Data Manipulation Language: <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>).</li>\n                </ul>\n            </li>\n        </ul>\n\n        <h4>2.2. Bảng so sánh chuyên sâu: Schema vs Instance</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí so sánh</th>\n                    <th>Database Schema (Lược đồ)</th>\n                    <th>Database Instance (Thể hiện / Trạng thái)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Ý nghĩa bản chất</b></td>\n                    <td>Bản vẽ cấu trúc quy định kiểu mẫu</td>\n                    <td>Dữ liệu thực tế được nạp vào cấu trúc đó</td>\n                </tr>\n                <tr>\n                    <td><b>Tần suất thay đổi</b></td>\n                    <td>Rất hiếm khi thay đổi (chỉ khi nâng cấp tính năng lớn)</td>\n                    <td>Thay đổi liên tục mỗi khi có giao dịch</td>\n                </tr>\n                <tr>\n                    <td><b>Nhóm lệnh tác động</b></td>\n                    <td>DDL (<code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>)</td>\n                    <td>DML (<code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>)</td>\n                </tr>\n                <tr>\n                    <td><b>Tương đương trong OOP</b></td>\n                    <td>Class (Định nghĩa lớp khuôn mẫu)</td>\n                    <td>Object (Đối tượng cụ thể được cấp phát bộ nhớ)</td>\n                </tr>\n                <tr>\n                    <td><b>Ví dụ tương đương</b></td>\n                    <td>Bản vẽ thiết kế kiến trúc ngôi nhà</td>\n                    <td>Đồ đạc và con người thực tế đang sống trong nhà</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Minh họa: Lệnh tác động đến Schema vs Lệnh tác động đến Instance</span>\n                <span>DDL vs DML Comparison</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- [TÁC ĐỘNG SCHEMA]: Thay đổi cấu trúc bản vẽ (Lược đồ)</span>\n<span class=\"kw\">ALTER TABLE</span> <span class=\"tbl\">sinh_vien</span> <span class=\"kw\">ADD COLUMN</span> email <span class=\"kw\">VARCHAR</span>(100) <span class=\"kw\">UNIQUE</span>;\n\n<span class=\"cm\">-- [TÁC ĐỘNG INSTANCE]: Thay đổi dữ liệu thực tế bên trong tại thời điểm hiện tại</span>\n<span class=\"kw\">UPDATE</span> <span class=\"tbl\">sinh_vien</span> \n<span class=\"kw\">SET</span> email = <span class=\"str\">'nguyenvana@gmail.com'</span> \n<span class=\"kw\">WHERE</span> ma_sv = <span class=\"str\">'SV001'</span>;</code></pre>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Khi một cửa hàng thực hiện lệnh 'INSERT INTO don_hang ...' để ghi nhận một đơn đặt hàng vừa phát sinh lúc 10:15:30, thành phần nào sau đây bị biến đổi trạng thái?", "options": ["Database Schema (Lược đồ CSDL).", "Database Instance (Thể hiện/Trạng thái của CSDL tại thời điểm đó).", "Phiên bản hệ điều hành Linux máy chủ.", "Bản quyền giấy phép phần mềm MySQL."], "correct": 1, "explanation": "Chính xác! Lệnh INSERT thêm dữ liệu cụ thể vào bảng làm thay đổi thể hiện (Instance) của CSDL, cấu trúc bảng (Schema) vẫn giữ nguyên."}, {"qid": "q2_2", "text": "Câu 2.2: Lệnh SQL nào sau đây làm biến đổi Database Schema thay vì chỉ tác động đến Instance?", "options": ["DELETE FROM khach_hang WHERE ngay_tao < '2020-01-01';", "UPDATE san_pham SET gia_ban = gia_ban * 1.1;", "ALTER TABLE nhan_vien ADD COLUMN ngay_sinh DATE NOT NULL;", "SELECT COUNT(*) FROM hoa_don;"], "correct": 2, "explanation": "Chính xác! ALTER TABLE là câu lệnh DDL bổ sung thêm một cột vào cấu trúc của bảng, do đó làm biến đổi Database Schema."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Tính độc lập dữ liệu (Data Independence) — Logical vs Physical", "takeaway": "Tính Độc lập Dữ liệu: Physical Data Independence (thay đổi đĩa/index) và Logical Data Independence (Compatibility Views).", "summary": "\n        <h4>3.1. Tính Độc lập Dữ liệu là gì?</h4>\n        <p><b>Data Independence (Tính độc lập dữ liệu):</b> Là khả năng sửa đổi định nghĩa ở một mức lược đồ mà <i>không phải thay đổi định nghĩa ở mức lược đồ cao hơn liền kề</i>. Nhờ đó, ứng dụng phần mềm không bị đổ vỡ khi hệ thống bên dưới nâng cấp.</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/data-independence-(1).png\" alt=\"Sơ đồ hai cấp độ độc lập dữ liệu\">\n            <figcaption>Hình 3.3: Độc lập dữ liệu logic (trên) và Độc lập dữ liệu vật lý (dưới)</figcaption>\n        </figure>\n\n        <h4>3.2. Hai cấp độ Độc lập dữ liệu cốt lõi</h4>\n        <ul>\n            <li><b>1. Physical Data Independence (Độc lập dữ liệu vật lý):</b>\n                <ul>\n                    <li>Là khả năng thay đổi lược đồ vật lý (Internal Schema) mà <b>không làm thay đổi lược đồ quan niệm (Conceptual Schema)</b> và các ứng dụng ngoài.</li>\n                    <li><i>Ví dụ minh họa:</i> Nâng cấp ổ cứng HDD sang SSD NVMe, di chuyển tệp dữ liệu sang phân vùng ổ đĩa khác, tạo thêm chỉ mục (B-Tree Index) trên cột <code>so_dien_thoai</code> để tăng tốc tìm kiếm, hoặc đổi thuật toán băm (Hash).</li>\n                    <li><i>Kết quả:</i> Tất cả các câu lệnh <code>SELECT ... WHERE so_dien_thoai = ...</code> của ứng dụng web vẫn chạy trơn tru mà không cần sửa đổi dù chỉ 1 dòng mã nguồn!</li>\n                </ul>\n            </li>\n            <li><b>2. Logical Data Independence (Độc lập dữ liệu logic):</b>\n                <ul>\n                    <li>Là khả năng thay đổi lược đồ quan niệm (Conceptual Schema) mà <b>không làm thay đổi các lược đồ ngoài (External Schemas)</b> hay ứng dụng hiện hành.</li>\n                    <li>Được đánh giá là <i>khó đạt được hơn rất nhiều</i> so với độc lập vật lý vì việc thêm/xóa/tách bảng liên quan trực tiếp đến cấu trúc dữ liệu mà ứng dụng đang phụ thuộc.</li>\n                </ul>\n            </li>\n        </ul>\n\n        <h4>3.3. Bí quyết hiện thực hóa Độc lập dữ liệu logic: Compatibility Views</h4>\n        <p>Khi doanh nghiệp cần tách một bảng lớn thành hai bảng nhỏ để chuẩn hóa dữ liệu, làm sao để hàng trăm ứng dụng cũ không bị lỗi? Giải pháp vàng là dùng <b>Compatibility View (Khung nhìn tương thích)</b>:</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>SQL Solution: Sử dụng View để duy trì tính độc lập dữ liệu logic khi tách bảng</span>\n                <span>Refactoring with Backward Compatibility</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- [Bước 1: Tình huống] Ban đầu hệ thống có bảng khách hàng cũ:</span>\n<span class=\"cm\">-- khach_hang (ma_kh, ho_ten, sdt, dia_chi_giao_hang, so_tai_khoan)</span>\n\n<span class=\"cm\">-- [Bước 2: Cải tổ logic] DBA tách thành 2 bảng để tăng bảo mật và chuẩn hóa:</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">kh_co_ban</span> (ma_kh <span class=\"kw\">INT PRIMARY KEY</span>, ho_ten <span class=\"kw\">NVARCHAR</span>(100), sdt <span class=\"kw\">VARCHAR</span>(15));\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">kh_tai_chinh</span> (ma_kh <span class=\"kw\">INT PRIMARY KEY</span>, dia_chi <span class=\"kw\">NVARCHAR</span>(200), so_tai_khoan <span class=\"kw\">VARCHAR</span>(30));\n\n<span class=\"cm\">-- [Bước 3: Giải cứu ứng dụng] Tạo View trùng tên với bảng cũ:</span>\n<span class=\"kw\">CREATE VIEW</span> <span class=\"tbl\">khach_hang</span> <span class=\"kw\">AS</span>\n<span class=\"kw\">SELECT</span> \n    c.ma_kh, \n    c.ho_ten, \n    c.sdt, \n    t.dia_chi <span class=\"kw\">AS</span> dia_chi_giao_hang, \n    t.so_tai_khoan\n<span class=\"kw\">FROM</span> <span class=\"tbl\">kh_co_ban</span> c\n<span class=\"kw\">JOIN</span> <span class=\"tbl\">kh_tai_chinh</span> t <span class=\"kw\">ON</span> c.ma_kh = t.ma_kh;\n\n<span class=\"cm\">-- KẾT QUẢ TUYỆT VỜI: Ứng dụng cũ chạy lệnh sau vẫn chạy hoàn toàn bình thường:</span>\n<span class=\"kw\">SELECT</span> ma_kh, ho_ten, dia_chi_giao_hang <span class=\"kw\">FROM</span> <span class=\"tbl\">khach_hang</span>;</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Nhận xét cốt lõi:</b> Độc lập vật lý dễ đạt được vì DBMS che giấu hoàn toàn con trỏ tệp. Độc lập logic khó hơn nhiều và thường được giải quyết bằng các lớp View (Khung nhìn) hoặc API trung gian.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Quản trị viên CSDL (DBA) quyết định tạo thêm một chỉ mục B-Tree (CREATE INDEX idx_email ON khach_hang(email)) để tăng tốc truy vấn tìm kiếm từ 3 giây xuống 5 mili-giây. Các lập trình viên ứng dụng web không cần phải thay đổi bất kỳ dòng mã nguồn nào. Đây là minh chứng mẫu mực cho thuộc tính nào?", "options": ["Physical Data Independence (Tính độc lập dữ liệu vật lý).", "Logical Data Independence (Tính độc lập dữ liệu logic).", "Network Latency Independence (Tính độc lập độ trễ mạng).", "Operating System Independence (Tính độc lập hệ điều hành)."], "correct": 0, "explanation": "Chính xác! Việc thay đổi cấu trúc truy xuất vật lý (tạo index, chuyển ổ đĩa) mà không làm ảnh hưởng câu lệnh SQL của ứng dụng là Độc lập dữ liệu vật lý (Physical Data Independence)."}, {"qid": "q3_2", "text": "Câu 3.2: Khi cấu trúc bảng quan niệm bị sửa đổi (như thêm cột mới hoặc tách bảng), công cụ kỹ thuật nào của RDBMS được sử dụng phổ biến nhất để duy trì tính độc lập dữ liệu logic cho các ứng dụng cũ?", "options": ["Xóa bỏ hoàn toàn CSDL và cài đặt lại từ đầu.", "Sử dụng View (Khung nhìn ảo) kết hợp câu lệnh JOIN để tái hiện lại cấu trúc bảng cũ cho ứng dụng đọc.", "Bắt buộc người dùng chuyển sang sử dụng tệp Excel.", "Tắt nguồn máy chủ trong 24 giờ."], "correct": 1, "explanation": "Chính xác! Compatibility Views cho phép định nghĩa lại khung nhìn ánh xạ tới các bảng mới, giúp ứng dụng cũ truy vấn như trên bảng ban đầu."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Các Mô hình Dữ liệu kinh điển & Mô hình Kho dữ liệu (OLAP)", "takeaway": "Tiến hóa mô hình dữ liệu (Phân cấp, Mạng, Quan hệ) và Lược đồ đa chiều Kho dữ liệu: Star Schema vs Snowflake Schema.", "summary": "\n        <h4>4.1. Lịch sử tiến hóa của các Mô hình Dữ liệu (Data Models)</h4>\n        <p>Mô hình dữ liệu là tập hợp các khái niệm dùng để mô tả cấu trúc, mối liên hệ và ràng buộc của CSDL:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">1. Mô hình Phân cấp (Hierarchical Model - thập niên 1960):</b><br>\n                Dữ liệu tổ chức dạng cây (Tree). Mỗi nút con chỉ có đúng 1 nút cha (Quan hệ 1-N). Đại diện tiêu biểu: IBM IMS. Điểm yếu: Rất khó diễn tả mối quan hệ nhiều-nhiều (N-N).\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">2. Mô hình Mạng (Network Model - chuẩn CODASYL 1971):</b><br>\n                Dữ liệu tổ chức dạng đồ thị (Graph). Một bản ghi con có thể có nhiều bản ghi cha. Điểm yếu: Lập trình viên phải điều hướng con trỏ bản ghi thủ công cực kỳ phức tạp.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">3. Mô hình Quan hệ (Relational Model - E.F. Codd 1970):</b><br>\n                Dữ liệu tổ chức thành các bảng 2 chiều (Tables) gồm hàng và cột. Liên kết giữa các bảng dựa trên giá trị khóa (Foreign Key). Cung cấp ngôn ngữ khai báo SQL cấp cao.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#0f4c81\">4. Mô hình Phi quan hệ (NoSQL - thập niên 2010):</b><br>\n                Document (MongoDB JSON), Key-Value (Redis), Wide-column (Cassandra), Graph (Neo4j) phục vụ dữ liệu phi cấu trúc và mở rộng ngang cực lớn.\n            </div>\n        </div>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/relational.jpg\" alt=\"Mô hình dữ liệu quan hệ\">\n            <figcaption>Hình 3.4: Mô hình dữ liệu quan hệ (Relational Model) — Bảng, Dòng (Tuple), Cột (Attribute) và Khóa</figcaption>\n        </figure>\n\n        <h4>4.2. Các Lược đồ trong Kho dữ liệu phân tích (Data Warehouse / OLAP)</h4>\n        <p>Trong hệ thống xử lý phân tích và báo cáo kinh doanh (BI/OLAP), dữ liệu không lưu ở dạng chuẩn 3NF truyền thống mà được tổ chức theo mô hình đa chiều gồm <b>Fact Table (Bảng sự kiện giao dịch)</b> và các <b>Dimension Tables (Bảng chiều phân tích)</b>:</p>\n\n        <div class=\"grid-2\">\n            <div>\n                <figure class=\"stage-figure\">\n                    <img class=\"stage-img\" src=\"images/star_schema.jpg\" alt=\"Lược đồ hình sao Star Schema\">\n                    <figcaption>Hình 3.5: Star Schema (Lược đồ hình sao) — 1 Fact table ở trung tâm nối trực tiếp các Dimension tables</figcaption>\n                </figure>\n                <div class=\"card-mini\">\n                    <b>Star Schema (Lược đồ hình sao):</b> Các bảng Dimension bị phi chuẩn hóa (chấp nhận dư thừa dữ liệu) để câu lệnh truy vấn chỉ cần 1 tầng JOIN duy nhất, đạt tốc độ quét cực nhanh.\n                </div>\n            </div>\n            <div>\n                <figure class=\"stage-figure\">\n                    <img class=\"stage-img\" src=\"images/snowflake_schema.jpg\" alt=\"Lược đồ bông tuyết Snowflake Schema\">\n                    <figcaption>Hình 3.6: Snowflake Schema (Lược đồ bông tuyết) — Các bảng Dimension được chuẩn hóa phân nhánh tiếp</figcaption>\n                </figure>\n                <div class=\"card-mini\">\n                    <b>Snowflake Schema (Bông tuyết):</b> Các Dimension tables được chuẩn hóa chia nhỏ tiếp thành nhiều bảng phân cấp (ví dụ: Thành phố -> Tỉnh -> Quốc gia), tiết kiệm dung lượng đĩa nhưng câu lệnh SQL phải JOIN phức tạp hơn.\n                </div>\n            </div>\n        </div>\n\n        <h4>4.3. Bảng đối chiếu: Star Schema vs Snowflake Schema</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí so sánh</th>\n                    <th>Star Schema (Hình sao)</th>\n                    <th>Snowflake Schema (Bông tuyết)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Mức độ chuẩn hóa</b></td>\n                    <td>Phi chuẩn hóa (Denormalized)</td>\n                    <td>Chuẩn hóa cao (Normalized)</td>\n                </tr>\n                <tr>\n                    <td><b>Độ phức tạp câu lệnh JOIN</b></td>\n                    <td>Đơn giản: Chỉ 1 bước nối giữa Fact và Dimension</td>\n                    <td>Phức tạp: Phải JOIN qua nhiều tầng phân nhánh</td>\n                </tr>\n                <tr>\n                    <td><b>Hiệu năng truy vấn đọc</b></td>\n                    <td>Nhanh hơn rất nhiều cho báo cáo BI</td>\n                    <td>Chậm hơn do tốn chi phí thực thi nhiều phép JOIN</td>\n                </tr>\n                <tr>\n                    <td><b>Dung lượng lưu trữ</b></td>\n                    <td>Tốn dung lượng hơn (chấp nhận dữ liệu lặp)</td>\n                    <td>Tối ưu dung lượng đĩa hơn</td>\n                </tr>\n            </tbody>\n        </table>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Trong mô hình dữ liệu quan hệ (Relational Model), mối quan hệ logic giữa hai bảng được thiết lập và duy trì thông qua cơ chế nào?", "options": ["Các con trỏ bộ nhớ vật lý trực tiếp trỏ vào địa chỉ RAM.", "Sự tương thích giữa Khóa chính (Primary Key) của bảng cha và Khóa ngoại (Foreign Key) của bảng con.", "Tên của hai bảng phải viết hoa giống nhau hoàn toàn.", "Hai bảng phải được lưu trong cùng một tệp nén ZIP."], "correct": 1, "explanation": "Chính xác! Khóa chính (Primary Key) và Khóa ngoại (Foreign Key) là sợi dây liên kết logic chuẩn mực giữa các bảng trong mô hình quan hệ."}, {"qid": "q4_2", "text": "Câu 4.2: Trong kiến trúc Kho dữ liệu (Data Warehouse), tại sao các kỹ sư phân tích dữ liệu thường ưu tiên sử dụng Star Schema (Lược đồ hình sao) thay vì Snowflake Schema cho các báo cáo Dashboard thời gian thực?", "options": ["Vì Star Schema hoàn toàn không chứa bảng Fact nào.", "Vì các bảng Dimension trong Star Schema được phi chuẩn hóa, giúp giảm số lượng phép nối (JOIN) và tăng tốc độ xử lý truy vấn báo cáo.", "Vì Star Schema chỉ chạy được trên điện thoại di động.", "Vì Star Schema sử dụng ít RAM hơn 100 lần."], "correct": 1, "explanation": "Chính xác! Star Schema chấp nhận phi chuẩn hóa để giảm thiểu phép JOIN, mang lại tốc độ truy vấn đọc cực cao cho các ứng dụng BI Dashboard."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Tổng kết kiến trúc & Bài tập tình huống thực tế", "takeaway": "Ứng dụng kiến trúc thực tế: Phân quyền bảo mật qua View, phân vùng vật lý (Partitioning) và tối ưu hóa truy vấn.", "summary": "\n        <h4>5.1. Nghiên cứu tình huống kiến trúc thực tế (Architecture Case Study)</h4>\n        <p><b>Bài toán:</b> Một kỳ thi đại học quốc gia có 1 triệu thí sinh tra cứu kết quả điểm thi tốt nghiệp lúc 08:00 sáng. Hội đồng thi cần:</p>\n        <ol>\n            <li>Thí sinh chỉ được xem điểm của chính mình bằng cách nhập Số báo danh và CCCD (không xem được điểm của thí sinh khác).</li>\n            <li>Bộ GD&amp;ĐT cần xem toàn bộ dữ liệu phổ điểm để phân tích thống kê.</li>\n            <li>Hệ thống lưu trữ trên ổ đĩa SSD NVMe mới cần thay đổi vị trí file lưu trữ mà không làm sập giao diện web.</li>\n        </ol>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Giải pháp áp dụng trọn vẹn kiến trúc 3 mức ANSI/SPARC:</b><br>\n                • <b>External Level:</b> Tạo View lọc điều kiện <code>WHERE sbd = :input_sbd</code> để thí sinh chỉ thấy đúng kết quả cá nhân.<br>\n                • <b>Conceptual Level:</b> Bảng logic <code>ket_qua_thi</code> chứa đầy đủ điểm các môn toán, văn, anh, lý, hóa, sinh để máy chủ Bộ GD&amp;ĐT phân tích thống kê.<br>\n                • <b>Internal Level:</b> Phân vùng dữ liệu (Partitioning) theo mã tỉnh thành và tạo Index B-Tree trên cột <code>so_bao_danh</code>. Dù di chuyển ổ đĩa vật lý, tính Độc lập dữ liệu vật lý giữ cho toàn bộ cổng tra cứu hoạt động 100% ổn định.\n            </div>\n        </div>\n\n        <h4>5.2. Chúc mừng bạn đã hoàn thành Bài 3!</h4>\n        <p>Hãy hoàn thành 2 câu hỏi trắc nghiệm dưới đây để kích hoạt mở khóa chứng nhận hoàn thành Bài 3 của bạn.</p>\n        ", "questions": [{"qid": "q5_1", "text": "Câu 5.1: Việc cấp các Khung nhìn (View) riêng cho từng nhóm người dùng (ví dụ: chỉ cho thí sinh xem điểm của chính mình) mang lại hai giá trị lớn nhất nào sau đây?", "options": ["Bảo mật dữ liệu (Data Security) và đơn giản hóa giao diện truy vấn cho người dùng.", "Tăng tốc độ quay của quạt làm mát trong CPU máy chủ.", "Giảm kích thước file HTML của website xuống 0 byte.", "Tự động nâng điểm bài thi của thí sinh."], "correct": 0, "explanation": "Chính xác! View ở mức External vừa là công cụ bảo mật dữ liệu tuyệt vời vừa giúp người dùng chỉ tập trung vào dữ liệu họ quan tâm."}, {"qid": "q5_2", "text": "Câu 5.2: Khái niệm nào sau đây chỉ khả năng nâng cấp phần cứng lưu trữ hoặc thay đổi cấu trúc bảng chỉ mục (Index) mà không phải viết lại ứng dụng?", "options": ["Độc lập dữ liệu logic (Logical Data Independence).", "Độc lập dữ liệu vật lý (Physical Data Independence).", "Độc lập hệ điều hành.", "Độc lập phần cứng màn hình."], "correct": 1, "explanation": "Chính xác! Độc lập dữ liệu vật lý cho phép can thiệp ở mức Internal Schema (ổ cứng, B-Tree index) mà không ảnh hưởng tới các mức phía trên."}]}];
 const STORAGE_KEY = 'dbms_intro_l3_v2';
 const LESSON_TITLE = 'Bài 3: Kiến trúc 3 Lược đồ, Độc lập Dữ liệu & Mô hình Dữ liệu';
-const LESSON_DESC = 'Nắm vững kiến trúc 3 mức ANSI/SPARC, phân biệt Schema vs Instance, làm chủ tính Độc lập dữ liệu (Physical & Logical Data Independence) và các mô hình quan hệ, Star, Snowflake.';
 const LESSON_CODE = '03-three-schema-architecture';
 const TOTAL_QUESTIONS = 10;
 
@@ -773,13 +767,14 @@ function updateScorecard() {
   document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
   
   const pct = Math.round((completedCount / totalStages) * 100);
-  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${Math.round((correctScore/TOTAL_QUESTIONS)*100)}%)`;
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
   document.getElementById('progressBar').style.width = pct + '%';
 
   // Toggle congrats card
   const congrats = document.getElementById('congratsCard');
   if (congrats) {
-    if (completedCount === totalStages) congrats.classList.add('show');
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
     else congrats.classList.remove('show');
   }
 
@@ -794,13 +789,18 @@ function renderStageNav() {
     const pill = document.createElement('div');
     const isCompleted = state.completedStages.includes(s.num);
     const isUnlocked = s.num <= state.unlockedUntil;
-    pill.className = 'nav-pill' + (isCompleted ? ' completed' : (isUnlocked ? ' active' : ' locked'));
-    pill.innerHTML = (isCompleted ? '✓ ' : (isUnlocked ? '▶ ' : '🔒 ')) + `Chặng ${s.num}`;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
     if (isUnlocked) {
-      pill.onclick = () => {
-        const el = document.getElementById('stage-' + s.num);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      };
+      pill.onclick = () => scrollToStage(s.num);
     }
     nav.appendChild(pill);
   });
@@ -811,110 +811,113 @@ function renderStages() {
   container.innerHTML = '';
 
   STAGES.forEach((s) => {
-    const isUnlocked = s.num <= state.unlockedUntil;
     const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
 
-    const section = document.createElement('section');
-    section.id = 'stage-' + s.num;
-    section.className = 'stage ' + (isCompleted ? 'completed' : (isUnlocked ? 'active' : 'locked'));
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
 
-    let badgeText = isCompleted ? '✓ Đã hoàn thành' : (isUnlocked ? 'Đang học' : '🔒 Đang khóa');
-    let badgeClass = isCompleted ? 'done' : (isUnlocked ? 'in-progress' : 'locked');
-
-    let lockBanner = `
-      <div class="stage-lock-banner">
-        <div class="lock-icon">🔒</div>
-        <h3>Chặng ${s.num} đang bị khóa</h3>
-        <p>Vui lòng vượt qua bài kiểm tra của <b>Chặng ${s.num - 1}</b> để mở khóa nội dung này!</p>
-      </div>
-    `;
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
 
     let questionsHtml = '';
-    (s.questions || []).forEach((q, qIndex) => {
-      const answered = state.answers[q.qid];
-      const isCorrect = state.scores[q.qid];
-      const feedbackClass = answered !== undefined ? (isCorrect ? 'correct' : 'incorrect') : '';
-      const feedbackText = answered !== undefined ? (isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt và thử lại nhé.') : '';
-
+    (s.questions || []).forEach((q, qIdx) => {
       let optionsHtml = '';
-      q.options.forEach((opt, optIndex) => {
-        const checked = answered === optIndex ? 'checked' : '';
-        let labelClass = 'option-label';
-        if (answered === optIndex) {
-          labelClass += (isCorrect ? ' is-correct' : ' is-wrong');
-        } else if (answered !== undefined && optIndex === q.correct) {
-          labelClass += ' is-correct';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
         }
+
         optionsHtml += `
-          <label class="${labelClass}" id="label_${q.qid}_${optIndex}">
-            <input type="radio" name="radio_${q.qid}" value="${optIndex}" ${checked} onchange="selectOption('${q.qid}', ${optIndex}, ${s.num})">
-            <span><b>${String.fromCharCode(65 + optIndex)}.</b> ${opt}</span>
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
           </label>
         `;
       });
 
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
       questionsHtml += `
         <div class="question-item" id="qitem_${q.qid}">
           <div class="q-text">${q.text}</div>
-          <div class="options-list">
-            ${optionsHtml}
-          </div>
-          <div class="feedback-box ${feedbackClass} ${answered !== undefined ? 'show' : ''}" id="fb_${q.qid}">
-            ${feedbackText}
-          </div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
         </div>
       `;
     });
 
-    let actionsHtml = '';
-    if (s.num < STAGES.length) {
-      actionsHtml = `
-        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra &amp; Mở khóa Chặng ${s.num + 1}</button>
-        <button class="btn-success btn-next" onclick="scrollToStage(${s.num + 1})" id="btnNext_${s.num}" style="display:${isCompleted ? 'inline-block' : 'none'}">Tiếp tục sang Chặng ${s.num + 1} ➔</button>
-      `;
-    } else {
-      actionsHtml = `
-        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra bài tập Chặng ${s.num}</button>
-      `;
-    }
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
 
-    section.innerHTML = `
-      ${lockBanner}
       <div class="stage-content">
         <div class="stage-head">
           <h2>${s.title}</h2>
-          <span class="stage-badge ${badgeClass}" id="badge_${s.num}">${badgeText}</span>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
         </div>
+
         <div class="concept-box">
           ${s.summary}
         </div>
-        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cpBox_${s.num}">
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
           <div class="checkpoint-title">
-            <h3>⚡ Thử thách Checkpoint Chặng ${s.num}</h3>
-            <span style="font-size:12.5px;color:var(--muted)">Đạt tất cả câu đúng để mở khóa chặng sau</span>
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
           </div>
           ${questionsHtml}
-          <div class="stage-actions">
-            ${actionsHtml}
-          </div>
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
         </div>
       </div>
     `;
 
-    container.appendChild(section);
+    container.appendChild(stageEl);
   });
 }
 
 function selectOption(qid, optIndex, stageNum) {
   state.answers[qid] = optIndex;
-  // Clear wrong class styling immediately on new selection
-  const stage = STAGES.find(s => s.num === stageNum);
-  const q = stage.questions.find(item => item.qid === qid);
-  q.options.forEach((_, idx) => {
-    const el = document.getElementById(`label_${qid}_${idx}`);
-    if (el) el.className = 'option-label' + (idx === optIndex ? ' selected' : '');
-  });
   saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
 }
 
 function checkStage(stageNum) {
@@ -924,198 +927,171 @@ function checkStage(stageNum) {
   let allAnswered = true;
   let allCorrect = true;
 
-  for (const q of (stage.questions || [])) {
-    const chosen = state.answers[q.qid];
-    if (chosen === undefined) {
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
       allAnswered = false;
-      continue;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
     }
-    const isCorrect = (chosen === q.correct);
-    state.scores[q.qid] = isCorrect;
-    if (!isCorrect) allCorrect = false;
 
-    // Update label classes
-    q.options.forEach((_, idx) => {
-      const el = document.getElementById(`label_${q.qid}_${idx}`);
-      if (el) {
-        el.className = 'option-label';
-        if (idx === chosen) {
-          el.className += (isCorrect ? ' is-correct' : ' is-wrong');
-        } else if (idx === q.correct) {
-          el.className += ' is-correct';
-        }
-      }
-    });
-
-    // Update feedback box
+    // Render feedback
     const fb = document.getElementById(`fb_${q.qid}`);
-    if (fb) {
-      fb.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'incorrect');
-      fb.innerHTML = isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt phía trên và chọn lại.';
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
     }
-  }
+  });
 
   if (!allAnswered) {
-    alert(`Vui lòng chọn đáp án cho tất cả câu hỏi trong Chặng ${stageNum} trước khi kiểm tra.`);
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
     return;
   }
+
+  saveState();
 
   if (allCorrect) {
     if (!state.completedStages.includes(stageNum)) {
       state.completedStages.push(stageNum);
     }
-    if (stageNum === state.unlockedUntil && state.unlockedUntil < STAGES.length) {
-      state.unlockedUntil++;
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
     }
-
     saveState();
     updateScorecard();
 
-    // Update current stage visuals
-    const section = document.getElementById('stage-' + stageNum);
-    if (section) section.className = 'stage completed';
-    const badge = document.getElementById('badge_' + stageNum);
-    if (badge) {
-      badge.textContent = '✓ Đã hoàn thành';
-      badge.className = 'stage-badge done';
-    }
-    const cpBox = document.getElementById('cpBox_' + stageNum);
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
     if (cpBox) cpBox.classList.add('passed');
 
-    const nextBtn = document.getElementById('btnNext_' + stageNum);
-    if (nextBtn) nextBtn.style.display = 'inline-block';
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
 
-    // Unlock next stage section if exists
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
     if (stageNum < STAGES.length) {
-      const nextSection = document.getElementById('stage-' + (stageNum + 1));
-      if (nextSection) {
-        nextSection.className = 'stage active';
-        const nextBadge = document.getElementById('badge_' + (stageNum + 1));
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
         if (nextBadge) {
-          nextBadge.textContent = 'Đang học';
           nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
         }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
       }
-      // Smooth scroll to next stage after slight pause
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
       setTimeout(() => {
-        const nextSection = document.getElementById('stage-' + (stageNum + 1));
-        if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 600);
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
     }
   } else {
-    saveState();
     updateScorecard();
-    alert('Có câu trả lời chưa chính xác. Hãy xem kỹ phần giải thích tô đỏ/xanh và chọn lại nhé!');
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
   }
 }
 
 function scrollToStage(stageNum) {
-  const el = document.getElementById('stage-' + stageNum);
+  const el = document.getElementById(`stage-${stageNum}`);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function resetProgress() {
-  if (!confirm('Bạn có chắc chắn muốn làm lại từ đầu? Tất cả chặng đã mở và điểm số sẽ được đặt lại.')) return;
-  state.unlockedUntil = 1;
-  state.completedStages = [];
-  state.answers = {};
-  state.scores = {};
-  saveState();
-  updateScorecard();
-  renderStages();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function exportScoreCSV() {
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'N/A';
-  const name = (document.getElementById('studentName')?.value || '').trim() || 'Sinh viên';
-  
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
   const rows = [
-    ['MSSV', 'Ho va ten', 'Bai hoc', 'Chang', 'Cau hoi', 'Ket qua', 'Diem'],
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
   ];
 
   STAGES.forEach(s => {
     (s.questions || []).forEach(q => {
-      const ok = state.scores[q.qid] === true;
+      const isCor = state.scores[q.qid] === true;
       rows.push([
         mssv,
         name,
         LESSON_TITLE,
-        `Chặng ${s.num}`,
+        String(s.num),
+        s.title,
         q.qid,
-        ok ? 'Dung' : 'Sai',
-        ok ? '1' : '0'
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
       ]);
     });
   });
 
-  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const tag = (mssv || name).replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
-  a.download = `diem_${LESSON_CODE}_${tag}.csv`;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function exportScorePNG() {{
+function exportScorePNG() {
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa điền MSSV';
-  const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
   const score = calculateTotalScore();
   const total = TOTAL_QUESTIONS;
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {{
-    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
-    let line = '';
-    let linesDrawn = 0;
-    for (let n = 0; n < words.length; n++) {{
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {{
-        ctx.fillText(line.trim(), x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-        linesDrawn++;
-        if (linesDrawn >= maxLines - 1 && n < words.length - 1) {{
-          let remaining = words.slice(n).join(' ');
-          while (ctx.measureText(remaining + '…').width > maxWidth && remaining.length > 0) {{
-            remaining = remaining.slice(0, -1).trim();
-          }}
-          ctx.fillText(remaining + '…', x, y);
-          return y + lineHeight;
-        }}
-      }} else {{
-        line = testLine;
-      }}
-    }}
-    ctx.fillText(line.trim(), x, y);
-    return y + lineHeight;
-  }}
-
-  function cleanHtmlSummary(htmlStr) {{
-    if (!htmlStr) return '';
-    return htmlStr
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }}
-
-  const W = 960;
-  const stageCardH = 78;
-  const stagesGap = 10;
-  const H = 450 + (STAGES.length * (stageCardH + stagesGap)) + 50;
+  // Kích thước chuẩn đẹp: Rộng 880px, cao tùy biến theo số phần
+  const W = 880;
+  const rowH = 44;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
 
   const canvas = document.createElement('canvas');
   canvas.width = W * 2;
@@ -1123,8 +1099,8 @@ function exportScorePNG() {{
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
-  if (!ctx.roundRect) {{
-    ctx.roundRect = function(x, y, w, h, r) {{
+  if (!ctx.roundRect) {
+    ctx.roundRect = function(x, y, w, h, r) {
       if (typeof r === 'undefined') r = 8;
       if (typeof r === 'number') r = [r, r, r, r];
       this.beginPath();
@@ -1138,204 +1114,164 @@ function exportScorePNG() {{
       this.lineTo(x, y + r[0]);
       this.quadraticCurveTo(x, y, x + r[0], y);
       this.closePath();
-    }};
-  }}
+    };
+  }
 
-  // Outer Background
-  ctx.fillStyle = '#f4f7fc';
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
   ctx.fillRect(0, 0, W, H);
 
-  // Main Container Card
+  // Thẻ chứa viền bo góc
   ctx.fillStyle = '#ffffff';
   ctx.roundRect(16, 16, W - 32, H - 32, 16);
   ctx.fill();
-  ctx.strokeStyle = '#d9e2ef';
+  ctx.strokeStyle = '#dae3f0';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Top Header Gradient Banner
+  // Header Gradient Banner
   const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
-  grad.addColorStop(0, '#0f2952');
-  grad.addColorStop(1, '#1d54ab');
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
   ctx.fillStyle = grad;
-  ctx.roundRect(16, 16, W - 32, 110, [16, 16, 0, 0]);
+  ctx.roundRect(16, 16, W - 32, 96, [16, 16, 0, 0]);
   ctx.fill();
 
-  ctx.fillStyle = '#9cbbe8';
-  ctx.font = '700 11.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP TƯƠNG TÁC', 40, 46);
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-  ctx.fillText(LESSON_TITLE, 40, 78);
+  ctx.fillText(LESSON_TITLE, 40, 80);
 
-  ctx.fillStyle = '#d4e4fc';
-  ctx.font = '12.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`Thời gian xuất chứng nhận: ${{dateStr}}`, 40, 104);
-
-  // Student Info & Score Overview Cards
-  const cardY = 142;
-  // Left: Student Info Card
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
   ctx.fillStyle = '#f8fafc';
-  ctx.roundRect(40, cardY, 520, 110, 10);
+  ctx.roundRect(40, cardY, 460, 115, 10);
   ctx.fill();
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.stroke();
 
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#64748b';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
-  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
-  ctx.fillText('MÔN HỌC / HỌC PHẦN:', 58, cardY + 76);
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
 
+  ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 16.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText(name, 58, cardY + 52);
-  ctx.fillText(mssv, 310, cardY + 52);
-  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#1e3a6e';
-  ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
-
-  // Right: Score & Rank Card
-  const scoreBoxX = 580;
-  const scoreBoxW = W - 40 - scoreBoxX;
-  const isPass = pct >= 50;
-  const isEx = pct >= 90;
-  const isGood = pct >= 80;
-  const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
-  const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
-
-  ctx.fillStyle = isEx ? '#f0fdf4' : '#f8fafc';
-  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 110, 10);
-  ctx.fill();
-  ctx.strokeStyle = isEx ? '#bbf7d0' : '#e2e8f0';
-  ctx.stroke();
-
-  ctx.fillStyle = rankColor;
-  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('TỔNG ĐIỂM & ĐÁNH GIÁ:', scoreBoxX + 18, cardY + 30);
-
-  ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`${{score}} / ${{total}}`, scoreBoxX + 18, cardY + 68);
-
-  // Rank Badge Pill
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16);
-  ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
-  ctx.textAlign = 'left';
-
-  // Progress Bar
-  ctx.fillStyle = '#e2e8f0';
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5);
-  ctx.fill();
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5);
-  ctx.fill();
-
-  // Lesson Overview / Summary Box
-  const descY = 268;
-  ctx.fillStyle = '#f1f5f9';
-  ctx.roundRect(40, descY, W - 80, 80, 10);
-  ctx.fill();
-  ctx.strokeStyle = '#cbd5e1';
-  ctx.stroke();
-
-  ctx.fillStyle = '#1e3a6e';
-  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('📖 TỔNG QUAN NỘI DUNG & MỤC TIÊU BÀI HỌC:', 56, descY + 24);
-
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#334155';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  wrapText(ctx, LESSON_DESC, 56, descY + 44, W - 112, 19, 2);
+  ctx.fillText(dateStr, 220, cardY + 94);
 
-  // Section Breakdown Header
-  let y = 372;
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  ctx.fillStyle = isDoneAll ? '#f0fdf4' : '#eff6ff';
+  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 115, 10);
+  ctx.fill();
+  ctx.strokeStyle = isDoneAll ? '#bbf7d0' : '#bfdbfe';
+  ctx.stroke();
+
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
   ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+
+  // Thanh tiến độ đồ họa
+  ctx.fillStyle = '#cbd5e1';
+  ctx.roundRect(scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5);
+  ctx.fill();
+  if (completedParts > 0 && totalParts > 0) {
+    ctx.fillStyle = isDoneAll ? '#16a34a' : '#2563eb';
+    ctx.roundRect(scoreBoxX + 18, cardY + 92, Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts)), 10, 5);
+    ctx.fill();
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.fillStyle = '#1e293b';
   ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
-  ctx.fillText('CHI TIẾT TIẾN ĐỘ & TÓM TẮT KIẾN THỨC TỪNG CHẶNG HỌC:', 40, y);
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
   y += 18;
 
-  // Stages List with Stage Summaries
-  STAGES.forEach((s) => {{
-    const done = state.completedStages.includes(s.num);
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
     const qCount = (s.questions || []).length;
     let sCorrect = 0;
-    (s.questions || []).forEach(q => {{ if (state.scores[q.qid]) sCorrect++; }});
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
 
     ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, W - 80, stageCardH, 8);
+    ctx.roundRect(40, y, W - 80, rowH, 8);
     ctx.fill();
-    ctx.strokeStyle = done ? '#86efac' : '#e2e8f0';
-    ctx.lineWidth = done ? 1.5 : 1;
+    ctx.strokeStyle = isStageDone ? '#bbf7d0' : '#e2e8f0';
+    ctx.lineWidth = isStageDone ? 1.5 : 1;
     ctx.stroke();
 
-    // Stage Title
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 13.5px system-ui, -apple-system, sans-serif';
-    ctx.fillText(s.title, 56, y + 24);
+    // Tên phần/chặng
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '600 13.5px system-ui, -apple-system, sans-serif';
+    const label = s.title.length > 58 ? s.title.slice(0, 57) + '…' : s.title;
+    ctx.fillText(label, 56, y + 27);
 
-    // Status Badge Pill
-    const badgeX = W - 40 - 190;
-    ctx.fillStyle = done ? '#ecfdf5' : '#f1f5f9';
-    ctx.roundRect(badgeX, y + 10, 175, 24, 12);
-    ctx.fill();
-    ctx.strokeStyle = done ? '#a7f3d0' : '#cbd5e1';
-    ctx.stroke();
-
-    ctx.fillStyle = done ? '#059669' : '#64748b';
-    ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(done ? `✓ ĐÃ HOÀN THÀNH (${{sCorrect}}/${{qCount}})` : `⏳ CHƯA XONG (${{sCorrect}}/${{qCount}})`, badgeX + 87, y + 26);
+    // Trạng thái hoàn thành & Điểm số
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 12.5px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+    }
     ctx.textAlign = 'left';
 
-    // Stage Summary / Key Takeaway text
-    const takeawayText = s.takeaway || cleanHtmlSummary(s.summary);
-    ctx.fillStyle = '#475569';
-    ctx.font = '12px system-ui, -apple-system, sans-serif';
-    wrapText(ctx, `• Tóm tắt cốt lõi: ${{takeawayText}}`, 56, y + 48, W - 112, 17, 1);
+    y += rowH + rowGap;
+  });
 
-    y += stageCardH + stagesGap;
-  }});
-
-  // Footer
-  y += 10;
+  // Footer ghi chú
+  y += 12;
   ctx.fillStyle = '#94a3b8';
   ctx.font = '11.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
   ctx.textAlign = 'right';
-  ctx.fillText(LESSON_CODE, W - 40, y);
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
   ctx.textAlign = 'left';
 
-  // Trigger download
+  // Kích hoạt tải ảnh PNG
   const a = document.createElement('a');
-  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9À-ỹ_-]+/g, '_');
-  a.download = `chung_nhan_${{LESSON_CODE}}_${{safeName}}.png`;
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
   a.href = canvas.toDataURL('image/png');
   document.body.appendChild(a);
   a.click();
   a.remove();
-}}
-
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderStages();
   updateScorecard();
 
-  const idIn = document.getElementById('studentId');
-  const nameIn = document.getElementById('studentName');
-  if (idIn) idIn.addEventListener('input', saveState);
-  if (nameIn) nameIn.addEventListener('input', saveState);
-
-  document.getElementById('exportPng').addEventListener('click', exportScorePNG);
-  document.getElementById('exportCsv').addEventListener('click', exportScoreCSV);
-  document.getElementById('resetProg').addEventListener('click', resetProgress);
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
 });
 </script>
 </body>

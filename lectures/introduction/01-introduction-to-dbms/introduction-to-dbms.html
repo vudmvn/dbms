@@ -454,7 +454,6 @@ figcaption::before {
 }
 
 /* Codebox */
-/* Codebox */
 .codebox {
   background: #0f172a;
   color: #e2e8f0;
@@ -467,11 +466,8 @@ figcaption::before {
   overflow-x: auto;
   border: 1px solid #334155;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 .codebox-title {
-  white-space: normal;
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -509,7 +505,6 @@ figcaption::before {
 .codebox .str { color: #a3e635; }
 .codebox .cm { color: #64748b; font-style: italic; }
 .codebox .fn { color: #fbbf24; }
-
 
 /* Checkpoint Box */
 .checkpoint-box {
@@ -663,7 +658,7 @@ footer {
       <span>Tương tác từng phần</span>
       <span>Khóa &amp; Mở chặng</span>
       <span>Tự chấm điểm Quiz</span>
-      <span>Xuất chứng nhận PNG</span>
+      <span>Xuất báo cáo kết quả PNG</span>
       <span>Lưu tiến trình Local</span>
     </div>
   </div>
@@ -678,11 +673,11 @@ footer {
         <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
       </div>
       <div class="stats-group">
-        <div class="stat-pill" id="stageStat">Chặng: 1 / 5</div>
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
         <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
       </div>
       <div class="btn-group">
-        <button class="btn-secondary" id="exportPng" title="Xuất chứng nhận kết quả ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
         <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
         <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
       </div>
@@ -703,7 +698,7 @@ footer {
     <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
     <p>Bạn đã xuất sắc vượt qua toàn bộ các nội dung và bài kiểm tra checkpoint của bài học.</p>
     <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
-      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Chứng nhận Kết quả (.PNG)</button>
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
       <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
     </div>
   </div>
@@ -719,7 +714,6 @@ footer {
 const STAGES = [{"id": "stage-1", "num": 1, "title": "Chặng 1: Khởi động & Khái niệm Dữ liệu, CSDL, DBMS, RDBMS", "takeaway": "Phân biệt Data vs Information; Khái niệm CSDL và vai trò trung gian của DBMS; Cấu trúc bảng quan hệ RDBMS.", "summary": "\n        <h4>1.1. Dữ liệu (Data) vs Thông tin (Information)</h4>\n        <p>Trong kỷ nguyên số, dữ liệu là tài nguyên thô quý giá nhất của mọi doanh nghiệp. Tuy nhiên cần phân biệt rõ:</p>\n        <ul>\n            <li><b>Dữ liệu (Data):</b> Là các sự kiện, con số, ký tự thô chưa qua xử lý và chưa mang ngữ cảnh cụ thể (ví dụ: chuỗi ký tự <code>20261028</code>, số <code>9.5</code>, mã <code>IT01</code>).</li>\n            <li><b>Thông tin (Information):</b> Là dữ liệu đã được thu thập, xử lý, cấu trúc và đặt vào ngữ cảnh có ý nghĩa giúp con người ra quyết định (ví dụ: \"Sinh viên IT01 đạt điểm trung bình 9.5 xếp loại Xuất sắc kỳ 1 năm học 2026\").</li>\n        </ul>\n\n        <h4>1.2. Khái niệm CSDL, DBMS và RDBMS</h4>\n        <ul>\n            <li><b>Database (Cơ sở dữ liệu - CSDL):</b> Là một tập hợp dữ liệu có tổ chức, có cấu trúc và có mối liên hệ logic với nhau, được lưu trữ trên các thiết bị nhớ máy tính nhằm phục vụ đồng thời nhiều người dùng và ứng dụng.</li>\n            <li><b>DBMS (Database Management System):</b> Là <i>hệ thống phần mềm trung gian</i> cho phép người dùng và ứng dụng định nghĩa (DDL), thao tác truy xuất (DML/DQL), bảo mật và kiểm soát giao dịch trên CSDL.</li>\n            <li><b>RDBMS (Relational DBMS):</b> Hệ quản trị CSDL theo mô hình quan hệ do E.F. Codd đề xuất (1970). Dữ liệu được tổ chức dưới dạng các <b>bảng (Tables)</b> gồm các dòng (Hàng/Tuple) và cột (Thuộc tính/Attribute), liên kết với nhau bằng các khóa (Primary Key - Foreign Key). Ví dụ: MySQL, PostgreSQL, Oracle Database, Microsoft SQL Server.</li>\n        </ul>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image.png\" alt=\"Kiến trúc trung gian của DBMS\">\n            <figcaption>Hình 1.1: DBMS đóng vai trò lớp cầu nối trung gian tối ưu giữa người dùng/ứng dụng và dữ liệu lưu trữ vật lý</figcaption>\n        </figure>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>SQL Example: Biến dữ liệu thô thành thông tin nghiệp vụ</span>\n                <span>RDBMS Syntax</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- Truy vấn dữ liệu có cấu trúc từ bảng sinh_vien và tính toán thông tin</span>\n<span class=\"kw\">SELECT</span> \n    ma_sv, \n    ho_va_ten, \n    diem_tb,\n    <span class=\"kw\">CASE</span> \n        <span class=\"kw\">WHEN</span> diem_tb >= 9.0 <span class=\"kw\">THEN</span> <span class=\"str\">'Xuất sắc'</span>\n        <span class=\"kw\">WHEN</span> diem_tb >= 8.0 <span class=\"kw\">THEN</span> <span class=\"str\">'Giỏi'</span>\n        <span class=\"kw\">ELSE</span> <span class=\"str\">'Khá'</span>\n    <span class=\"kw\">END</span> <span class=\"kw\">AS</span> xep_loai_hoc_tap\n<span class=\"kw\">FROM</span> <span class=\"tbl\">sinh_vien</span>\n<span class=\"kw\">WHERE</span> khoa = <span class=\"str\">'CNTT'</span>\n<span class=\"kw\">ORDER BY</span> diem_tb <span class=\"kw\">DESC</span>;</code></pre>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">💡</div>\n            <div>\n                <b>Nguyên tắc ghi nhớ vàng:</b> <i>\"Database\"</i> là kho chứa dữ liệu; <i>\"DBMS\"</i> là phần mềm bảo vệ và quản trị kho dữ liệu đó. Tuyệt đối không nhầm lẫn giữa MySQL (DBMS) và cơ sở dữ liệu bán hàng cụ thể được lưu trữ trong đó.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q1_1", "text": "Câu 1.1: Phát biểu nào phân biệt chính xác nhất bản chất kỹ thuật giữa Database và DBMS?", "options": ["Database là phần mềm ứng dụng; DBMS là kho lưu trữ phần cứng trên tủ rack server.", "Database là tập hợp dữ liệu có cấu trúc logic; DBMS là hệ thống phần mềm quản lý, thao tác và bảo vệ tập dữ liệu đó.", "Database và DBMS luôn là hai tên gọi đồng nghĩa và có thể thay thế hoàn toàn cho nhau.", "DBMS là ngôn ngữ lập trình kịch bản, còn Database là trình biên dịch mã nguồn."], "correct": 1, "explanation": "Chính xác! Database là dữ liệu có cấu trúc được lưu trữ, còn DBMS (như MySQL, PostgreSQL) là phần mềm trung gian đứng ra quản trị việc truy xuất và đảm bảo an toàn cho dữ liệu đó."}, {"qid": "q1_2", "text": "Câu 1.2: Một cổng thông tin tuyển sinh trực tuyến có 50.000 thí sinh tra cứu điểm cùng lúc, trong khi ban thư ký đang cập nhật phúc khảo. Vai trò nào của DBMS thể hiện rõ nhất ở đây?", "options": ["Chỉ đơn thuần nhân đôi dung lượng ổ đĩa SSD trên máy chủ web.", "Hỗ trợ kiểm soát truy cập đồng thời (Concurrency Control), đảm bảo tính nhất quán và phân quyền an toàn.", "Tự động viết code giao diện website cho người dùng đầu cuối.", "Nén toàn bộ dữ liệu thành một tệp ZIP duy nhất trên máy trạm."], "correct": 1, "explanation": "Chính xác! Khả năng kiểm soát truy cập đồng thời (Concurrency Control) và phân chia quyền đọc/ghi mà không làm hỏng dữ liệu là sứ mệnh then chốt của DBMS."}]}, {"id": "stage-2", "num": 2, "title": "Chặng 2: Hệ thống tệp truyền thống vs DBMS — Vì sao ngành CNTT chuyển dịch?", "takeaway": "So sánh 6 tiêu chí giữa File System và DBMS; Khắc phục lỗi Lost Update; Độc lập dữ liệu và kiểm soát đồng thời.", "summary": "\n        <h4>2.1. Hạn chế chí mạng của Hệ thống tệp (File-Processing System)</h4>\n        <p>Trước khi có DBMS vào cuối thập niên 1960, các doanh nghiệp lưu trữ dữ liệu trong các tệp riêng rẽ (như tệp nhị phân, CSV, COBOL files). Kiến trúc này bộc lộ 5 nhược điểm nghiêm trọng:</p>\n\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">1. Dư thừa & Không nhất quán (Redundancy & Inconsistency):</b><br>\n                Cùng thông tin sinh viên bị lưu lặp lại ở tệp Phòng Đào tạo, tệp Ký túc xá và tệp Thư viện. Khi sinh viên đổi SĐT, một tệp cập nhật còn các tệp khác giữ số cũ.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">2. Phụ thuộc dữ liệu vào chương trình (Data Dependence):</b><br>\n                Nếu thay đổi cấu trúc tệp (ví dụ thêm trường mã bưu chính từ 5 số thành 7 số), toàn bộ mã nguồn của các ứng dụng đọc tệp đó đều phải sửa lại và biên dịch lại.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">3. Cô lập dữ liệu & Truy vấn khó khăn:</b><br>\n                Mỗi tệp có định dạng riêng. Để tạo báo cáo liên phòng ban, lập trình viên phải viết chương trình mới hoàn toàn để đọc ghép nối từng byte của từng tệp.\n            </div>\n            <div class=\"card-mini\">\n                <b style=\"color:#b45309\">4. Tranh chấp truy cập đồng thời (Concurrent Anomaly):</b><br>\n                Hai tiến trình cùng mở một file để ghi sẽ dễ dàng ghi đè lên nhau (Lost Update), làm thất thoát tiền bạc hoặc sai lệch hồ sơ khách hàng.\n            </div>\n        </div>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-1.png\" alt=\"So sánh kiến trúc tệp truyền thống và kiến trúc DBMS\">\n            <figcaption>Hình 1.2: Kiến trúc tệp truyền thống gây manh mún phân tán (trái) đối lập với kiến trúc tập trung bảo vệ của DBMS (phải)</figcaption>\n        </figure>\n\n        <h4>2.2. Bảng so sánh toàn diện: File System vs DBMS</h4>\n        <table class=\"compare-table\">\n            <thead>\n                <tr>\n                    <th>Tiêu chí so sánh</th>\n                    <th>Hệ thống tệp (File System)</th>\n                    <th>Hệ quản trị CSDL (DBMS)</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td><b>Cấu trúc lưu trữ</b></td>\n                    <td>Tệp phi cấu trúc hoặc cấu trúc riêng theo ứng dụng</td>\n                    <td>Mô hình dữ liệu chuẩn hóa (bảng quan hệ, tài liệu JSON, đồ thị)</td>\n                </tr>\n                <tr>\n                    <td><b>Độc lập dữ liệu</b></td>\n                    <td>Kém: Ứng dụng gắn chặt với cấu trúc vật lý của tệp</td>\n                    <td>Rất cao: Tách biệt hoàn toàn giữa Schema logic và Physical storage</td>\n                </tr>\n                <tr>\n                    <td><b>Dư thừa dữ liệu</b></td>\n                    <td>Rất cao do các phòng ban sao lưu phân tán</td>\n                    <td>Cực tiểu hóa thông qua chuẩn hóa (Normalization)</td>\n                </tr>\n                <tr>\n                    <td><b>Kiểm soát đồng thời</b></td>\n                    <td>Rất khó hoặc khóa toàn bộ tệp (File-lock thô thiển)</td>\n                    <td>Khóa hạt mịn (Row-level / Page-level locking) qua Transaction Manager</td>\n                </tr>\n                <tr>\n                    <td><b>Bảo mật & Phân quyền</b></td>\n                    <td>Phân quyền thô theo cấp thư mục/tệp của Hệ điều hành</td>\n                    <td>Phân quyền cực chi tiết tới từng lệnh, bảng, cột, thậm chí từng hàng</td>\n                </tr>\n                <tr>\n                    <td><b>Phục hồi sự cố</b></td>\n                    <td>Khó khôi phục hoàn toàn trạng thái nhất quán khi mất điện</td>\n                    <td>Tự động Rollback/Redo dựa trên Write-Ahead Log (WAL)</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>Minh họa kịch bản: Lỗi mất dữ liệu ghi đè (Lost Update) trong File System</span>\n                <span>Concurrency Conflict</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">[08:00:00.010] User A mở file balance.dat (Số dư đọc được = 10.000.000 VNĐ)</span>\n<span class=\"cm\">[08:00:00.012] User B mở file balance.dat (Số dư đọc được = 10.000.000 VNĐ)</span>\n<span class=\"cm\">[08:00:00.020] User A thực hiện rút 2.000.000 -> Đang tính toán: 10M - 2M = 8M</span>\n<span class=\"cm\">[08:00:00.022] User B nộp vào 5.000.000 -> Tính toán: 10M + 5M = 15M -> GHI FILE: 15.000.000 VNĐ</span>\n<span class=\"cm\">[08:00:00.030] User A hoàn tất giao dịch rút -> GHI FILE: 8.000.000 VNĐ</span>\n<span class=\"kw\">==> HẬU QUẢ:</span> <span class=\"str\">Số tiền 5.000.000 VNĐ nộp của User B bị ghi đè biến mất hoàn toàn!</span>\n<span class=\"kw\">==> GIẢI PHÁP DBMS:</span> <span class=\"tbl\">DBMS sử dụng cơ chế Khóa bi quan/lạc quan (Locking/MVCC) và Giao dịch ACID để ngăn chặn triệt để xung đột này.</span></code></pre>\n        </div>\n\n        <div class=\"callout warn\">\n            <div class=\"callout-icon\">⚠️</div>\n            <div>\n                <b>Khi nào File System vẫn là lựa chọn phù hợp?</b> Không phải lúc nào cũng cần DBMS! Với các tệp đa phương tiện lớn (video streaming, hình ảnh thô), log nhúng trên cảm biến IoT dung lượng cực nhỏ (không có RAM chạy DBMS), hoặc các file cấu hình tĩnh cá nhân, hệ thống tệp truyền thống hoặc Object Storage (như Amazon S3) sẽ tiết kiệm tài nguyên và đơn giản hơn rất nhiều.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q2_1", "text": "Câu 2.1: Trong kiến trúc hệ thống tệp truyền thống, khi cấu trúc tệp dữ liệu trên đĩa thay đổi (ví dụ thay đổi độ dài cột SĐT), hiện tượng nào sau đây chắc chắn xảy ra?", "options": ["Các ứng dụng đọc tệp sẽ tự động cập nhật mã nguồn theo thời gian thực.", "Lập trình viên phải sửa đổi và biên dịch lại mã nguồn của tất cả ứng dụng phụ thuộc vào tệp đó (Program-Data Dependence).", "Dung lượng bộ nhớ RAM trên máy chủ tự động được mở rộng gấp đôi.", "Tệp dữ liệu tự động chuyển đổi sang dạng bảng quan hệ của MySQL."], "correct": 1, "explanation": "Chính xác! Sự phụ thuộc dữ liệu vào chương trình (Program-Data Dependence) là gánh nặng bảo trì lớn nhất của hệ thống tệp cổ điển."}, {"qid": "q2_2", "text": "Câu 2.2: Tình huống thực tế nào sau đây chứng minh DBMS là bắt buộc và KHÔNG THỂ thay thế bằng hệ thống tệp?", "options": ["Lưu trữ 10.000 bức ảnh chân dung nhân viên để xem lại khi cần.", "Lưu tệp log lịch sử chạy của một tiến trình shell script trên Linux.", "Hệ thống chuyển tiền ngân hàng liên tài khoản xử lý hàng nghìn giao dịch trừ/cộng tiền cùng giây.", "Tạo một tệp cấu hình appsettings.json cho ứng dụng desktop."], "correct": 2, "explanation": "Chính xác! Giao dịch tài chính đòi hỏi tính toàn vẹn tuyệt đối (ACID) và kiểm soát tranh chấp đa người dùng ở mức vi mô mà chỉ DBMS mới cung cấp được."}]}, {"id": "stage-3", "num": 3, "title": "Chặng 3: Sáu thành phần của hệ thống DBMS & Cấu trúc Siêu dữ liệu", "takeaway": "Sáu thành phần của DBMS (Hardware, Software, Data, Procedures, Language, People) và vai trò của Siêu dữ liệu Metadata.", "summary": "\n        <h4>3.1. Sáu thành phần cấu thành môi trường hệ thống DBMS</h4>\n        <p>Một hệ thống CSDL hoạt động ổn định trong doanh nghiệp là sự kết hợp đồng bộ của 6 thành phần hữu cơ:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-2.png\" alt=\"6 thành phần cốt lõi của hệ thống DBMS\">\n            <figcaption>Hình 1.3: Sáu thành phần hữu cơ tạo nên môi trường quản trị cơ sở dữ liệu hiện đại</figcaption>\n        </figure>\n\n        <ol>\n            <li><b>Phần cứng (Hardware):</b> Máy chủ vật lý (Physical Servers), cụm lưu trữ SAN/NAS, ổ đĩa SSD NVMe, bộ nhớ RAM lớn để đệm dữ liệu (Buffer Pool) và hạ tầng mạng băng thông cao.</li>\n            <li><b>Phần mềm (Software):</b> Bao gồm bản thân phần mềm DBMS (MySQL Server, Oracle Engine), Hệ điều hành máy chủ (Linux RedHat, Ubuntu Server, Windows Server) và các ứng dụng giao diện kết nối (Web App, Mobile App, DBeaver).</li>\n            <li><b>Dữ liệu (Data):</b> Trọng tâm của hệ thống, bao gồm 2 nhóm chính:\n                <ul>\n                    <li><i>Dữ liệu nghiệp vụ (Operational Data):</i> Dữ liệu giao dịch thực tế (bảng sinh viên, đơn hàng, hóa đơn).</li>\n                    <li><i>Siêu dữ liệu (Metadata / Data Dictionary):</i> Dữ liệu mô tả cấu trúc, kiểu dữ liệu, các ràng buộc toàn vẹn, quyền truy cập của người dùng.</li>\n                </ul>\n            </li>\n            <li><b>Quy trình (Procedures):</b> Bộ hướng dẫn, quy chuẩn vận hành như: quy trình đăng nhập an toàn, lịch trình sao lưu tự động (Backup) lúc 02:00 sáng hàng ngày, kịch bản phục hồi sự cố (Disaster Recovery).</li>\n            <li><b>Ngôn ngữ truy cập (Database Access Language):</b> Công cụ để người dùng và phần mềm tương tác với DBMS, chuẩn mực phổ biến nhất là SQL (Structured Query Language).</li>\n            <li><b>Con người (People):</b> Gồm các vai trò phân định rõ ràng:\n                <ul>\n                    <li><b>DBA (Database Administrator):</b> Quản trị viên chịu trách nhiệm tối thượng về hiệu năng, bảo mật, sao lưu và cấp quyền.</li>\n                    <li><b>Database Designer / Architect:</b> Thiết kế mô hình dữ liệu quan niệm và logic.</li>\n                    <li><b>Application Developers:</b> Lập trình viên viết mã ứng dụng giao tiếp với CSDL.</li>\n                    <li><b>End Users:</b> Người dùng cuối khai thác dữ liệu qua giao diện phần mềm.</li>\n                </ul>\n            </li>\n        </ol>\n\n        <h4>3.2. Thực hành truy vấn Siêu dữ liệu (Metadata)</h4>\n        <p>DBMS lưu toàn bộ thông tin về các bảng, cột, khóa vào một \"CSDL của CSDL\" gọi là <b>Data Dictionary / System Catalog</b>. Dưới đây là cách truy vấn Metadata trong MySQL:</p>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>SQL Example: Đọc siêu dữ liệu từ INFORMATION_SCHEMA</span>\n                <span>System Catalog Query</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- Xem danh sách tất cả các cột, kiểu dữ liệu và khóa của bảng hoc_phan</span>\n<span class=\"kw\">SELECT</span> \n    column_name <span class=\"kw\">AS</span> ten_cot,\n    data_type <span class=\"kw\">AS</span> kieu_du_lieu,\n    is_nullable <span class=\"kw\">AS</span> cho_phep_null,\n    column_key <span class=\"kw\">AS</span> loai_khoa,\n    column_comment <span class=\"kw\">AS</span> chu_thich\n<span class=\"kw\">FROM</span> <span class=\"tbl\">information_schema.columns</span>\n<span class=\"kw\">WHERE</span> table_schema = <span class=\"str\">'quan_ly_dao_tao'</span>\n  <span class=\"kw\">AND</span> table_name = <span class=\"str\">'hoc_phan'</span>;</code></pre>\n        </div>\n\n        <div class=\"callout info\">\n            <div class=\"callout-icon\">📌</div>\n            <div>\n                <b>Vai trò của DBA:</b> Khi hệ thống gặp hiện tượng chậm (Bottleneck), DBA không chỉ xem xét câu lệnh SQL mà phải phân tích từ dung lượng RAM cấp cho Buffer Pool (Hardware), thông số cấu hình OS (Software), đến việc đánh chỉ mục Index cho bảng (Data) và quy trình dọn dẹp log (Procedures).\n            </div>\n        </div>\n        ", "questions": [{"qid": "q3_1", "text": "Câu 3.1: Tài liệu hướng dẫn thao tác sao lưu CSDL hàng tuần và kịch bản khôi phục khi cụm server bị hỏa hoạn thuộc về thành phần nào trong 6 thành phần của hệ thống DBMS?", "options": ["Hardware (Phần cứng).", "Software (Phần mềm).", "Procedures (Quy trình).", "Database Access Language (Ngôn ngữ truy cập)."], "correct": 2, "explanation": "Chính xác! Các quy chuẩn, chính sách, kịch bản vận hành và kế hoạch ứng cứu thảm họa (Disaster Recovery Plan) thuộc nhóm Procedures (Quy trình)."}, {"qid": "q3_2", "text": "Câu 3.2: Khái niệm 'Metadata' (Siêu dữ liệu) trong hệ quản trị CSDL được hiểu chuẩn xác nhất là gì?", "options": ["Là toàn bộ các file backup được nén trên đám mây.", "Là dữ liệu mô tả cấu trúc, kiểu dữ liệu, ràng buộc và định nghĩa của chính dữ liệu đó (Data about data).", "Là dữ liệu bị lỗi do virus tấn công vào ổ đĩa.", "Là tên của người quản trị CSDL cao nhất (DBA)."], "correct": 1, "explanation": "Chính xác! Metadata là dữ liệu mô tả về dữ liệu (Data about data), được lưu trữ trong Data Dictionary/Catalog của DBMS."}]}, {"id": "stage-4", "num": 4, "title": "Chặng 4: Ngôn ngữ CSDL (SQL) & Phân loại DBMS hiện đại", "takeaway": "Làm chủ 5 phân hệ lệnh SQL chuẩn: DDL (cấu trúc), DML (dữ liệu), DQL (truy vấn), DCL (phân quyền), TCL (giao dịch).", "summary": "\n        <h4>4.1. Ngôn ngữ SQL và 5 phân hệ lệnh nền tảng</h4>\n        <p>SQL (Structured Query Language) là ngôn ngữ chuẩn hóa ANSI/ISO giúp con người và ứng dụng ra lệnh cho RDBMS thực hiện các thao tác dữ liệu:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-5.png\" alt=\"Phân loại các nhóm lệnh trong ngôn ngữ SQL\">\n            <figcaption>Hình 1.4: Phân hệ câu lệnh SQL chuẩn hóa: DDL, DML, DQL, DCL, TCL</figcaption>\n        </figure>\n\n        <ul>\n            <li><b>1. DDL (Data Definition Language):</b> Định nghĩa, thay đổi cấu trúc lược đồ CSDL:\n                <ul>\n                    <li><code>CREATE</code> (tạo bảng, view, index), <code>ALTER</code> (sửa cấu trúc), <code>DROP</code> (xóa bỏ bảng), <code>TRUNCATE</code> (xóa sạch dữ liệu trong bảng).</li>\n                </ul>\n            </li>\n            <li><b>2. DML (Data Manipulation Language):</b> Thao tác bản ghi dữ liệu nghiệp vụ:\n                <ul>\n                    <li><code>INSERT</code> (thêm dòng mới), <code>UPDATE</code> (cập nhật dòng hiện có), <code>DELETE</code> (xóa dòng có điều kiện).</li>\n                </ul>\n            </li>\n            <li><b>3. DQL (Data Query Language):</b> Khai phá và truy vấn dữ liệu:\n                <ul>\n                    <li>Mệnh đề cốt lõi <code>SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY</code>.</li>\n                </ul>\n            </li>\n            <li><b>4. DCL (Data Control Language):</b> Quản trị phân quyền truy cập và an toàn bảo mật:\n                <ul>\n                    <li><code>GRANT</code> (cấp quyền truy cập cho user), <code>REVOKE</code> (thu hồi quyền).</li>\n                </ul>\n            </li>\n            <li><b>5. TCL (Transaction Control Language):</b> Điều khiển giao dịch bảo đảm tính toàn vẹn:\n                <ul>\n                    <li><code>COMMIT</code> (chốt lưu vĩnh viễn thay đổi), <code>ROLLBACK</code> (hủy bỏ hoàn tác thao tác khi có lỗi), <code>SAVEPOINT</code> (đặt điểm mốc hoàn tác).</li>\n                </ul>\n            </li>\n        </ul>\n\n        <div class=\"codebox\">\n            <div class=\"codebox-title\">\n                <span>SQL Complete Lifecycle: Trải nghiệm đủ 5 nhóm câu lệnh</span>\n                <span>Production Example</span>\n            </div>\n            <pre class=\"codebox-code\"><code><span class=\"cm\">-- [1. DDL] Tạo bảng tài khoản ngân hàng</span>\n<span class=\"kw\">CREATE TABLE</span> <span class=\"tbl\">tai_khoan</span> (\n    so_tk <span class=\"kw\">VARCHAR</span>(20) <span class=\"kw\">PRIMARY KEY</span>,\n    chu_tk <span class=\"kw\">NVARCHAR</span>(100) <span class=\"kw\">NOT NULL</span>,\n    so_du <span class=\"kw\">DECIMAL</span>(15,2) <span class=\"kw\">DEFAULT</span> 0.00\n);\n\n<span class=\"cm\">-- [2. DML] Thêm bản ghi khách hàng</span>\n<span class=\"kw\">INSERT INTO</span> <span class=\"tbl\">tai_khoan</span> (so_tk, chu_tk, so_du) \n<span class=\"kw\">VALUES</span> (<span class=\"str\">'19001234'</span>, <span class=\"str\">N'Nguyễn Văn A'</span>, 50000000.00);\n\n<span class=\"cm\">-- [3. DQL] Truy vấn kiểm tra</span>\n<span class=\"kw\">SELECT</span> so_tk, chu_tk, so_du <span class=\"kw\">FROM</span> <span class=\"tbl\">tai_khoan</span> <span class=\"kw\">WHERE</span> so_du > 10000000;\n\n<span class=\"cm\">-- [4. TCL] Thực thi chuyển tiền an toàn trong Transaction</span>\n<span class=\"kw\">START TRANSACTION</span>;\n<span class=\"kw\">UPDATE</span> <span class=\"tbl\">tai_khoan</span> <span class=\"kw\">SET</span> so_du = so_du - 2000000 <span class=\"kw\">WHERE</span> so_tk = <span class=\"str\">'19001234'</span>;\n<span class=\"kw\">UPDATE</span> <span class=\"tbl\">tai_khoan</span> <span class=\"kw\">SET</span> so_du = so_du + 2000000 <span class=\"kw\">WHERE</span> so_tk = <span class=\"str\">'19005678'</span>;\n<span class=\"kw\">COMMIT</span>; <span class=\"cm\">-- Xác nhận thành công cả 2 lệnh</span>\n\n<span class=\"cm\">-- [5. DCL] Cấp quyền cho giao dịch viên chỉ được xem và tra cứu</span>\n<span class=\"kw\">GRANT SELECT ON</span> <span class=\"tbl\">tai_khoan</span> <span class=\"kw\">TO</span> <span class=\"str\">'giao_dich_vien'</span>@<span class=\"str\">'%'</span>;</code></pre>\n        </div>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-3.png\" alt=\"Phổ biến các mô hình DBMS: Quan hệ và Phi quan hệ\">\n            <figcaption>Hình 1.5: Sự tiến hóa từ RDBMS bảng quan hệ kinh điển đến các mô hình NoSQL linh hoạt</figcaption>\n        </figure>\n        ", "questions": [{"qid": "q4_1", "text": "Câu 4.1: Các câu lệnh 'CREATE TABLE', 'ALTER TABLE' và 'DROP TABLE' thuộc nhóm câu lệnh SQL nào sau đây?", "options": ["DML (Data Manipulation Language).", "DQL (Data Query Language).", "DDL (Data Definition Language).", "TCL (Transaction Control Language)."], "correct": 2, "explanation": "Chính xác! DDL (Data Definition Language) bao gồm các câu lệnh tạo, sửa đổi và hủy bỏ cấu trúc các đối tượng trong CSDL."}, {"qid": "q4_2", "text": "Câu 4.2: Trong một giao dịch chuyển tiền liên tài khoản, sau khi lệnh trừ tiền tài khoản A thành công nhưng lệnh nạp tiền tài khoản B gặp lỗi mất kết nối mạng, câu lệnh nào sẽ được gọi để hủy bỏ thao tác trừ tiền của tài khoản A?", "options": ["COMMIT.", "ROLLBACK.", "REVOKE.", "TRUNCATE."], "correct": 1, "explanation": "Chính xác! ROLLBACK trong TCL được gọi để hoàn tác toàn bộ thay đổi tạm thời của giao dịch về trạng thái nguyên vẹn ban đầu khi xảy ra sự cố."}]}, {"id": "stage-5", "num": 5, "title": "Chặng 5: Ứng dụng thực tế, Tiêu chí lựa chọn & Tổng kết bài học", "takeaway": "Ứng dụng DBMS trong Banking, E-commerce, Hàng không; Bộ 4 thuộc tính ACID bảo toàn giao dịch tài chính an toàn.", "summary": "\n        <h4>5.1. Ứng dụng thực tế của DBMS trong mọi ngành công nghiệp</h4>\n        <p>Hệ quản trị CSDL là động cơ thầm lặng vận hành nền kinh tế số hiện đại:</p>\n\n        <figure class=\"stage-figure\">\n            <img class=\"stage-img\" src=\"images/image-4.png\" alt=\"Các lĩnh vực ứng dụng của DBMS trong thực tế\">\n            <figcaption>Hình 1.6: Ứng dụng của DBMS trong các lĩnh vực tài chính, thương mại, y tế và hàng không</figcaption>\n        </figure>\n\n        <ul>\n            <li><b>Ngân hàng & Tài chính (Banking):</b> Core-banking quản lý hàng triệu tài khoản, sổ phụ, máy ATM và giao dịch thẻ yêu cầu tuân thủ ACID 100%.</li>\n            <li><b>Hàng không (Airlines):</b> Hệ thống đặt chỗ toàn cầu (GDS như Amadeus, Sabre) quản lý chuyến bay, sơ đồ ghế ngồi theo thời gian thực và ngăn chặn đặt trùng chỗ (overbooking).</li>\n            <li><b>Thương mại điện tử (E-Commerce):</b> Quản lý danh mục hàng triệu sản phẩm, giỏ hàng, lịch sử đơn hàng và tích hợp gợi ý cá nhân hóa (Recommendation Systems).</li>\n            <li><b>Giáo dục & Đại học:</b> Cổng đăng ký tín chỉ trực tuyến, quản lý điểm rèn luyện, học phí và cấp bằng chuẩn mực.</li>\n            <li><b>Viễn thông (Telecommunications):</b> Ghi nhận cước gọi (CDR), quản lý gói cước 4G/5G với lưu lượng hàng trăm nghìn sự kiện mỗi giây.</li>\n        </ul>\n\n        <h4>5.2. Tóm tắt các thuật ngữ sống còn của Bài 1</h4>\n        <div class=\"grid-2\">\n            <div class=\"card-mini\">\n                <b>• ACID:</b> Bốn thuộc tính vàng của giao dịch: Nguyên tử (Atomicity), Nhất quán (Consistency), Cô lập (Isolation), Bền vững (Durability).\n            </div>\n            <div class=\"card-mini\">\n                <b>• Data Independence:</b> Tính độc lập dữ liệu, cho phép thay đổi cấu trúc vật lý hoặc logic mà không cần viết lại ứng dụng.\n            </div>\n            <div class=\"card-mini\">\n                <b>• Concurrency Control:</b> Cơ chế kiểm soát truy cập đồng thời để bảo vệ dữ liệu không bị ghi đè hay sai lệch.\n            </div>\n            <div class=\"card-mini\">\n                <b>• Data Dictionary:</b> Từ điển dữ liệu chứa toàn bộ siêu dữ liệu (metadata) của hệ thống.\n            </div>\n        </div>\n\n        <div class=\"callout tip\">\n            <div class=\"callout-icon\">🎯</div>\n            <div>\n                <b>Chúc mừng bạn đã hoàn thành Bài 1!</b> Sau khi vượt qua câu hỏi Checkpoint dưới đây, hãy bấm nút <b>\"Xuất PNG\"</b> trên thanh công cụ để lưu chứng nhận thành tích học tập cá nhân.\n            </div>\n        </div>\n        ", "questions": [{"qid": "q5_1", "text": "Câu 5.1: Hệ thống đặt vé máy bay cần đảm bảo hai hành khách ở hai thành phố khác nhau không thể cùng đặt thành công một chiếc ghế duy nhất còn lại trên chuyến bay. Tính năng kỹ thuật nào của DBMS giải quyết bài toán này?", "options": ["Tự động tăng độ sáng màn hình ứng dụng bán vé.", "Kiểm soát truy cập đồng thời (Concurrency Control) thông qua cơ chế khóa bản ghi ghế (Locking).", "Chuyển toàn bộ dữ liệu ghế ngồi sang dạng tệp văn bản Word.", "Xóa bỏ hoàn toàn cơ sở dữ liệu ghế khi có người truy cập."], "correct": 1, "explanation": "Chính xác! DBMS sử dụng cơ chế khóa dữ liệu (Row-level Locking) trong giao dịch để ngăn chặn việc bán trùng một tài nguyên duy nhất."}, {"qid": "q5_2", "text": "Câu 5.2: Bộ 4 thuộc tính nào sau đây là tiêu chuẩn vàng đảm bảo mọi giao dịch dữ liệu trong hệ thống tài chính ngân hàng được thực thi an toàn và tin cậy?", "options": ["CRUD (Create, Read, Update, Delete).", "ACID (Atomicity, Consistency, Isolation, Durability).", "HTTP (Hypertext Transfer Protocol).", "JSON (JavaScript Object Notation)."], "correct": 1, "explanation": "Chính xác! ACID là viết tắt của Atomicity (Nguyên tử), Consistency (Nhất quán), Isolation (Cô lập) và Durability (Bền vững) - nền tảng giao dịch của DBMS."}]}];
 const STORAGE_KEY = 'dbms_intro_l1_v2';
 const LESSON_TITLE = 'Bài 1: Tổng quan về Cơ sở dữ liệu và Hệ quản trị CSDL';
-const LESSON_DESC = 'Tìm hiểu bản chất Cơ sở dữ liệu, vai trò sống còn của DBMS, so sánh chi tiết với hệ thống tệp truyền thống, 6 thành phần cốt lõi và các nhóm lệnh SQL qua sơ đồ & ví dụ trực quan.';
 const LESSON_CODE = '01-introduction-to-dbms';
 const TOTAL_QUESTIONS = 10;
 
@@ -773,13 +767,14 @@ function updateScorecard() {
   document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
   
   const pct = Math.round((completedCount / totalStages) * 100);
-  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${Math.round((correctScore/TOTAL_QUESTIONS)*100)}%)`;
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
   document.getElementById('progressBar').style.width = pct + '%';
 
   // Toggle congrats card
   const congrats = document.getElementById('congratsCard');
   if (congrats) {
-    if (completedCount === totalStages) congrats.classList.add('show');
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
     else congrats.classList.remove('show');
   }
 
@@ -794,13 +789,18 @@ function renderStageNav() {
     const pill = document.createElement('div');
     const isCompleted = state.completedStages.includes(s.num);
     const isUnlocked = s.num <= state.unlockedUntil;
-    pill.className = 'nav-pill' + (isCompleted ? ' completed' : (isUnlocked ? ' active' : ' locked'));
-    pill.innerHTML = (isCompleted ? '✓ ' : (isUnlocked ? '▶ ' : '🔒 ')) + `Chặng ${s.num}`;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+    
     if (isUnlocked) {
-      pill.onclick = () => {
-        const el = document.getElementById('stage-' + s.num);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      };
+      pill.onclick = () => scrollToStage(s.num);
     }
     nav.appendChild(pill);
   });
@@ -811,110 +811,113 @@ function renderStages() {
   container.innerHTML = '';
 
   STAGES.forEach((s) => {
-    const isUnlocked = s.num <= state.unlockedUntil;
     const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
 
-    const section = document.createElement('section');
-    section.id = 'stage-' + s.num;
-    section.className = 'stage ' + (isCompleted ? 'completed' : (isUnlocked ? 'active' : 'locked'));
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
 
-    let badgeText = isCompleted ? '✓ Đã hoàn thành' : (isUnlocked ? 'Đang học' : '🔒 Đang khóa');
-    let badgeClass = isCompleted ? 'done' : (isUnlocked ? 'in-progress' : 'locked');
-
-    let lockBanner = `
-      <div class="stage-lock-banner">
-        <div class="lock-icon">🔒</div>
-        <h3>Chặng ${s.num} đang bị khóa</h3>
-        <p>Vui lòng vượt qua bài kiểm tra của <b>Chặng ${s.num - 1}</b> để mở khóa nội dung này!</p>
-      </div>
-    `;
+    // Stage Header
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
 
     let questionsHtml = '';
-    (s.questions || []).forEach((q, qIndex) => {
-      const answered = state.answers[q.qid];
-      const isCorrect = state.scores[q.qid];
-      const feedbackClass = answered !== undefined ? (isCorrect ? 'correct' : 'incorrect') : '';
-      const feedbackText = answered !== undefined ? (isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt và thử lại nhé.') : '';
-
+    (s.questions || []).forEach((q, qIdx) => {
       let optionsHtml = '';
-      q.options.forEach((opt, optIndex) => {
-        const checked = answered === optIndex ? 'checked' : '';
-        let labelClass = 'option-label';
-        if (answered === optIndex) {
-          labelClass += (isCorrect ? ' is-correct' : ' is-wrong');
-        } else if (answered !== undefined && optIndex === q.correct) {
-          labelClass += ' is-correct';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
         }
+
         optionsHtml += `
-          <label class="${labelClass}" id="label_${q.qid}_${optIndex}">
-            <input type="radio" name="radio_${q.qid}" value="${optIndex}" ${checked} onchange="selectOption('${q.qid}', ${optIndex}, ${s.num})">
-            <span><b>${String.fromCharCode(65 + optIndex)}.</b> ${opt}</span>
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
           </label>
         `;
       });
 
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
       questionsHtml += `
         <div class="question-item" id="qitem_${q.qid}">
           <div class="q-text">${q.text}</div>
-          <div class="options-list">
-            ${optionsHtml}
-          </div>
-          <div class="feedback-box ${feedbackClass} ${answered !== undefined ? 'show' : ''}" id="fb_${q.qid}">
-            ${feedbackText}
-          </div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
         </div>
       `;
     });
 
-    let actionsHtml = '';
-    if (s.num < STAGES.length) {
-      actionsHtml = `
-        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra &amp; Mở khóa Chặng ${s.num + 1}</button>
-        <button class="btn-success btn-next" onclick="scrollToStage(${s.num + 1})" id="btnNext_${s.num}" style="display:${isCompleted ? 'inline-block' : 'none'}">Tiếp tục sang Chặng ${s.num + 1} ➔</button>
-      `;
-    } else {
-      actionsHtml = `
-        <button class="btn-primary btn-check" onclick="checkStage(${s.num})" id="btnCheck_${s.num}">Kiểm tra bài tập Chặng ${s.num}</button>
-      `;
-    }
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
 
-    section.innerHTML = `
-      ${lockBanner}
       <div class="stage-content">
         <div class="stage-head">
           <h2>${s.title}</h2>
-          <span class="stage-badge ${badgeClass}" id="badge_${s.num}">${badgeText}</span>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
         </div>
+
         <div class="concept-box">
           ${s.summary}
         </div>
-        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cpBox_${s.num}">
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
           <div class="checkpoint-title">
-            <h3>⚡ Thử thách Checkpoint Chặng ${s.num}</h3>
-            <span style="font-size:12.5px;color:var(--muted)">Đạt tất cả câu đúng để mở khóa chặng sau</span>
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
           </div>
           ${questionsHtml}
-          <div class="stage-actions">
-            ${actionsHtml}
-          </div>
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
         </div>
       </div>
     `;
 
-    container.appendChild(section);
+    container.appendChild(stageEl);
   });
 }
 
 function selectOption(qid, optIndex, stageNum) {
   state.answers[qid] = optIndex;
-  // Clear wrong class styling immediately on new selection
-  const stage = STAGES.find(s => s.num === stageNum);
-  const q = stage.questions.find(item => item.qid === qid);
-  q.options.forEach((_, idx) => {
-    const el = document.getElementById(`label_${qid}_${idx}`);
-    if (el) el.className = 'option-label' + (idx === optIndex ? ' selected' : '');
-  });
   saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
 }
 
 function checkStage(stageNum) {
@@ -924,198 +927,171 @@ function checkStage(stageNum) {
   let allAnswered = true;
   let allCorrect = true;
 
-  for (const q of (stage.questions || [])) {
-    const chosen = state.answers[q.qid];
-    if (chosen === undefined) {
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
       allAnswered = false;
-      continue;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
     }
-    const isCorrect = (chosen === q.correct);
-    state.scores[q.qid] = isCorrect;
-    if (!isCorrect) allCorrect = false;
 
-    // Update label classes
-    q.options.forEach((_, idx) => {
-      const el = document.getElementById(`label_${q.qid}_${idx}`);
-      if (el) {
-        el.className = 'option-label';
-        if (idx === chosen) {
-          el.className += (isCorrect ? ' is-correct' : ' is-wrong');
-        } else if (idx === q.correct) {
-          el.className += ' is-correct';
-        }
-      }
-    });
-
-    // Update feedback box
+    // Render feedback
     const fb = document.getElementById(`fb_${q.qid}`);
-    if (fb) {
-      fb.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'incorrect');
-      fb.innerHTML = isCorrect ? '✓ ' + q.explanation : '✗ Chưa đúng! Hãy đọc lại tóm tắt phía trên và chọn lại.';
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
     }
-  }
+  });
 
   if (!allAnswered) {
-    alert(`Vui lòng chọn đáp án cho tất cả câu hỏi trong Chặng ${stageNum} trước khi kiểm tra.`);
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
     return;
   }
+
+  saveState();
 
   if (allCorrect) {
     if (!state.completedStages.includes(stageNum)) {
       state.completedStages.push(stageNum);
     }
-    if (stageNum === state.unlockedUntil && state.unlockedUntil < STAGES.length) {
-      state.unlockedUntil++;
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
     }
-
     saveState();
     updateScorecard();
 
-    // Update current stage visuals
-    const section = document.getElementById('stage-' + stageNum);
-    if (section) section.className = 'stage completed';
-    const badge = document.getElementById('badge_' + stageNum);
-    if (badge) {
-      badge.textContent = '✓ Đã hoàn thành';
-      badge.className = 'stage-badge done';
-    }
-    const cpBox = document.getElementById('cpBox_' + stageNum);
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
     if (cpBox) cpBox.classList.add('passed');
 
-    const nextBtn = document.getElementById('btnNext_' + stageNum);
-    if (nextBtn) nextBtn.style.display = 'inline-block';
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
 
-    // Unlock next stage section if exists
+    const currentStageEl = document.getElementById(`stage-${stageNum}`);
+    if (currentStageEl) {
+      currentStageEl.className = 'stage completed';
+    }
+
     if (stageNum < STAGES.length) {
-      const nextSection = document.getElementById('stage-' + (stageNum + 1));
-      if (nextSection) {
-        nextSection.className = 'stage active';
-        const nextBadge = document.getElementById('badge_' + (stageNum + 1));
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
         if (nextBadge) {
-          nextBadge.textContent = 'Đang học';
           nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
         }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
       }
-      // Smooth scroll to next stage after slight pause
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
       setTimeout(() => {
-        const nextSection = document.getElementById('stage-' + (stageNum + 1));
-        if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 600);
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
     }
   } else {
-    saveState();
     updateScorecard();
-    alert('Có câu trả lời chưa chính xác. Hãy xem kỹ phần giải thích tô đỏ/xanh và chọn lại nhé!');
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
   }
 }
 
 function scrollToStage(stageNum) {
-  const el = document.getElementById('stage-' + stageNum);
+  const el = document.getElementById(`stage-${stageNum}`);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function resetProgress() {
-  if (!confirm('Bạn có chắc chắn muốn làm lại từ đầu? Tất cả chặng đã mở và điểm số sẽ được đặt lại.')) return;
-  state.unlockedUntil = 1;
-  state.completedStages = [];
-  state.answers = {};
-  state.scores = {};
-  saveState();
-  updateScorecard();
-  renderStages();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function exportScoreCSV() {
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'N/A';
-  const name = (document.getElementById('studentName')?.value || '').trim() || 'Sinh viên';
-  
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
   const rows = [
-    ['MSSV', 'Ho va ten', 'Bai hoc', 'Chang', 'Cau hoi', 'Ket qua', 'Diem'],
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
   ];
 
   STAGES.forEach(s => {
     (s.questions || []).forEach(q => {
-      const ok = state.scores[q.qid] === true;
+      const isCor = state.scores[q.qid] === true;
       rows.push([
         mssv,
         name,
         LESSON_TITLE,
-        `Chặng ${s.num}`,
+        String(s.num),
+        s.title,
         q.qid,
-        ok ? 'Dung' : 'Sai',
-        ok ? '1' : '0'
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
       ]);
     });
   });
 
-  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const tag = (mssv || name).replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
-  a.download = `diem_${LESSON_CODE}_${tag}.csv`;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function exportScorePNG() {{
+function exportScorePNG() {
   saveState();
-  const mssv = (document.getElementById('studentId')?.value || '').trim() || 'Chưa điền MSSV';
-  const name = (document.getElementById('studentName')?.value || '').trim() || 'Học viên DBMS';
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
   const score = calculateTotalScore();
   const total = TOTAL_QUESTIONS;
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const partsPct = totalParts > 0 ? Math.round((completedParts / totalParts) * 100) : 0;
   const dateStr = new Date().toLocaleString('vi-VN');
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {{
-    const words = (text || '').replace(/\s+/g, ' ').trim().split(' ');
-    let line = '';
-    let linesDrawn = 0;
-    for (let n = 0; n < words.length; n++) {{
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {{
-        ctx.fillText(line.trim(), x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-        linesDrawn++;
-        if (linesDrawn >= maxLines - 1 && n < words.length - 1) {{
-          let remaining = words.slice(n).join(' ');
-          while (ctx.measureText(remaining + '…').width > maxWidth && remaining.length > 0) {{
-            remaining = remaining.slice(0, -1).trim();
-          }}
-          ctx.fillText(remaining + '…', x, y);
-          return y + lineHeight;
-        }}
-      }} else {{
-        line = testLine;
-      }}
-    }}
-    ctx.fillText(line.trim(), x, y);
-    return y + lineHeight;
-  }}
-
-  function cleanHtmlSummary(htmlStr) {{
-    if (!htmlStr) return '';
-    return htmlStr
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }}
-
-  const W = 960;
-  const stageCardH = 78;
-  const stagesGap = 10;
-  const H = 450 + (STAGES.length * (stageCardH + stagesGap)) + 50;
+  // Kích thước chuẩn đẹp: Rộng 880px, cao tùy biến theo số phần
+  const W = 880;
+  const rowH = 44;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
 
   const canvas = document.createElement('canvas');
   canvas.width = W * 2;
@@ -1123,8 +1099,8 @@ function exportScorePNG() {{
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2);
 
-  if (!ctx.roundRect) {{
-    ctx.roundRect = function(x, y, w, h, r) {{
+  if (!ctx.roundRect) {
+    ctx.roundRect = function(x, y, w, h, r) {
       if (typeof r === 'undefined') r = 8;
       if (typeof r === 'number') r = [r, r, r, r];
       this.beginPath();
@@ -1138,204 +1114,164 @@ function exportScorePNG() {{
       this.lineTo(x, y + r[0]);
       this.quadraticCurveTo(x, y, x + r[0], y);
       this.closePath();
-    }};
-  }}
+    };
+  }
 
-  // Outer Background
-  ctx.fillStyle = '#f4f7fc';
+  // Khung nền chính
+  ctx.fillStyle = '#f6f8fc';
   ctx.fillRect(0, 0, W, H);
 
-  // Main Container Card
+  // Thẻ chứa viền bo góc
   ctx.fillStyle = '#ffffff';
   ctx.roundRect(16, 16, W - 32, H - 32, 16);
   ctx.fill();
-  ctx.strokeStyle = '#d9e2ef';
+  ctx.strokeStyle = '#dae3f0';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Top Header Gradient Banner
+  // Header Gradient Banner
   const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
-  grad.addColorStop(0, '#0f2952');
-  grad.addColorStop(1, '#1d54ab');
+  grad.addColorStop(0, '#102c59');
+  grad.addColorStop(1, '#235cba');
   ctx.fillStyle = grad;
-  ctx.roundRect(16, 16, W - 32, 110, [16, 16, 0, 0]);
+  ctx.roundRect(16, 16, W - 32, 96, [16, 16, 0, 0]);
   ctx.fill();
 
-  ctx.fillStyle = '#9cbbe8';
-  ctx.font = '700 11.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP TƯƠNG TÁC', 40, 46);
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
 
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-  ctx.fillText(LESSON_TITLE, 40, 78);
+  ctx.fillText(LESSON_TITLE, 40, 80);
 
-  ctx.fillStyle = '#d4e4fc';
-  ctx.font = '12.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`Thời gian xuất chứng nhận: ${{dateStr}}`, 40, 104);
-
-  // Student Info & Score Overview Cards
-  const cardY = 142;
-  // Left: Student Info Card
+  // Card Thông tin Sinh viên (Trái)
+  const cardY = 132;
   ctx.fillStyle = '#f8fafc';
-  ctx.roundRect(40, cardY, 520, 110, 10);
+  ctx.roundRect(40, cardY, 460, 115, 10);
   ctx.fill();
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.stroke();
 
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#64748b';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('HỌ VÀ TÊN SINH VIÊN:', 58, cardY + 30);
-  ctx.fillText('MÃ SỐ SINH VIÊN (MSSV):', 310, cardY + 30);
-  ctx.fillText('MÔN HỌC / HỌC PHẦN:', 58, cardY + 76);
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
 
+  ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 16.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText(name, 58, cardY + 52);
-  ctx.fillText(mssv, 310, cardY + 52);
-  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = '#1e3a6e';
-  ctx.fillText('Hệ Quản trị Cơ sở Dữ liệu (DBMS) — Khoa CNTT', 58, cardY + 95);
-
-  // Right: Score & Rank Card
-  const scoreBoxX = 580;
-  const scoreBoxW = W - 40 - scoreBoxX;
-  const isPass = pct >= 50;
-  const isEx = pct >= 90;
-  const isGood = pct >= 80;
-  const rankText = isEx ? 'XUẤT SẮC' : (isGood ? 'GIỎI' : (isPass ? 'ĐẠT CHUẨN' : 'ĐANG HỌC'));
-  const rankColor = isEx ? '#0f845a' : (isGood ? '#166534' : (isPass ? '#b45309' : '#c02b2b'));
-
-  ctx.fillStyle = isEx ? '#f0fdf4' : '#f8fafc';
-  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 110, 10);
-  ctx.fill();
-  ctx.strokeStyle = isEx ? '#bbf7d0' : '#e2e8f0';
-  ctx.stroke();
-
-  ctx.fillStyle = rankColor;
-  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('TỔNG ĐIỂM & ĐÁNH GIÁ:', scoreBoxX + 18, cardY + 30);
-
-  ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`${{score}} / ${{total}}`, scoreBoxX + 18, cardY + 68);
-
-  // Rank Badge Pill
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + scoreBoxW - 130, cardY + 38, 112, 32, 16);
-  ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(rankText, scoreBoxX + scoreBoxW - 74, cardY + 58);
-  ctx.textAlign = 'left';
-
-  // Progress Bar
-  ctx.fillStyle = '#e2e8f0';
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, scoreBoxW - 36, 10, 5);
-  ctx.fill();
-  ctx.fillStyle = rankColor;
-  ctx.roundRect(scoreBoxX + 18, cardY + 84, Math.max(10, (scoreBoxW - 36) * (pct / 100)), 10, 5);
-  ctx.fill();
-
-  // Lesson Overview / Summary Box
-  const descY = 268;
-  ctx.fillStyle = '#f1f5f9';
-  ctx.roundRect(40, descY, W - 80, 80, 10);
-  ctx.fill();
-  ctx.strokeStyle = '#cbd5e1';
-  ctx.stroke();
-
-  ctx.fillStyle = '#1e3a6e';
-  ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('📖 TỔNG QUAN NỘI DUNG & MỤC TIÊU BÀI HỌC:', 56, descY + 24);
-
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = '#334155';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  wrapText(ctx, LESSON_DESC, 56, descY + 44, W - 112, 19, 2);
+  ctx.fillText(dateStr, 220, cardY + 94);
 
-  // Section Breakdown Header
-  let y = 372;
+  // Card Tổng kết Tiến độ & Điểm số (Phải)
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  ctx.fillStyle = isDoneAll ? '#f0fdf4' : '#eff6ff';
+  ctx.roundRect(scoreBoxX, cardY, scoreBoxW, 115, 10);
+  ctx.fill();
+  ctx.strokeStyle = isDoneAll ? '#bbf7d0' : '#bfdbfe';
+  ctx.stroke();
+
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
   ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} phần`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+
+  // Thanh tiến độ đồ họa
+  ctx.fillStyle = '#cbd5e1';
+  ctx.roundRect(scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5);
+  ctx.fill();
+  if (completedParts > 0 && totalParts > 0) {
+    ctx.fillStyle = isDoneAll ? '#16a34a' : '#2563eb';
+    ctx.roundRect(scoreBoxX + 18, cardY + 92, Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts)), 10, 5);
+    ctx.fill();
+  }
+
+  // Tiêu đề bảng chi tiết điểm từng phần
+  let y = 274;
+  ctx.fillStyle = '#1e293b';
   ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
-  ctx.fillText('CHI TIẾT TIẾN ĐỘ & TÓM TẮT KIẾN THỨC TỪNG CHẶNG HỌC:', 40, y);
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
   y += 18;
 
-  // Stages List with Stage Summaries
-  STAGES.forEach((s) => {{
-    const done = state.completedStages.includes(s.num);
+  // Render từng phần bài học
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
     const qCount = (s.questions || []).length;
     let sCorrect = 0;
-    (s.questions || []).forEach(q => {{ if (state.scores[q.qid]) sCorrect++; }});
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
 
     ctx.fillStyle = '#ffffff';
-    ctx.roundRect(40, y, W - 80, stageCardH, 8);
+    ctx.roundRect(40, y, W - 80, rowH, 8);
     ctx.fill();
-    ctx.strokeStyle = done ? '#86efac' : '#e2e8f0';
-    ctx.lineWidth = done ? 1.5 : 1;
+    ctx.strokeStyle = isStageDone ? '#bbf7d0' : '#e2e8f0';
+    ctx.lineWidth = isStageDone ? 1.5 : 1;
     ctx.stroke();
 
-    // Stage Title
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 13.5px system-ui, -apple-system, sans-serif';
-    ctx.fillText(s.title, 56, y + 24);
+    // Tên phần/chặng
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '600 13.5px system-ui, -apple-system, sans-serif';
+    const label = s.title.length > 58 ? s.title.slice(0, 57) + '…' : s.title;
+    ctx.fillText(label, 56, y + 27);
 
-    // Status Badge Pill
-    const badgeX = W - 40 - 190;
-    ctx.fillStyle = done ? '#ecfdf5' : '#f1f5f9';
-    ctx.roundRect(badgeX, y + 10, 175, 24, 12);
-    ctx.fill();
-    ctx.strokeStyle = done ? '#a7f3d0' : '#cbd5e1';
-    ctx.stroke();
-
-    ctx.fillStyle = done ? '#059669' : '#64748b';
-    ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(done ? `✓ ĐÃ HOÀN THÀNH (${{sCorrect}}/${{qCount}})` : `⏳ CHƯA XONG (${{sCorrect}}/${{qCount}})`, badgeX + 87, y + 26);
+    // Trạng thái hoàn thành & Điểm số
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 12.5px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 27);
+    }
     ctx.textAlign = 'left';
 
-    // Stage Summary / Key Takeaway text
-    const takeawayText = s.takeaway || cleanHtmlSummary(s.summary);
-    ctx.fillStyle = '#475569';
-    ctx.font = '12px system-ui, -apple-system, sans-serif';
-    wrapText(ctx, `• Tóm tắt cốt lõi: ${{takeawayText}}`, 56, y + 48, W - 112, 17, 1);
+    y += rowH + rowGap;
+  });
 
-    y += stageCardH + stagesGap;
-  }});
-
-  // Footer
-  y += 10;
+  // Footer ghi chú
+  y += 12;
   ctx.fillStyle = '#94a3b8';
   ctx.font = '11.5px system-ui, -apple-system, sans-serif';
-  ctx.fillText('Hệ thống học liệu tương tác DBMS · Môn Cơ sở Dữ liệu · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
   ctx.textAlign = 'right';
-  ctx.fillText(LESSON_CODE, W - 40, y);
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
   ctx.textAlign = 'left';
 
-  // Trigger download
+  // Kích hoạt tải ảnh PNG
   const a = document.createElement('a');
-  const safeName = (mssv || name ? (mssv + (name ? '_' + name : '')) : 'sv').replace(/[^a-zA-Z0-9À-ỹ_-]+/g, '_');
-  a.download = `chung_nhan_${{LESSON_CODE}}_${{safeName}}.png`;
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
   a.href = canvas.toDataURL('image/png');
   document.body.appendChild(a);
   a.click();
   a.remove();
-}}
-
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderStages();
   updateScorecard();
 
-  const idIn = document.getElementById('studentId');
-  const nameIn = document.getElementById('studentName');
-  if (idIn) idIn.addEventListener('input', saveState);
-  if (nameIn) nameIn.addEventListener('input', saveState);
-
-  document.getElementById('exportPng').addEventListener('click', exportScorePNG);
-  document.getElementById('exportCsv').addEventListener('click', exportScoreCSV);
-  document.getElementById('resetProg').addEventListener('click', resetProgress);
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
 });
 </script>
 </body>
