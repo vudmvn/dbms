@@ -120,6 +120,15 @@ Current homepage sections:
   - `relational-model-and-functional-dependencies/functional-dependency/functional-dependency.md` & `.html`
   - `relational-model-and-functional-dependencies/functional-dependency-types/functional-dependency-types.md` & `.html`
 
+- Normalization
+  - `normalization/normalization.html`
+    - Central interactive hub aggregating 5 lessons, 25 stages, 50 checkpoint questions, real-time aggregate score tracking, and master certificate export.
+  - `normalization/normal-forms/normal-forms.md` & `.html`
+  - `normalization/1st-normal-form/1st-normal-form.md` & `.html`
+  - `normalization/2nd-normal-form/2nd-normal-form.md` & `.html`
+  - `normalization/3rd-normal-form/3rd-normal-form.md` & `.html`
+  - `normalization/4th-normal-form/4th-normal-form.md` & `.html`
+
 - MySQL Server
   - `MySQL/mysql-server/gioi-thieu-mysql/gioi-thieu-mysql.md`
   - `MySQL/mysql-server/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.md`
@@ -224,6 +233,7 @@ Workflow trigger paths:
 
 ## Update Notes
 
+- 2026-10-29: Reorganized Normalization chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, instant feedback, Canvas 2x PNG report generation, and a central interactive Master Hub (`normalization.html`) with cross-lesson synchronization and master certificate export. Updated `index.md` bilingually.
 - 2026-10-28: Reorganized Relational Model and Functional Dependencies chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, PNG certificate export, and a central interactive learning hub (`relational-model-and-functional-dependencies.html`), updated `index.md` bilingually.
 - 2026-06-04: Refreshed `entity-relationship-model/er-model/` attribute and relationship
   image references against the GeeksforGeeks source, then regenerated the

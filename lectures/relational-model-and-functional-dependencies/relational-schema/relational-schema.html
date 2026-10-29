@@ -1260,7 +1260,18 @@ function exportScorePNG() {
   a.remove();
 }
 
+function normalizeQuestions() {
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      q.qid = q.qid || q.id;
+      q.text = q.text || q.stem;
+      q.explanation = q.explanation || q.explain;
+    });
+  });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+  normalizeQuestions();
   loadState();
   renderStages();
   updateScorecard();

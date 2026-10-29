@@ -143,15 +143,16 @@ Phần này trình bày cách tổ chức dữ liệu theo bảng quan hệ, cá
 
 ## Normalization
 
-Phần này trình bày chuẩn hóa dữ liệu, các dạng chuẩn và cách giảm dư thừa để cải thiện tính nhất quán của thiết kế cơ sở dữ liệu.
+Phần này trình bày chuẩn hóa dữ liệu, các dạng chuẩn và cách giảm dư thừa để cải thiện tính nhất quán của thiết kế cơ sở dữ liệu. Trải nghiệm hệ thống học tập có khóa chặng và tự chấm điểm tại [Trung tâm Bài học Tương tác Chuẩn hóa Dữ liệu (Normalization Hub)](lectures/normalization/normalization.html).
 
-| Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
+| Bài học | Bài giảng Markdown | Bản Web Tương tác (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
-| Normal Forms trong DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [HTML](lectures/normalization/normal-forms/dbms_normalization_interactive_v2_fd.html) | <span class="missing">—</span> | Tổng quan chuẩn hóa và các dạng chuẩn |
-| First Normal Form (1NF) trong DBMS | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Loại bỏ nhóm lặp và đảm bảo giá trị nguyên tử |
-| Second Normal Form (2NF) trong DBMS | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Phụ thuộc đầy đủ vào khóa chính |
-| Third Normal Form (3NF) trong DBMS | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Loại bỏ phụ thuộc bắc cầu |
-| Fourth Normal Form (4NF) trong DBMS | [Markdown](lectures/normalization/4th-normal-form/4th-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Xử lý phụ thuộc đa trị |
+| 🎯 **Trung tâm Bài học Tương tác Chuẩn hóa Dữ liệu (Normalization Master Hub)** | <span class="missing">—</span> | [HTML Tương tác](lectures/normalization/normalization.html) | <span class="missing">—</span> | Hub tổng hợp 5 bài học, 25 chặng, 50 câu hỏi & Cấp chứng nhận Master |
+| 01. Tổng quan Chuẩn hóa & Các Dạng chuẩn (Normal Forms Overview) | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [HTML Tương tác](lectures/normalization/normal-forms/normal-forms.html) | <span class="missing">—</span> | Khái niệm chuẩn hóa, 3 dị thường (Insert/Update/Delete), phân cấp 1NF-5NF, Normalization vs Denormalization |
+| 02. Dạng chuẩn 1 - First Normal Form (1NF) | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | [HTML Tương tác](lectures/normalization/1st-normal-form/1st-normal-form.html) | <span class="missing">—</span> | Tính nguyên tử (Atomic values), loại bỏ nhóm lặp, mảng/danh sách trong ô và kỹ thuật phân tách bảng |
+| 03. Dạng chuẩn 2 - Second Normal Form (2NF) | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | [HTML Tương tác](lectures/normalization/2nd-normal-form/2nd-normal-form.html) | <span class="missing">—</span> | Phụ thuộc đầy đủ vào khóa chính, triệt tiêu phụ thuộc hàm một phần (Partial FD) trên khóa ghép |
+| 04. Dạng chuẩn 3 & Boyce-Codd (3NF & BCNF) | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | [HTML Tương tác](lectures/normalization/3rd-normal-form/3rd-normal-form.html) | <span class="missing">—</span> | Triệt tiêu phụ thuộc bắc cầu (Transitive FD), điều kiện Super Key vs Prime Attribute, phân rã BCNF |
+| 05. Dạng chuẩn 4 & Dạng chuẩn 5 (4NF & 5NF) | [Markdown](lectures/normalization/4th-normal-form/4th-normal-form.md) | [HTML Tương tác](lectures/normalization/4th-normal-form/4th-normal-form.html) | <span class="missing">—</span> | Phụ thuộc đa trị (MVD), triệt tiêu tích Đề-các trong 4NF, phụ thuộc nối (Join Dependency) & 5NF |
 
 ## MySQL Server
 
@@ -325,15 +326,16 @@ This section covers data organization in relational tables, key types, functiona
 
 ## Normalization
 
-Phần này trình bày chuẩn hóa dữ liệu, các dạng chuẩn và cách giảm dư thừa để cải thiện tính nhất quán của thiết kế cơ sở dữ liệu.
+This section covers database normalization, normal forms, and redundancy reduction strategies to improve relational database consistency and integrity. Stage-locked interactive learning system with auto-grading is available at the [Database Normalization Interactive Learning Hub](lectures/normalization/normalization.html).
 
-| Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
+| Lesson | Markdown Lecture | Interactive Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
-| Normal Forms in DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [HTML](lectures/normalization/normal-forms/dbms_normalization_interactive_v2_fd.html) | <span class="missing">—</span> | Overview of normalization and normal forms |
-| First Normal Form (1NF) in DBMS | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Removes repeating groups and keeps values atomic |
-| Second Normal Form (2NF) in DBMS | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Full dependency on the primary key |
-| Third Normal Form (3NF) in DBMS | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Removes transitive dependencies |
-| Fourth Normal Form (4NF) in DBMS | [Markdown](lectures/normalization/4th-normal-form/4th-normal-form.md) | <span class="missing">—</span> | <span class="missing">—</span> | Handles multivalued dependencies |
+| 🎯 **Database Normalization Interactive Learning Center (Master Hub)** | <span class="missing">—</span> | [Interactive HTML](lectures/normalization/normalization.html) | <span class="missing">—</span> | Aggregated 5 lessons, 25 stages, 50 questions & Master certificate |
+| 01. Normal Forms Overview in DBMS | [Markdown](lectures/normalization/normal-forms/normal-forms.md) | [Interactive HTML](lectures/normalization/normal-forms/normal-forms.html) | <span class="missing">—</span> | Normalization concepts, 3 anomalies (Insert/Update/Delete), 1NF-5NF hierarchy, Normalization vs Denormalization |
+| 02. First Normal Form (1NF) in DBMS | [Markdown](lectures/normalization/1st-normal-form/1st-normal-form.md) | [Interactive HTML](lectures/normalization/1st-normal-form/1st-normal-form.html) | <span class="missing">—</span> | Atomic values, removing repeating groups and array/list values, decomposition techniques |
+| 03. Second Normal Form (2NF) in DBMS | [Markdown](lectures/normalization/2nd-normal-form/2nd-normal-form.md) | [Interactive HTML](lectures/normalization/2nd-normal-form/2nd-normal-form.html) | <span class="missing">—</span> | Full functional dependency on primary key, eliminating partial dependencies on composite keys |
+| 04. Third Normal Form & Boyce-Codd (3NF & BCNF) | [Markdown](lectures/normalization/3rd-normal-form/3rd-normal-form.md) | [Interactive HTML](lectures/normalization/3rd-normal-form/3rd-normal-form.html) | <span class="missing">—</span> | Eliminating transitive dependencies, Super Key vs Prime Attribute conditions, BCNF decomposition |
+| 05. Fourth & Fifth Normal Forms (4NF & 5NF) | [Markdown](lectures/normalization/4th-normal-form/4th-normal-form.md) | [Interactive HTML](lectures/normalization/4th-normal-form/4th-normal-form.html) | <span class="missing">—</span> | Multivalued dependencies (MVD), eliminating Cartesian product redundancy in 4NF, Join Dependency & 5NF |
 
 ## MySQL Server
 

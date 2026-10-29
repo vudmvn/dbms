@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bài 1: Tổng quan Chuẩn hóa & Các Dạng chuẩn (Normal Forms Overview) | DBMS Interactive</title>
+<meta name="description" content="Khám phá bản chất của Chuẩn hóa CSDL (Normalization), nhận diện 3 dị thường dữ liệu (Insertion, Update, Deletion), làm chủ phân cấp 1NF-5NF và nguyên tắc phân rã không mất thông tin.">
+<style>
+:root {
+  --bg: #f5f8fc;
+  --panel: #ffffff;
+  --line: #dce4f0;
+  --ink: #17263c;
+  --muted: #627289;
+  --blue: #1c52b8;
+  --blue-sub: #edf3fe;
+  --green: #0f845a;
+  --green-sub: #e9f7f1;
+  --amber: #b45309;
+  --amber-sub: #fef3c7;
+  --red: #c02b2b;
+  --red-sub: #fdf2f2;
+  --shadow: 0 8px 24px rgba(18, 38, 63, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: var(--blue); text-decoration: none; }
+button, input { font: inherit; }
+
+.wrap {
+  max-width: 980px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Hero Banner */
+.hero {
+  background: linear-gradient(112deg, #0e2b4e 0%, #1c52b8 100%);
+  color: #fff;
+  padding: 32px 0 28px;
+}
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  opacity: 0.88;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.2;
+  margin: 8px 0 10px;
+}
+.hero p {
+  margin: 0;
+  max-width: 820px;
+  color: #e4eeff;
+  font-size: 14.5px;
+}
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tags span {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Sticky Score & Progress Bar */
+.sticky-bar {
+  background: rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+.scorecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.student-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.student-inputs input {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+}
+.student-inputs input:focus { border-color: var(--blue); }
+
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #bfdbfe;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+  border-color: #bbf7d0;
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+button:hover:not(:disabled) { filter: brightness(0.96); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--ink); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: #fff4f2; border-color: #fca5a5; color: var(--red); }
+
+.progress-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1c52b8, #0f845a);
+  transition: width 0.4s ease;
+}
+
+/* Stage Stepper Breadcrumb */
+.stage-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 14px 0 6px;
+  scrollbar-width: thin;
+}
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-pill.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-sub);
+}
+.nav-pill.completed {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-sub);
+}
+.nav-pill.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* Stages Content */
+main { padding: 24px 0 40px; }
+
+.stage {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.stage.active { border-left: 6px solid var(--blue); }
+.stage.completed { border-left: 6px solid var(--green); }
+.stage.locked { background: #fbfcfe; }
+.stage.locked .stage-content {
+  filter: blur(4px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Stage Lock Banner */
+.stage-lock-banner { display: none; }
+.stage.locked .stage-lock-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 22px 30px;
+  box-shadow: 0 10px 32px rgba(15, 30, 60, 0.12);
+  z-index: 5;
+  text-align: center;
+  max-width: 90%;
+  width: 420px;
+}
+.stage-lock-banner .lock-icon { font-size: 32px; margin-bottom: 8px; }
+.stage-lock-banner h3 { margin: 0 0 6px; font-size: 17px; color: #1e293b; }
+.stage-lock-banner p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+/* Stage Header */
+.stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+.stage-head h2 { font-size: 19px; margin: 0; color: var(--ink); }
+.stage-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-badge.locked { background: #f1f5f9; color: #64748b; }
+.stage-badge.in-progress { background: var(--blue-sub); color: var(--blue); }
+.stage-badge.done { background: var(--green-sub); color: var(--green); }
+
+/* Concept box */
+.concept-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  font-size: 14.5px;
+}
+.concept-box h4 { margin: 0 0 10px; font-size: 15px; color: #1e3a6e; }
+.concept-box ul, .concept-box ol { margin: 0; padding-left: 20px; }
+.concept-box li { margin-bottom: 6px; }
+
+/* Boxes */
+.note-box, .warn-box, .tip-box {
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.note-box {
+  background: var(--blue-sub);
+  border-left: 4px solid var(--blue);
+  color: #1e3a6e;
+}
+.warn-box {
+  background: #fffbeb;
+  border-left: 4px solid var(--amber);
+  color: #78350f;
+}
+.tip-box {
+  background: var(--green-sub);
+  border-left: 4px solid var(--green);
+  color: #0b593a;
+}
+
+/* Figures */
+.stage-figure {
+  margin: 18px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(15, 30, 60, 0.05);
+  text-align: center;
+}
+.stage-img {
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+figcaption::before { content: "📊 "; }
+
+/* Stage Table */
+.stage-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13.5px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.stage-table th {
+  background: #1e3a6e;
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 650;
+}
+.stage-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+.stage-table tr:last-child td { border-bottom: none; }
+.stage-table tr:nth-child(even) td { background: #f8fafc; }
+
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, Consolas, monospace;
+  background: #f1f5f9;
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #0f3274;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Checkpoint Box */
+.checkpoint-box {
+  background: #fdfefe;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 24px;
+  transition: all 0.25s;
+}
+.checkpoint-box.passed {
+  border-color: #86efac;
+  background: #fcfdfc;
+}
+.checkpoint-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.checkpoint-title h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.question-item {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.q-text {
+  font-weight: 650;
+  font-size: 14.5px;
+  margin-bottom: 12px;
+  color: #0f172a;
+}
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.option-label:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.option-label input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+}
+.option-label.selected {
+  background: var(--blue-sub);
+  border-color: var(--blue);
+  color: #0f3274;
+}
+.option-label.is-correct {
+  background: var(--green-sub) !important;
+  border-color: var(--green) !important;
+  color: #0b593a !important;
+  font-weight: 600;
+}
+.option-label.is-wrong {
+  background: var(--red-sub) !important;
+  border-color: var(--red) !important;
+  color: #991b1b !important;
+}
+.feedback-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.feedback-box.show { display: block; }
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: #0b593a;
+  border-left: 4px solid var(--green);
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: #991b1b;
+  border-left: 4px solid var(--red);
+}
+
+.stage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Congrats Card */
+.congrats-card {
+  display: none;
+  background: linear-gradient(135deg, #0f4c81 0%, #0f845a 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 30px;
+  box-shadow: 0 12px 36px rgba(15, 132, 90, 0.2);
+}
+.congrats-card.show { display: block; }
+.congrats-card h2 { font-size: 26px; margin: 0 0 10px; }
+.congrats-card p { font-size: 15px; margin: 0 0 20px; color: #e2fdf1; }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 35px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../normalization.html" style="display:inline-flex;align-items:center;gap:6px;color:#93c5fd;font-size:12.5px;font-weight:600;text-decoration:none;margin-bottom:12px;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15)">← Về Hub Chuẩn hóa Dữ liệu</a>
+    <div class="eyebrow">DBMS · NORMALIZATION · BÀI HỌC TƯƠNG TÁC THEO CHẶNG</div>
+    <h1>Bài 1: Tổng quan Chuẩn hóa & Các Dạng chuẩn (Normal Forms Overview)</h1>
+    <p>Khám phá bản chất của Chuẩn hóa CSDL (Normalization), nhận diện 3 dị thường dữ liệu kinh điển (Insertion, Update, Deletion), làm chủ hệ thống phân cấp dạng chuẩn 1NF–5NF và nguyên tắc phân rã lược đồ an toàn.</p>
+    <div class="tags">
+      <span>Tương tác từng phần</span>
+      <span>Khóa &amp; Mở chặng</span>
+      <span>Tự chấm điểm Quiz</span>
+      <span>Xuất báo cáo kết quả PNG</span>
+      <span>Lưu tiến trình Local</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="studentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="stageStat">Chặng: 0 / 5</div>
+        <div class="stat-pill" id="scoreStat">Điểm: 0 / 10</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" id="exportPng" title="Xuất kết quả báo cáo học tập ảnh PNG">Xuất PNG</button>
+        <button class="btn-secondary" id="exportCsv" title="Xuất kết quả chi tiết file CSV">Xuất CSV</button>
+        <button class="btn-danger" id="resetProg" title="Làm lại từ đầu">Làm lại</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    <div class="stage-nav" id="stageNav"></div>
+  </div>
+</div>
+
+<main class="wrap" id="stagesContainer">
+  <!-- Stages injected by JS -->
+</main>
+
+<div class="wrap">
+  <div class="congrats-card" id="congratsCard">
+    <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ CÁC CHẶNG!</h2>
+    <p>Bạn đã xuất sắc vượt qua toàn bộ 5 chặng bài học và kiểm tra checkpoint về Tổng quan Chuẩn hóa & Các Dạng chuẩn.</p>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+      <button class="btn-primary" style="background:#fff;color:#0f4c81;font-size:14.5px;padding:9px 18px" onclick="exportScorePNG()">Tải Báo cáo Kết quả (.PNG)</button>
+      <button class="btn-secondary" style="background:rgba(255,255,255,0.2);color:#fff;border-color:#fff;font-size:14.5px;padding:9px 18px" onclick="exportScoreCSV()">Xuất file điểm (.CSV)</button>
+      <a href="../1st-normal-form/1st-normal-form.html" class="btn-primary" style="background:#f59e0b;color:#fff;font-size:14.5px;padding:9px 18px;text-decoration:none;display:inline-flex;align-items:center">Học tiếp Bài 2: Dạng chuẩn 1 (1NF) ➔</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    DBMS Interactive Learning Series · 01-normal-forms. Tổng quan Chuẩn hóa &amp; Các Dạng chuẩn (Normal Forms Overview) · Khoa Công nghệ Thông tin
+  </div>
+</footer>
+
+<script>
+const STAGES = [
+  {
+    id: "stage-1",
+    num: 1,
+    title: "Chặng 1: Bản chất Chuẩn hóa CSDL & Vấn đề Dư thừa Dữ liệu (Redundancy)",
+    takeaway: "Chuẩn hóa là kỹ thuật thiết kế logic dựa trên các quy tắc toán học nhằm phân rã các bảng quan hệ lớn thành các bảng nhỏ hơn, loại bỏ triệt để dữ liệu trùng lặp và bảo vệ tính nhất quán.",
+    summary: `
+      <h4>1.1. Chuẩn hóa Cơ sở Dữ liệu (Database Normalization) là gì?</h4>
+      <p><b>Chuẩn hóa (Normalization)</b> là quy trình cấu trúc lại một cơ sở dữ liệu quan hệ theo các chuẩn mực nghiêm ngặt được gọi là <b>Các dạng chuẩn (Normal Forms)</b> do <i>E.F. Codd</i> đề xuất từ năm 1970. Mục tiêu cốt lõi của chuẩn hóa gồm:</p>
+      <ul>
+        <li><b>Tối thiểu hóa dữ liệu dư thừa (Data Redundancy):</b> Tránh việc cùng một sự thật thông tin (ví dụ: tên khoa, địa chỉ nhà cung cấp) bị lặp lại hàng nghìn lần trên nhiều dòng.</li>
+        <li><b>Loại bỏ các dị thường dữ liệu (Anomalies):</b> Đảm bảo thao tác thêm, sửa, xóa dữ liệu luôn diễn ra chính xác mà không phá vỡ tính toàn vẹn.</li>
+        <li><b>Bảo vệ tính độc lập và khả năng mở rộng:</b> Tách biệt các chủ thể nghiệp vụ để khi một chủ thể thay đổi, cấu trúc các bảng khác không bị xáo trộn.</li>
+      </ul>
+
+      <h4>1.2. Hậu quả của Lược đồ chưa Chuẩn hóa (Unnormalized Schema)</h4>
+      <p>Giả sử ta gom toàn bộ thông tin Sinh viên, Lớp học, Khoa và Giáo viên vào chung một bảng phẳng khổng lồ <code>SINH_VIEN_TOAN_DIEN</code>:</p>
+      <table class="stage-table">
+        <thead>
+          <tr><th>MaSV</th><th>HoTen</th><th>MaKhoa</th><th>TenKhoa</th><th>TruongKhoa</th><th>MaMon</th><th>TenMon</th><th>Diem</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SV01</td><td>Nguyễn Văn An</td><td>CNTT</td><td>Công nghệ Thông tin</td><td>TS. Minh</td><td>CSDL</td><td>Cơ sở Dữ liệu</td><td>8.5</td></tr>
+          <tr><td>SV01</td><td>Nguyễn Văn An</td><td>CNTT</td><td>Công nghệ Thông tin</td><td>TS. Minh</td><td>CTDL</td><td>Cấu trúc Dữ liệu</td><td>9.0</td></tr>
+          <tr><td>SV02</td><td>Trần Thị Bình</td><td>CNTT</td><td>Công nghệ Thông tin</td><td>TS. Minh</td><td>CSDL</td><td>Cơ sở Dữ liệu</td><td>7.5</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warn-box">
+        <b>Dư thừa thấy rõ:</b> Thông tin <code>TenKhoa = "Công nghệ Thông tin"</code> và <code>TruongKhoa = "TS. Minh"</code> bị lặp lại vô ích ở tất cả các dòng sinh viên thuộc khoa này. Nếu khoa có 5.000 sinh viên, thông tin đó sẽ bị sao chép 5.000 lần, lãng phí dung lượng ổ cứng, bộ nhớ đệm RAM và chi phí truyền tải mạng.
+      </div>
+    `,
+    questions: [
+      {
+        qid: "q1_1",
+        text: "Mục đích trực tiếp và cốt lõi nhất của quá trình Chuẩn hóa CSDL (Normalization) là gì?",
+        options: [
+          "Tăng tối đa số lượng bảng để cơ sở dữ liệu có cấu trúc đồ sộ hơn",
+          "Giảm thiểu tối đa sự dư thừa dữ liệu và hạn chế các bất thường khi thêm, sửa, xóa dữ liệu",
+          "Thay thế hoàn toàn sự cần thiết của ngôn ngữ truy vấn SQL",
+          "Mã hóa bảo mật tất cả các cột dữ liệu số trong cơ sở dữ liệu"
+        ],
+        correct: 1,
+        explanation: "Chính xác! Chuẩn hóa nhằm mục tiêu cốt lõi là tối thiểu hóa dư thừa dữ liệu và triệt tiêu các dị thường thêm/xóa/sửa, bảo đảm tính nhất quán của hệ thống."
+      },
+      {
+        qid: "q1_2",
+        text: "Điều gì xảy ra khi lưu trữ thông tin phòng ban lặp lại trên từng dòng của hàng nghìn nhân viên trong cùng một bảng chưa chuẩn hóa?",
+        options: [
+          "Tốc độ ghi dữ liệu INSERT chắc chắn sẽ tăng gấp đôi",
+          "Hệ thống tự động kích hoạt tính năng phân tán dữ liệu đám mây",
+          "Lãng phí dung lượng lưu trữ và có nguy cơ cao phát sinh mâu thuẫn dữ liệu khi thông tin phòng ban thay đổi",
+          "Bảng dữ liệu tự động đạt Dạng chuẩn 3 (3NF)"
+        ],
+        correct: 2,
+        explanation: "Chính xác! Dữ liệu bị sao chép nhiều nơi gây lãng phí bộ nhớ và dẫn đến mâu thuẫn khi sửa ở dòng này nhưng bỏ sót ở dòng khác."
+      }
+    ]
+  },
+  {
+    id: "stage-2",
+    num: 2,
+    title: "Chặng 2: Ba Dị thường Dữ liệu Kinh điển (Insertion, Update, Deletion Anomalies)",
+    takeaway: "Lược đồ dữ liệu kém gây ra 3 thảm họa cập nhật: Dị thường chèn (không thêm được đối tượng độc lập), Dị thường xóa (mất thông tin ngoài ý muốn) và Dị thường cập nhật (bất nhất dữ liệu).",
+    summary: `
+      <h4>2.1. Phân tích Chi tiết 3 Dạng Dị thường (Data Anomalies)</h4>
+      <p>Khi các thực thể độc lập bị gộp ép vào cùng một bảng, CSDL sẽ xuất hiện 3 dạng bất thường thao tác cực kỳ nguy hiểm:</p>
+
+      <div class="note-box">
+        <b>1. Dị thường khi Thêm mới (Insertion Anomaly):</b><br>
+        Xảy ra khi ta <b>không thể ghi nhận thông tin của một thực thể độc lập</b> nếu thiếu dữ liệu của một thực thể khác đi kèm. Ví dụ: Nhà trường vừa mở một ngành đào tạo mới mang mã <code>AI</code> nhưng chưa tuyển sinh được sinh viên nào. Do <code>MaSV</code> là thành phần khóa chính (không được phép NULL theo ràng buộc Entity Integrity), hệ thống hoàn toàn <b>không thể thêm thông tin ngành AI</b> vào bảng!
+      </div>
+
+      <div class="tip-box">
+        <b>2. Dị thường khi Cập nhật (Update / Modification Anomaly):</b><br>
+        Xảy ra khi một sự thật nghiệp vụ bị thay đổi (ví dụ: Trưởng khoa CNTT đổi từ TS. Minh sang PGS. Hùng), người quản trị phải thực hiện cập nhật trên <b>hàng nghìn dòng</b> sinh viên. Nếu câu lệnh UPDATE gặp sự cố ngắt quãng hoặc bỏ sót một vài dòng, CSDL sẽ rơi vào trạng thái <i>mâu thuẫn (Inconsistent)</i>: cùng một khoa nhưng có hai trưởng khoa khác nhau!
+      </div>
+
+      <div class="warn-box">
+        <b>3. Dị thường khi Xóa (Deletion Anomaly):</b><br>
+        Xảy ra khi thao tác xóa một bản ghi nghiệp vụ vô tình làm <b>mất sạch thông tin độc lập có giá trị khác</b>. Ví dụ: Ngành học <code>Triết học</code> chỉ có đúng 1 sinh viên theo học. Khi sinh viên này tốt nghiệp hoặc chuyển trường và bị xóa khỏi bảng, toàn bộ thông tin về tên ngành, chương trình học cũng bị xóa sổ vĩnh viễn khỏi hệ thống!
+      </div>
+
+      <h4>2.2. Bảng Tóm tắt 3 Dị thường</h4>
+      <table class="stage-table">
+        <thead>
+          <tr><th>Loại Dị thường</th><th>Biểu hiện Cốt lõi</th><th>Hậu quả Thực tế</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>Insertion Anomaly</b></td><td>Không thể chèn dữ liệu thực thể A nếu thiếu dữ liệu thực thể B</td><td>Bế tắc nghiệp vụ khi muốn khởi tạo đối tượng mới độc lập</td></tr>
+          <tr><td><b>Update Anomaly</b></td><td>Phải sửa đổi nhiều bản ghi giống nhau ở nhiều nơi</td><td>Dữ liệu bất nhất, mâu thuẫn báo cáo thống kê</td></tr>
+          <tr><td><b>Deletion Anomaly</b></td><td>Xóa bản ghi con làm mất luôn thông tin bản ghi cha</td><td>Mất mát dữ liệu quan trọng ngoài tầm kiểm soát</td></tr>
+        </tbody>
+      </table>
+    `,
+    questions: [
+      {
+        qid: "q2_1",
+        text: "Một trường đại học không thể thêm thông tin về một Ngành học mới vào CSDL nếu ngành đó chưa tuyển được sinh viên nào (vì MaSV là khóa chính không được NULL). Đây là hiện tượng dị thường nào?",
+        options: [
+          "Deletion Anomaly (Dị thường khi xóa)",
+          "Insertion Anomaly (Dị thường khi chèn/thêm)",
+          "Update Anomaly (Dị thường khi cập nhật)",
+          "Domain Anomaly (Dị thường miền giá trị)"
+        ],
+        correct: 1,
+        explanation: "Chính xác! Insertion Anomaly xảy ra khi không thể thêm dữ liệu của một thực thể độc lập do thiếu dữ liệu của một thực thể khác đi kèm khóa chính."
+      },
+      {
+        qid: "q2_2",
+        text: "Khi sinh viên duy nhất đăng ký môn học 'Xác suất thống kê' hủy môn và dòng dữ liệu đó bị xóa, kéo theo toàn bộ thông tin tên môn học và số tín chỉ cũng bị mất khỏi hệ thống. Đây là ví dụ của:",
+        options: [
+          "Deletion Anomaly (Dị thường khi xóa)",
+          "Insertion Anomaly (Dị thường khi chèn)",
+          "Update Anomaly (Dị thường khi cập nhật)",
+          "Entity Anomaly (Dị thường thực thể)"
+        ],
+        correct: 0,
+        explanation: "Chính xác! Deletion Anomaly xảy ra khi xóa một bản ghi nghiệp vụ ngoài ý muốn làm mất sạch thông tin của thực thể độc lập khác."
+      }
+    ]
+  },
+  {
+    id: "stage-3",
+    num: 3,
+    title: "Chặng 3: Phân cấp Các Dạng chuẩn (1NF ⊂ 2NF ⊂ 3NF ⊂ BCNF ⊂ 4NF ⊂ 5NF)",
+    takeaway: "Các dạng chuẩn là các nấc thang tinh lọc cấu trúc dữ liệu theo quan hệ bao hàm lồng nhau: Đạt dạng chuẩn cao hơn đồng nghĩa với việc đã thỏa mãn tất cả các dạng chuẩn thấp hơn.",
+    summary: `
+      <h4>3.1. Hệ thống Phân cấp Dạng chuẩn (Normal Forms Hierarchy)</h4>
+      <p>Quá trình chuẩn hóa diễn ra theo từng bước kế thừa tuần tự. Biểu thức bao hàm toán học thể hiện mối quan hệ giữa các dạng chuẩn:</p>
+      <pre><code>5NF ⊂ 4NF ⊂ BCNF ⊂ 3NF ⊂ 2NF ⊂ 1NF</code></pre>
+
+      <figure class="stage-figure">
+        <img class="stage-img" src="images/normalization_venn_diagram2.png" alt="Sơ đồ Venn phân cấp các dạng chuẩn từ 1NF đến 5NF">
+        <figcaption>Hình 1.1: Sơ đồ Venn mô tả mối quan hệ bao hàm giữa các dạng chuẩn CSDL</figcaption>
+      </figure>
+
+      <h4>3.2. Vai trò Triệt tiêu Lỗi của Từng Dạng chuẩn</h4>
+      <table class="stage-table">
+        <thead>
+          <tr><th>Dạng chuẩn</th><th>Điều kiện Ràng buộc Cốt lõi</th><th>Vấn đề / Dị thường Triệt tiêu</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>1NF</b> (First)</td><td>Mọi thuộc tính đều là <b>nguyên tử (Atomic values)</b>; không có nhóm lặp hoặc mảng.</td><td>Loại bỏ cấu trúc lồng nhau phức tạp, danh sách trong ô.</td></tr>
+          <tr><td><b>2NF</b> (Second)</td><td>Đạt 1NF và <b>triệt tiêu Phụ thuộc hàm một phần (Partial FD)</b>. Thuộc tính không khóa phụ thuộc đầy đủ vào khóa chính.</td><td>Loại bỏ dư thừa dữ liệu do các phần của khóa ghép gây ra.</td></tr>
+          <tr><td><b>3NF</b> (Third)</td><td>Đạt 2NF và <b>triệt tiêu Phụ thuộc hàm bắc cầu (Transitive FD)</b> giữa các thuộc tính không khóa.</td><td>Loại bỏ dị thường cập nhật giữa các thuộc tính không khóa.</td></tr>
+          <tr><td><b>BCNF</b> (Boyce-Codd)</td><td>Dạng chuẩn mạnh hơn 3NF: Với mọi FD không tầm thường $X \to Y$, <b>$X$ bắt buộc phải là Super Key</b>.</td><td>Loại bỏ triệt để mọi dị thường phụ thuộc hàm còn sót lại ở 3NF.</td></tr>
+          <tr><td><b>4NF</b> (Fourth)</td><td>Đạt BCNF và <b>triệt tiêu Phụ thuộc đa trị không tầm thường (Non-trivial MVD)</b> $X \twoheadrightarrow Y$.</td><td>Loại bỏ bùng nổ tích Đề-các do các tập đa trị độc lập.</td></tr>
+          <tr><td><b>5NF</b> (Fifth / PJNF)</td><td>Đạt 4NF và <b>triệt tiêu Phụ thuộc nối (Join Dependency)</b>.</td><td>Loại bỏ dị thường liên kết 3 chiều không thể phân tách thành cặp.</td></tr>
+        </tbody>
+      </table>
+    `,
+    questions: [
+      {
+        qid: "q3_1",
+        text: "Mối quan hệ phân cấp bao hàm giữa các dạng chuẩn trong CSDL được biểu diễn chính xác như thế nào?",
+        options: [
+          "1NF ⊂ 2NF ⊂ 3NF ⊂ BCNF ⊂ 4NF ⊂ 5NF",
+          "5NF ⊂ 4NF ⊂ BCNF ⊂ 3NF ⊂ 2NF ⊂ 1NF (Dạng chuẩn cao hơn đòi hỏi thỏa mãn tất cả dạng chuẩn thấp hơn)",
+          "BCNF ⊂ 1NF ⊂ 2NF ⊂ 3NF",
+          "Không có mối liên hệ thứ bậc nào giữa các dạng chuẩn"
+        ],
+        correct: 1,
+        explanation: "Chính xác! 5NF ⊂ 4NF ⊂ BCNF ⊂ 3NF ⊂ 2NF ⊂ 1NF. Một quan hệ đạt 3NF chắc chắn đã đạt 1NF và 2NF."
+      },
+      {
+        qid: "q3_2",
+        text: "Một bảng dữ liệu đã đạt Dạng chuẩn 3 (3NF) thì chắc chắn đã thỏa mãn những dạng chuẩn nào trước đó?",
+        options: [
+          "Chắc chắn đã đạt cả Dạng chuẩn 1 (1NF) và Dạng chuẩn 2 (2NF)",
+          "Chắc chắn đã đạt Dạng chuẩn 4 (4NF) và 5 (5NF)",
+          "Chắc chắn đạt chuẩn BCNF trong mọi trường hợp",
+          "Không cần đạt dạng chuẩn nào trước đó"
+        ],
+        correct: 0,
+        explanation: "Chính xác! 3NF được định nghĩa trên nền tảng của 2NF (và 2NF kế thừa từ 1NF)."
+      }
+    ]
+  },
+  {
+    id: "stage-4",
+    num: 4,
+    title: "Chặng 4: Tiêu chuẩn Phân rã Lược đồ: Nối Không Mất Mát & Bảo toàn Phụ thuộc",
+    takeaway: "Khi phân rã một bảng thành các bảng nhỏ hơn, hai tiêu chuẩn bắt buộc phải tuân thủ là Nối không mất thông tin (Lossless Join) và Bảo toàn phụ thuộc hàm (Dependency Preservation).",
+    summary: `
+      <h4>4.1. Phân rã Lược đồ (Schema Decomposition) là gì?</h4>
+      <p>Thay vì lưu mọi thông tin trong một bảng lớn $R$, chuẩn hóa thực hiện phép chiếu để tách $R$ thành tập các lược đồ con $R_1, R_2, \dots, R_k$ sao cho $R_1 \cup R_2 \cup \dots \cup R_k = R$. Tuy nhiên, việc tách bảng phải thỏa mãn 2 nguyên tắc vàng:</p>
+
+      <h4>4.2. Nguyên tắc 1: Nối không Mất Mát (Lossless-Join Decomposition)</h4>
+      <p>Phép phân rã được gọi là <b>Lossless Join</b> nếu khi thực hiện phép kết nối tự nhiên (Natural Join) các bảng con, ta tái tạo lại chính xác 100% các dòng dữ liệu ban đầu của bảng cha:</p>
+      <pre><code>R₁ ⋈ R₂ ⋈ ... ⋈ R_k = R</code></pre>
+      <div class="warn-box">
+        <b>Nguy cơ Lossy Decomposition:</b> Nếu tách bảng sai, khi kết nối lại sẽ sinh ra các <i>bộ dữ liệu giả mạo (Spurious Tuples)</i> khiến dữ liệu bị sai lệch nghiêm trọng so với thực tế.<br>
+        <b>Định lý kiểm tra Lossless Join cho 2 bảng:</b> Phép phân rã $R$ thành $(R_1, R_2)$ là Lossless Join khi và chỉ khi thuộc tính chung $(R_1 \cap R_2)$ là Siêu khóa (Super Key) của $R_1$ HOẶC là Siêu khóa của $R_2$:
+        <br><code>(R₁ ∩ R₂) → R₁  HOẶC  (R₁ ∩ R₂) → R₂</code>
+      </div>
+
+      <h4>4.3. Nguyên tắc 2: Bảo toàn Phụ thuộc Hàm (Dependency Preservation)</h4>
+      <p>Một phép phân rã đạt tiêu chuẩn <b>Bảo toàn phụ thuộc hàm</b> khi tất cả các phụ thuộc hàm trong tập $F$ ban đầu đều có thể được kiểm tra trực tiếp trên các bảng con mà <b>không cần phải thực hiện phép JOIN</b> tốn kém tài nguyên hệ thống.</p>
+    `,
+    questions: [
+      {
+        qid: "q4_1",
+        text: "Phân rã một lược đồ quan hệ được gọi là 'Nối không mất thông tin' (Lossless-Join Decomposition) khi:",
+        options: [
+          "Tổng dung lượng file trên ổ cứng sau khi tách bảng giảm đi 50%",
+          "Phép kết nối tự nhiên (Natural Join) của các bảng phân rã tái tạo chính xác 100% dữ liệu gốc mà không sinh ra bộ dữ liệu giả mạo",
+          "Mỗi bảng con đều có đúng 2 cột thuộc tính",
+          "Tất cả các bảng con đều không được phép chứa khóa ngoại"
+        ],
+        correct: 1,
+        explanation: "Chính xác! Lossless Join bảo đảm phép kết nối tự nhiên tái tạo trung thực dữ liệu gốc ban đầu, không làm mất mát hay sinh thêm dòng giả."
+      },
+      {
+        qid: "q4_2",
+        text: "Điều kiện cần và đủ để phép phân rã một lược đồ R thành hai lược đồ con R1 và R2 là Lossless Join theo phụ thuộc hàm là:",
+        options: [
+          "Hai bảng con không được có bất kỳ thuộc tính chung nào",
+          "Thuộc tính chung (R1 ∩ R2) phải là siêu khóa của ít nhất một trong hai lược đồ con R1 hoặc R2",
+          "Bảng R1 phải có số lượng thuộc tính nhiều hơn bảng R2",
+          "Cả hai bảng con đều phải có ít nhất 10 dòng dữ liệu"
+        ],
+        correct: 1,
+        explanation: "Chính xác! Định lý kinh điển: (R1 ∩ R2) → R1 hoặc (R1 ∩ R2) → R2 bảo đảm phép nối tự nhiên không sinh ra bộ giả mạo."
+      }
+    ]
+  },
+  {
+    id: "stage-5",
+    num: 5,
+    title: "Chặng 5: So sánh Chuẩn hóa (Normalization) vs Phi chuẩn hóa (Denormalization)",
+    takeaway: "Chuẩn hóa tối ưu hóa cho thao tác GHI và bảo vệ toàn vẹn dữ liệu (OLTP). Phi chuẩn hóa có kiểm soát tối ưu hóa cho thao tác ĐỌC và phân tích báo cáo (OLAP/Data Warehouse).",
+    summary: `
+      <h4>5.1. So sánh Toàn diện Normalization vs Denormalization</h4>
+      <p>Trong kỹ nghệ phần mềm và kiến trúc dữ liệu doanh nghiệp, chuẩn hóa và phi chuẩn hóa là hai chiến lược bổ trợ cho nhau:</p>
+
+      <table class="stage-table">
+        <thead>
+          <tr><th>Tiêu chí</th><th>Chuẩn hóa (Normalization - 3NF/BCNF)</th><th>Phi chuẩn hóa (Denormalization)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>Mục tiêu chính</b></td><td>Loại bỏ dư thừa, ngăn chặn dị thường, bảo đảm toàn vẹn</td><td>Tăng tốc độ truy vấn đọc, giảm số lượng phép JOIN</td></tr>
+          <tr><td><b>Hiệu năng Ghi (INSERT/UPDATE)</b></td><td><b>Rất nhanh & an toàn:</b> Chỉ sửa đổi một nơi duy nhất</td><td><b>Chậm & rủi ro:</b> Phải sửa trên nhiều bản ghi trùng lặp</td></tr>
+          <tr><td><b>Hiệu năng Đọc (SELECT phức tạp)</b></td><td>Có thể chậm hơn vì phải thực hiện nhiều phép <code>JOIN</code> bảng</td><td><b>Rất nhanh:</b> Đọc dữ liệu trực tiếp từ một bảng gộp sẵn</td></tr>
+          <tr><td><b>Không gian lưu trữ</b></td><td>Tối ưu, tiết kiệm dung lượng bộ nhớ</td><td>Tốn kém dung lượng do cố tình sao chép dữ liệu lặp</td></tr>
+          <tr><td><b>Môi trường áp dụng lý tưởng</b></td><td><b>OLTP (Online Transaction Processing):</b> Ngân hàng, E-commerce, Quản lý đơn hàng</td><td><b>OLAP / Data Warehouse / Reporting:</b> Báo cáo BI, Dashboard phân tích dữ liệu lớn</td></tr>
+        </tbody>
+      </table>
+
+      <h4>5.2. Lời khuyên Kiến trúc Thực tế trong Doanh nghiệp</h4>
+      <div class="tip-box">
+        <b>Quy tắc vàng của Kỹ sư CSDL:</b> Luôn luôn thiết kế CSDL đạt chuẩn ở mức <b>3NF hoặc BCNF trước tiên</b>. Chỉ thực hiện phi chuẩn hóa có kiểm soát (Denormalization) tại một số bảng cụ thể khi các công cụ giám sát hiệu năng thực tế chứng minh câu lệnh JOIN gây nghẽn cổ chai và không thể giải quyết bằng Indexing hay Caching.
+      </div>
+    `,
+    questions: [
+      {
+        qid: "q5_1",
+        text: "Kỹ thuật 'Phi chuẩn hóa' (Denormalization) thường được áp dụng có chủ đích trong trường hợp nào?",
+        options: [
+          "Trong các hệ thống phân tích kho dữ liệu (Data Warehouse / OLAP) hoặc báo cáo nhằm giảm số phép JOIN và tăng tốc độ đọc dữ liệu",
+          "Khi muốn loại bỏ hoàn toàn các khóa chính khỏi hệ thống",
+          "Khi mới bắt đầu dự án mà chưa phân tích xong yêu cầu nghiệp vụ",
+          "Khi muốn tăng tính toàn vẹn dữ liệu cho giao dịch ngân hàng"
+        ],
+        correct: 0,
+        explanation: "Chính xác! Denormalization được áp dụng có chủ đích cho các hệ thống đọc nhiều/phân tích báo cáo để giảm chi phí JOIN bảng."
+      },
+      {
+        qid: "q5_2",
+        text: "Trong đa số các ứng dụng doanh nghiệp thực tế (hệ thống giao dịch OLTP), mức chuẩn hóa được khuyến nghị và coi là mục tiêu tối ưu về mặt cân bằng hiệu năng và toàn vẹn là:",
+        options: [
+          "Chỉ dừng lại ở Dạng chuẩn 1 (1NF)",
+          "Bắt buộc phải đạt Dạng chuẩn 5 (5NF) trong mọi bảng",
+          "3NF hoặc BCNF",
+          "Hoàn toàn không chuẩn hóa, giữ nguyên bảng phẳng"
+        ],
+        correct: 2,
+        explanation: "Chính xác! 3NF hoặc BCNF là điểm cân bằng vàng loại bỏ triệt để hầu hết các dị thường mà vẫn giữ hiệu năng hệ thống ở mức tối ưu."
+      }
+    ]
+  }
+];
+
+const STORAGE_KEY = 'dbms_norm_l1_overview_v1';
+const LESSON_TITLE = 'Bài 1: Tổng quan Chuẩn hóa & Các Dạng chuẩn (Normal Forms Overview)';
+const LESSON_CODE = '01-normal-forms';
+const TOTAL_QUESTIONS = 10;
+
+let state = {
+  studentId: '',
+  studentName: '',
+  unlockedUntil: 1,
+  completedStages: [],
+  answers: {},
+  scores: {}
+};
+
+function normalizeQuestions() {
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      q.qid = q.qid || q.id;
+      q.text = q.text || q.stem;
+      q.explanation = q.explanation || q.explain;
+    });
+  });
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = Object.assign(state, parsed);
+    }
+  } catch (e) { console.warn('Could not load localStorage', e); }
+  const idEl = document.getElementById('studentId');
+  const nameEl = document.getElementById('studentName');
+  if (idEl) idEl.value = state.studentId || '';
+  if (nameEl) nameEl.value = state.studentName || '';
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function calculateTotalScore() {
+  let correct = 0;
+  for (const s of STAGES) {
+    for (const q of (s.questions || [])) {
+      if (state.scores[q.qid] === true) correct++;
+    }
+  }
+  return correct;
+}
+
+function updateScorecard() {
+  const completedCount = state.completedStages.length;
+  const totalStages = STAGES.length;
+  const correctScore = calculateTotalScore();
+
+  document.getElementById('stageStat').textContent = `Chặng: ${completedCount} / ${totalStages}`;
+  document.getElementById('stageStat').className = 'stat-pill' + (completedCount === totalStages ? ' success' : '');
+
+  const pct = Math.round((completedCount / totalStages) * 100);
+  const scorePct = TOTAL_QUESTIONS > 0 ? Math.round((correctScore / TOTAL_QUESTIONS) * 100) : 0;
+  document.getElementById('scoreStat').textContent = `Điểm: ${correctScore} / ${TOTAL_QUESTIONS} (${scorePct}%)`;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  const congrats = document.getElementById('congratsCard');
+  if (congrats) {
+    if (completedCount === totalStages && totalStages > 0) congrats.classList.add('show');
+    else congrats.classList.remove('show');
+  }
+
+  renderStageNav();
+}
+
+function renderStageNav() {
+  const nav = document.getElementById('stageNav');
+  nav.innerHTML = '';
+  STAGES.forEach((s) => {
+    const pill = document.createElement('div');
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    let cls = 'nav-pill';
+    if (isCompleted) cls += ' completed';
+    else if (isActive) cls += ' active';
+    else if (!isUnlocked) cls += ' locked';
+
+    pill.className = cls;
+    pill.textContent = `${isCompleted ? '✓ ' : (isUnlocked ? '● ' : '🔒 ')}Chặng ${s.num}`;
+
+    if (isUnlocked) {
+      pill.onclick = () => scrollToStage(s.num);
+    }
+    nav.appendChild(pill);
+  });
+}
+
+function renderStages() {
+  const container = document.getElementById('stagesContainer');
+  container.innerHTML = '';
+
+  STAGES.forEach((s) => {
+    const isCompleted = state.completedStages.includes(s.num);
+    const isUnlocked = s.num <= state.unlockedUntil;
+    const isActive = s.num === state.unlockedUntil && !isCompleted;
+
+    const stageEl = document.createElement('section');
+    stageEl.id = `stage-${s.num}`;
+    stageEl.className = `stage ${isCompleted ? 'completed' : (isActive ? 'active' : 'locked')}`;
+
+    let badgeText = 'Đang khóa 🔒';
+    let badgeClass = 'stage-badge locked';
+    if (isCompleted) {
+      badgeText = '✓ Đã hoàn thành';
+      badgeClass = 'stage-badge done';
+    } else if (isUnlocked) {
+      badgeText = '● Đang thực hiện';
+      badgeClass = 'stage-badge in-progress';
+    }
+
+    let questionsHtml = '';
+    (s.questions || []).forEach((q) => {
+      let optionsHtml = '';
+      const userAns = state.answers[q.qid];
+      const isAnswered = typeof userAns !== 'undefined';
+      const isCorrect = state.scores[q.qid] === true;
+
+      q.options.forEach((opt, optIdx) => {
+        let optCls = 'option-label';
+        let checked = userAns === optIdx ? 'checked' : '';
+        if (isAnswered) {
+          if (optIdx === q.correct) optCls += ' is-correct';
+          else if (userAns === optIdx) optCls += ' is-wrong';
+        }
+
+        optionsHtml += `
+          <label class="${optCls}" data-qid="${q.qid}" data-idx="${optIdx}" onclick="selectOption('${q.qid}', ${optIdx}, ${s.num})">
+            <input type="radio" name="radio_${q.qid}" value="${optIdx}" ${checked} ${!isUnlocked ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      let feedbackCls = 'feedback-box';
+      let feedbackText = '';
+      if (isAnswered) {
+        feedbackCls += ' show ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackText = (isCorrect ? '✓ ' : '✕ ') + q.explanation;
+      }
+
+      questionsHtml += `
+        <div class="question-item" id="qitem_${q.qid}">
+          <div class="q-text">${q.text}</div>
+          <div class="options-list">${optionsHtml}</div>
+          <div class="${feedbackCls}" id="fb_${q.qid}">${feedbackText}</div>
+        </div>
+      `;
+    });
+
+    stageEl.innerHTML = `
+      <div class="stage-lock-banner">
+        <div class="lock-icon">🔒</div>
+        <h3>Chặng này đang bị khóa</h3>
+        <p>Hãy hoàn thành xuất sắc các câu hỏi Checkpoint của <b>Chặng ${s.num - 1}</b> để mở khóa chặng tiếp theo.</p>
+      </div>
+
+      <div class="stage-content">
+        <div class="stage-head">
+          <h2>${s.title}</h2>
+          <span class="${badgeClass}" id="badge_s_${s.num}">${badgeText}</span>
+        </div>
+
+        <div class="concept-box">
+          ${s.summary}
+        </div>
+
+        <div class="checkpoint-box ${isCompleted ? 'passed' : ''}" id="cp_box_${s.num}">
+          <div class="checkpoint-title">
+            <h3>⚡ Nhiệm vụ Vượt Ải Checkpoint (${(s.questions || []).length} câu hỏi tự chấm)</h3>
+            <span style="font-size:12.5px;color:var(--muted)">Trả lời đúng toàn bộ để mở khóa</span>
+          </div>
+          ${questionsHtml}
+        </div>
+
+        <div class="stage-actions">
+          <button class="btn-primary" id="btn_check_${s.num}" onclick="checkStage(${s.num})" ${!isUnlocked ? 'disabled' : ''}>
+            ${isCompleted ? 'Làm lại bài tập chặng này' : 'Kiểm tra & Mở khóa chặng tiếp ➔'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(stageEl);
+  });
+}
+
+function selectOption(qid, optIndex, stageNum) {
+  state.answers[qid] = optIndex;
+  saveState();
+
+  const qItem = document.getElementById(`qitem_${qid}`);
+  if (qItem) {
+    qItem.querySelectorAll('.option-label').forEach((el) => {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      if (idx === optIndex) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+  }
+}
+
+function checkStage(stageNum) {
+  const stage = STAGES.find(s => s.num === stageNum);
+  if (!stage) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  (stage.questions || []).forEach(q => {
+    const userAns = state.answers[q.qid];
+    if (typeof userAns === 'undefined') {
+      allAnswered = false;
+      allCorrect = false;
+    } else if (userAns === q.correct) {
+      state.scores[q.qid] = true;
+    } else {
+      state.scores[q.qid] = false;
+      allCorrect = false;
+    }
+
+    const fb = document.getElementById(`fb_${q.qid}`);
+    const qItem = document.getElementById(`qitem_${q.qid}`);
+    if (fb && qItem) {
+      if (typeof userAns !== 'undefined') {
+        const isCor = userAns === q.correct;
+        fb.className = 'feedback-box show ' + (isCor ? 'correct' : 'incorrect');
+        fb.textContent = (isCor ? '✓ ' : '✕ ') + q.explanation;
+
+        qItem.querySelectorAll('.option-label').forEach(lbl => {
+          const idx = parseInt(lbl.getAttribute('data-idx'));
+          lbl.classList.remove('is-correct', 'is-wrong');
+          if (idx === q.correct) lbl.classList.add('is-correct');
+          else if (idx === userAns) lbl.classList.add('is-wrong');
+        });
+      }
+    }
+  });
+
+  if (!allAnswered) {
+    alert('Vui lòng chọn đáp án cho tất cả các câu hỏi trắc nghiệm của chặng này!');
+    return;
+  }
+
+  saveState();
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(stageNum)) {
+      state.completedStages.push(stageNum);
+    }
+    if (state.unlockedUntil <= stageNum && stageNum < STAGES.length) {
+      state.unlockedUntil = stageNum + 1;
+    }
+    saveState();
+    updateScorecard();
+
+    const cpBox = document.getElementById(`cp_box_${stageNum}`);
+    if (cpBox) cpBox.classList.add('passed');
+
+    const badge = document.getElementById(`badge_s_${stageNum}`);
+    if (badge) {
+      badge.className = 'stage-badge done';
+      badge.textContent = '✓ Đã hoàn thành';
+    }
+    const curStageEl = document.getElementById(`stage-${stageNum}`);
+    if (curStageEl) {
+      curStageEl.className = 'stage completed';
+    }
+
+    if (stageNum < STAGES.length) {
+      const nextStageEl = document.getElementById(`stage-${stageNum + 1}`);
+      if (nextStageEl) {
+        nextStageEl.className = 'stage active';
+        const nextBadge = document.getElementById(`badge_s_${stageNum + 1}`);
+        if (nextBadge) {
+          nextBadge.className = 'stage-badge in-progress';
+          nextBadge.textContent = '● Đang thực hiện';
+        }
+        const nextBtn = document.getElementById(`btn_check_${stageNum + 1}`);
+        if (nextBtn) nextBtn.disabled = false;
+        nextStageEl.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+      }
+      setTimeout(() => scrollToStage(stageNum + 1), 350);
+    } else {
+      updateScorecard();
+      setTimeout(() => {
+        const congrats = document.getElementById('congratsCard');
+        if (congrats) congrats.scrollIntoView({ behavior: 'smooth' });
+      }, 350);
+    }
+  } else {
+    updateScorecard();
+    alert('Một số câu hỏi trả lời chưa chính xác. Vui lòng xem giải thích chi tiết màu đỏ bên dưới từng câu và thử lại!');
+  }
+}
+
+function scrollToStage(stageNum) {
+  const el = document.getElementById(`stage-${stageNum}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập và làm lại từ đầu không?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      studentId: document.getElementById('studentId')?.value || '',
+      studentName: document.getElementById('studentName')?.value || '',
+      unlockedUntil: 1,
+      completedStages: [],
+      answers: {},
+      scores: {}
+    };
+    saveState();
+    renderStages();
+    updateScorecard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function exportScoreCSV() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim();
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const rows = [
+    ['MSSV', 'HoTen', 'BaiHoc', 'ChangSo', 'TenChang', 'CauHoiID', 'TrangThai', 'Diem']
+  ];
+
+  STAGES.forEach(s => {
+    (s.questions || []).forEach(q => {
+      const isCor = state.scores[q.qid] === true;
+      rows.push([
+        mssv,
+        name,
+        LESSON_TITLE,
+        String(s.num),
+        s.title,
+        q.qid,
+        isCor ? 'Dung' : 'ChuaDung',
+        isCor ? '1' : '0'
+      ]);
+    });
+  });
+
+  const csvContent = String.fromCharCode(0xFEFF) + rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join(String.fromCharCode(10));
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `diem_${LESSON_CODE}_${mssv || 'sv'}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportScorePNG() {
+  saveState();
+  const mssv = (document.getElementById('studentId')?.value || '').trim() || '(Chưa điền)';
+  const name = (document.getElementById('studentName')?.value || '').trim() || '(Chưa điền)';
+  const score = calculateTotalScore();
+  const total = TOTAL_QUESTIONS;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  const completedParts = state.completedStages.length;
+  const totalParts = STAGES.length;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const W = 880;
+  const rowH = 46;
+  const rowGap = 8;
+  const H = 340 + (STAGES.length * (rowH + rowGap)) + 40;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') r = [r, r, r, r];
+    else if (!r) r = [0, 0, 0, 0];
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) { c.fillStyle = fillColor; c.fill(); }
+    if (strokeColor) { c.strokeStyle = strokeColor; c.lineWidth = lineWidth || 1; c.stroke(); }
+    c.restore();
+  }
+
+  ctx.fillStyle = '#f6f8fc';
+  ctx.fillRect(0, 0, W, H);
+  drawRoundedRect(ctx, 16, 16, W - 32, H - 32, 16, '#ffffff', '#dae3f0', 1.5);
+
+  const grad = ctx.createLinearGradient(16, 16, W - 16, 16);
+  grad.addColorStop(0, '#0e2b4e');
+  grad.addColorStop(1, '#1c52b8');
+  drawRoundedRect(ctx, 16, 16, W - 32, 96, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#9cb8e8';
+  ctx.font = '600 12px Arial, sans-serif';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · BÁO CÁO KẾT QUẢ HỌC TẬP', 40, 48);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(LESSON_TITLE, 40, 80);
+  ctx.restore();
+
+  const cardY = 132;
+  drawRoundedRect(ctx, 40, cardY, 460, 115, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 62);
+  ctx.fillText('Thời gian xuất kết quả:', 56, cardY + 94);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 220, cardY + 30);
+  ctx.fillText(mssv, 220, cardY + 62);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 220, cardY + 94);
+  ctx.restore();
+
+  const scoreBoxX = 520;
+  const scoreBoxW = 320;
+  const isDoneAll = completedParts === totalParts && totalParts > 0;
+  drawRoundedRect(ctx, scoreBoxX, cardY, scoreBoxW, 115, 10, isDoneAll ? '#f0fdf4' : '#eff6ff', isDoneAll ? '#bbf7d0' : '#bfdbfe', 1);
+
+  ctx.save();
+  ctx.fillStyle = isDoneAll ? '#166534' : '#1e40af';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TIẾN ĐỘ HOÀN THÀNH TOÀN BÀI', scoreBoxX + 18, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${completedParts} / ${totalParts} chặng`, scoreBoxX + 18, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = isDoneAll ? '#15803d' : '#2563eb';
+  ctx.fillText(`Tổng điểm: ${score} / ${total} câu (${pct}%)`, scoreBoxX + 18, cardY + 80);
+  ctx.restore();
+
+  drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, scoreBoxW - 36, 10, 5, '#cbd5e1', null, 0);
+  if (completedParts > 0 && totalParts > 0) {
+    const fillW = Math.max(10, (scoreBoxW - 36) * (completedParts / totalParts));
+    drawRoundedRect(ctx, scoreBoxX + 18, cardY + 92, fillW, 10, 5, isDoneAll ? '#16a34a' : '#2563eb', null, 0);
+  }
+
+  let y = 274;
+  ctx.save();
+  ctx.fillStyle = '#1e293b';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText(`Chi tiết kết quả theo từng phần bài học (${STAGES.length} phần):`, 40, y);
+  ctx.restore();
+  y += 18;
+
+  STAGES.forEach((s) => {
+    const isStageDone = state.completedStages.includes(s.num);
+    const qCount = (s.questions || []).length;
+    let sCorrect = 0;
+    (s.questions || []).forEach(q => { if (state.scores[q.qid]) sCorrect++; });
+
+    drawRoundedRect(ctx, 40, y, W - 80, rowH, 8, '#ffffff', isStageDone ? '#bbf7d0' : '#e2e8f0', isStageDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 13.5px Arial, sans-serif';
+    const label = s.title.length > 56 ? s.title.slice(0, 55) + '…' : s.title;
+    ctx.fillText(label, 56, y + 28);
+
+    ctx.textAlign = 'right';
+    if (isStageDone) {
+      ctx.fillStyle = '#16a34a';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`✓ ĐÃ HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    } else {
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12.5px Arial, sans-serif';
+      ctx.fillText(`⏳ CHƯA HOÀN THÀNH  ·  Điểm: ${sCorrect}/${qCount}`, W - 56, y + 28);
+    }
+    ctx.restore();
+
+    y += rowH + rowGap;
+  });
+
+  y += 14;
+  ctx.save();
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Báo cáo kết quả bài học tương tác DBMS · Dữ liệu được xác thực tự động trên thiết bị người học.', 40, y);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, y);
+  ctx.restore();
+
+  const a = document.createElement('a');
+  const safeMssv = (mssv && mssv !== '(Chưa điền)' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  a.download = `bao_cao_${LESSON_CODE}_${safeMssv}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  normalizeQuestions();
+  loadState();
+  renderStages();
+  updateScorecard();
+
+  document.getElementById('exportPng')?.addEventListener('click', exportScorePNG);
+  document.getElementById('exportCsv')?.addEventListener('click', exportScoreCSV);
+  document.getElementById('resetProg')?.addEventListener('click', resetProgress);
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Normalization · Trung tâm Bài học Tương tác Chuẩn hóa Cơ sở Dữ liệu</title>
+<meta name="description" content="Trung tâm điều phối tiến trình học tập và kiểm tra Checkpoint tương tác cho toàn bộ Chuẩn hóa CSDL: 1NF, 2NF, 3NF, BCNF, 4NF và 5NF.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-sub: #eff6ff;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --primary-grad: linear-gradient(135deg, #092240 0%, #174785 50%, #1e5ba3 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 44px 0 38px;
+  box-shadow: 0 8px 24px rgba(10, 37, 64, 0.2);
+}
+header.hero .eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+header.hero h1 {
+  margin: 0 0 12px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 15px;
+  color: #e0e7ff;
+  max-width: 860px;
+  line-height: 1.6;
+}
+
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus {
+  border-color: var(--blue);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+}
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #1e40af;
+}
+.btn-secondary {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--line);
+}
+.btn-secondary:hover {
+  background: #f1f5f9;
+}
+.btn-danger {
+  background: #fff4f2;
+  border-color: #fca5a5;
+  color: #c02b2b;
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  transition: width 0.3s ease;
+}
+
+main.wrap {
+  padding-top: 28px;
+  padding-bottom: 60px;
+}
+
+.hub-banner-summary {
+  background: linear-gradient(135deg, #092240 0%, #1e40af 100%);
+  color: #fff;
+  padding: 22px 24px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hub-banner-summary h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.hub-banner-summary p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #dbeafe;
+  max-width: 650px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: #cbd5e1;
+}
+.card.completed {
+  border-color: #86efac;
+  background: linear-gradient(to bottom, #ffffff, #f0fdf4);
+}
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-num {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.card-status-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--muted);
+}
+.card.completed .card-status-badge {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.35;
+  color: var(--text);
+}
+.card p {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.card .features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.card .features span {
+  font-size: 11.5px;
+  background: #f8fafc;
+  color: #475569;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+}
+.card .btn-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 9px 16px;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.card .btn-open:hover {
+  background: #1e40af;
+}
+
+footer {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">DBMS · NORMALIZATION · MASTER LEARNING HUB</div>
+    <h1>Trung tâm Bài học Tương tác Chuẩn hóa Cơ sở Dữ liệu</h1>
+    <p>Hệ thống học tập có khóa chặng và tự chấm điểm toàn diện cho chuyên đề Chuẩn hóa CSDL. Làm chủ các dạng chuẩn từ 1NF đến 5NF, triệt tiêu dữ liệu dư thừa, ngăn chặn 3 dị thường cập nhật và xây dựng lược đồ cơ sở dữ liệu doanh nghiệp chuẩn mực.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <div class="scorecard">
+      <div class="student-inputs">
+        <label for="hubStudentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+        <input type="text" id="hubStudentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+        <input type="text" id="hubStudentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill" id="hubLessonStat">Tiến độ: 0 / 5 bài</div>
+        <div class="stat-pill" id="hubScoreStat">Điểm: 0 / 50 câu</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-primary" id="hubExportPng" title="Xuất chứng nhận tổng quan PNG">Xuất Chứng Nhận (.PNG)</button>
+        <button class="btn-secondary" id="hubExportCsv" title="Xuất bảng điểm tổng hợp CSV">Bảng Điểm (.CSV)</button>
+        <button class="btn-danger" id="hubResetAll" title="Xóa toàn bộ tiến trình học tập chuyên đề Chuẩn hóa">Xóa Tiến Độ</button>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="hubProgressBar"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="hub-banner-summary">
+    <div>
+      <h3>Lộ trình Tinh lọc Dữ liệu Toàn diện (1NF → 2NF → 3NF → BCNF → 4NF → 5NF)</h3>
+      <p>Mỗi bài học được thiết kế thành 5 chặng khóa tự động với câu hỏi Checkpoint tự chấm. Hoàn thành toàn bộ 5 bài học (25 chặng, 50 câu hỏi) để nhận Chứng nhận Master Normalization.</p>
+    </div>
+    <div style="text-align:right">
+      <span style="font-size:26px;font-weight:800;color:#93c5fd">50</span>
+      <span style="display:block;font-size:11.5px;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.05em">Câu hỏi Tự chấm</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Bài 1 -->
+    <div class="card" id="card-l1">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 01</span>
+          <span class="card-status-badge" id="badge-l1">Chưa bắt đầu</span>
+        </div>
+        <h2>Tổng quan Chuẩn hóa &amp; Các Dạng chuẩn (Normal Forms Overview)</h2>
+        <p>Bản chất chuẩn hóa CSDL của E.F. Codd, nhận diện 3 dị thường dữ liệu kinh điển (Insertion, Update, Deletion), phân cấp 1NF–5NF và nguyên tắc phân rã không mất thông tin (Lossless Join).</p>
+        <div class="features">
+          <span>5 Chặng học</span>
+          <span>10 Câu Checkpoint</span>
+          <span>3 Dị thường dữ liệu</span>
+          <span>Lossless Join</span>
+          <span>Phi chuẩn hóa</span>
+        </div>
+      </div>
+      <a class="btn-open" href="normal-forms/normal-forms.html">Vào học bài tương tác ➔</a>
+    </div>
+
+    <!-- Bài 2 -->
+    <div class="card" id="card-l2">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 02</span>
+          <span class="card-status-badge" id="badge-l2">Chưa bắt đầu</span>
+        </div>
+        <h2>Dạng chuẩn 1 - First Normal Form (1NF)</h2>
+        <p>Nguyên tắc giá trị nguyên tử (Atomic values), nhận diện và loại bỏ thuộc tính đa trị, mảng, danh sách trong ô, xử lý antipattern cột đánh số và kỹ thuật phân tách bảng chuẩn mực.</p>
+        <div class="features">
+          <span>5 Chặng học</span>
+          <span>10 Câu Checkpoint</span>
+          <span>Tính nguyên tử</span>
+          <span>Repeating Groups</span>
+          <span>Khóa ghép phức hợp</span>
+        </div>
+      </div>
+      <a class="btn-open" href="1st-normal-form/1st-normal-form.html">Vào học bài tương tác ➔</a>
+    </div>
+
+    <!-- Bài 3 -->
+    <div class="card" id="card-l3">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 03</span>
+          <span class="card-status-badge" id="badge-l3">Chưa bắt đầu</span>
+        </div>
+        <h2>Dạng chuẩn 2 - Second Normal Form (2NF)</h2>
+        <p>Phụ thuộc hàm đầy đủ (Full FD), phương pháp phát hiện & triệt tiêu Phụ thuộc hàm một phần (Partial Dependency), phân biệt Prime vs Non-prime và thuật toán phân rã bảng liên kết.</p>
+        <div class="features">
+          <span>5 Chặng học</span>
+          <span>10 Câu Checkpoint</span>
+          <span>Full vs Partial FD</span>
+          <span>Prime Attribute</span>
+          <span>Decomposition 2NF</span>
+        </div>
+      </div>
+      <a class="btn-open" href="2nd-normal-form/2nd-normal-form.html">Vào học bài tương tác ➔</a>
+    </div>
+
+    <!-- Bài 4 -->
+    <div class="card" id="card-l4">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 04</span>
+          <span class="card-status-badge" id="badge-l4">Chưa bắt đầu</span>
+        </div>
+        <h2>Dạng chuẩn 3 &amp; Boyce-Codd (3NF &amp; BCNF)</h2>
+        <p>Triệt tiêu phụ thuộc bắc cầu (Transitive Dependency), điều kiện hình thức Super Key vs Prime, thuật toán phân rã bảo toàn FD, tiêu chuẩn BCNF và bài toán đánh đổi kiến trúc thực tế.</p>
+        <div class="features">
+          <span>5 Chặng học</span>
+          <span>10 Câu Checkpoint</span>
+          <span>Transitive FD</span>
+          <span>Điều kiện Codd 3NF</span>
+          <span>Tiêu chuẩn BCNF</span>
+          <span>Đánh đổi thực tiễn</span>
+        </div>
+      </div>
+      <a class="btn-open" href="3rd-normal-form/3rd-normal-form.html">Vào học bài tương tác ➔</a>
+    </div>
+
+    <!-- Bài 5 -->
+    <div class="card" id="card-l5">
+      <div>
+        <div class="card-top">
+          <span class="card-num">BÀI HỌC 05</span>
+          <span class="card-status-badge" id="badge-l5">Chưa bắt đầu</span>
+        </div>
+        <h2>Dạng chuẩn 4 &amp; Dạng chuẩn 5 (4NF &amp; 5NF)</h2>
+        <p>Bản chất Phụ thuộc đa trị (MVD: X ↠ Y), triệt tiêu bùng nổ dư thừa do tích Đề-các trong 4NF, tổng quan Phụ thuộc nối (Join Dependency) trong 5NF và cẩm nang thiết kế doanh nghiệp.</p>
+        <div class="features">
+          <span>5 Chặng học</span>
+          <span>10 Câu Checkpoint</span>
+          <span>MVD X ↠ Y</span>
+          <span>Tích Đề-các</span>
+          <span>Join Dependency</span>
+          <span>Cẩm nang thiết kế</span>
+        </div>
+      </div>
+      <a class="btn-open" href="4th-normal-form/4th-normal-form.html">Vào học bài tương tác ➔</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Hệ thống Học tập &amp; Đánh giá Năng lực CSDL · Normalization Master Hub · Bản cập nhật 2026
+  </div>
+</footer>
+
+<script>
+const LESSON_METADATA = [
+  {
+    num: 1,
+    id: 'l1',
+    storageKey: 'dbms_norm_l1_overview_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Tổng quan Chuẩn hóa & Các Dạng chuẩn (Normal Forms Overview)',
+    summary: 'Bản chất chuẩn hóa CSDL của E.F. Codd, nhận diện 3 dị thường dữ liệu (Insertion, Update, Deletion), phân cấp 1NF–5NF và nguyên tắc phân rã không mất thông tin (Lossless Join).'
+  },
+  {
+    num: 2,
+    id: 'l2',
+    storageKey: 'dbms_norm_l2_1nf_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Dạng chuẩn 1 - First Normal Form (1NF)',
+    summary: 'Nguyên tắc giá trị nguyên tử (Atomic values), loại bỏ thuộc tính đa trị, mảng, danh sách trong ô, xử lý antipattern cột đánh số và kỹ thuật phân tách bảng chuẩn mực.'
+  },
+  {
+    num: 3,
+    id: 'l3',
+    storageKey: 'dbms_norm_l3_2nf_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Dạng chuẩn 2 - Second Normal Form (2NF)',
+    summary: 'Phụ thuộc hàm đầy đủ (Full FD), phương pháp phát hiện & triệt tiêu Phụ thuộc hàm một phần (Partial Dependency), phân biệt Prime vs Non-prime và thuật toán phân rã bảng liên kết.'
+  },
+  {
+    num: 4,
+    id: 'l4',
+    storageKey: 'dbms_norm_l4_3nf_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Dạng chuẩn 3 & Boyce-Codd (3NF & BCNF)',
+    summary: 'Triệt tiêu phụ thuộc bắc cầu (Transitive Dependency), điều kiện hình thức Super Key vs Prime, thuật toán phân rã bảo toàn FD, tiêu chuẩn BCNF và bài toán đánh đổi kiến trúc thực tế.'
+  },
+  {
+    num: 5,
+    id: 'l5',
+    storageKey: 'dbms_norm_l5_4nf_v1',
+    stagesCount: 5,
+    qCount: 10,
+    title: 'Dạng chuẩn 4 & Dạng chuẩn 5 (4NF & 5NF)',
+    summary: 'Bản chất Phụ thuộc đa trị (MVD: X ↠ Y), triệt tiêu bùng nổ dư thừa do tích Đề-các trong 4NF, tổng quan Phụ thuộc nối (Join Dependency) trong 5NF và cẩm nang thiết kế doanh nghiệp.'
+  }
+];
+
+function getStoredLessonData(lesson) {
+  try {
+    const raw = localStorage.getItem(lesson.storageKey);
+    if (!raw) return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+    return JSON.parse(raw);
+  } catch (e) {
+    return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+  }
+}
+
+function updateHubUI() {
+  let totalCompletedLessons = 0;
+  let totalScoreAll = 0;
+  let totalQuestionsAll = 0;
+  let commonStudentId = '';
+  let commonStudentName = '';
+
+  LESSON_METADATA.forEach(l => {
+    const data = getStoredLessonData(l);
+    if (!commonStudentId && data.studentId) commonStudentId = data.studentId;
+    if (!commonStudentName && data.studentName) commonStudentName = data.studentName;
+
+    const doneCount = (data.completedStages || []).length;
+    let score = 0;
+    Object.values(data.scores || {}).forEach(v => { if (v) score++; });
+
+    totalScoreAll += score;
+    totalQuestionsAll += l.qCount;
+
+    const isAllDone = doneCount === l.stagesCount && l.stagesCount > 0;
+    if (isAllDone) totalCompletedLessons++;
+
+    const card = document.getElementById(`card-${l.id}`);
+    const badge = document.getElementById(`badge-${l.id}`);
+
+    if (badge) {
+      if (isAllDone) {
+        badge.textContent = `✓ Hoàn thành (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.add('completed');
+      } else if (doneCount > 0) {
+        badge.textContent = `Đang học (${doneCount}/${l.stagesCount}) · ${score}/${l.qCount}đ`;
+        if (card) card.classList.remove('completed');
+      } else {
+        badge.textContent = `Chưa bắt đầu (0/${l.stagesCount})`;
+        if (card) card.classList.remove('completed');
+      }
+    }
+  });
+
+  const idInput = document.getElementById('hubStudentId');
+  const nameInput = document.getElementById('hubStudentName');
+  if (idInput && !idInput.value && commonStudentId) idInput.value = commonStudentId;
+  if (nameInput && !nameInput.value && commonStudentName) nameInput.value = commonStudentName;
+
+  const lessonStat = document.getElementById('hubLessonStat');
+  const scoreStat = document.getElementById('hubScoreStat');
+  if (lessonStat) lessonStat.textContent = `Tiến độ: ${totalCompletedLessons} / ${LESSON_METADATA.length} bài`;
+  if (scoreStat) scoreStat.textContent = `Điểm: ${totalScoreAll} / ${totalQuestionsAll} câu`;
+
+  const bar = document.getElementById('hubProgressBar');
+  if (bar) {
+    const pct = totalQuestionsAll > 0 ? Math.round((totalScoreAll / totalQuestionsAll) * 100) : 0;
+    bar.style.width = pct + '%';
+  }
+}
+
+function exportMasterCertificatePNG() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim() || 'Chưa điền MSSV';
+  const name = (document.getElementById('hubStudentName')?.value || '').trim() || 'Học viên DBMS';
+
+  const lessons = LESSON_METADATA.map(l => {
+    const prog = getStoredLessonData(l);
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
+    return {
+      num: l.num,
+      title: l.title,
+      summary: l.summary,
+      stagesCount: l.stagesCount,
+      qCount: l.qCount,
+      doneStages: (prog.completedStages || []).length,
+      score: score
+    };
+  });
+
+  const totalStages = lessons.reduce((acc, l) => acc + l.stagesCount, 0);
+  const doneStages = lessons.reduce((acc, l) => acc + l.doneStages, 0);
+  const totalQuestions = lessons.reduce((acc, l) => acc + l.qCount, 0);
+  const totalScore = lessons.reduce((acc, l) => acc + l.score, 0);
+  const pct = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+  const dateStr = new Date().toLocaleString('vi-VN');
+
+  const W = 960;
+  const cardH = 88;
+  const gap = 12;
+  const H = 450 + (lessons.length * (cardH + gap)) + 50;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function drawRoundedRect(c, x, y, w, h, r, fillColor, strokeColor, lineWidth) {
+    c.save();
+    c.beginPath();
+    if (typeof r === 'number') r = [r, r, r, r];
+    else if (!r) r = [0, 0, 0, 0];
+    const [tl, tr, br, bl] = r;
+    c.moveTo(x + tl, y);
+    c.lineTo(x + w - tr, y);
+    if (tr > 0) c.quadraticCurveTo(x + w, y, x + w, y + tr);
+    c.lineTo(x + w, y + h - br);
+    if (br > 0) c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    c.lineTo(x + bl, y + h);
+    if (bl > 0) c.quadraticCurveTo(x, y + h, x, y + h - bl);
+    c.lineTo(x, y + tl);
+    if (tl > 0) c.quadraticCurveTo(x, y, x + tl, y);
+    c.closePath();
+    if (fillColor) { c.fillStyle = fillColor; c.fill(); }
+    if (strokeColor) { c.strokeStyle = strokeColor; c.lineWidth = lineWidth || 1; c.stroke(); }
+    c.restore();
+  }
+
+  function wrapText(c, text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = text.split(' ');
+    let line = '';
+    let linesDrawn = 0;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = c.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        c.fillText(line, x, y);
+        line = words[n] + ' ';
+        y += lineHeight;
+        linesDrawn++;
+        if (maxLines && linesDrawn >= maxLines - 1) {
+          let rest = words.slice(n).join(' ');
+          while (c.measureText(rest + '…').width > maxWidth && rest.length > 0) {
+            rest = rest.slice(0, -1);
+          }
+          c.fillText(rest + '…', x, y);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    c.fillText(line, x, y);
+  }
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, W, H);
+  drawRoundedRect(ctx, 20, 20, W - 40, H - 40, 16, '#ffffff', '#e2e8f0', 1.5);
+
+  const grad = ctx.createLinearGradient(20, 20, W - 20, 20);
+  grad.addColorStop(0, '#092240');
+  grad.addColorStop(0.5, '#174785');
+  grad.addColorStop(1, '#1e5ba3');
+  drawRoundedRect(ctx, 20, 20, W - 40, 120, [16, 16, 0, 0], grad, null, 0);
+
+  ctx.save();
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.letterSpacing = '0.08em';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU (DBMS) · CHỨNG NHẬN KẾT QUẢ HỌC TẬP TỔNG QUAN', 40, 52);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px Arial, sans-serif';
+  ctx.fillText('CHUẨN HÓA DỮ LIỆU (DATABASE NORMALIZATION)', 40, 86);
+
+  ctx.fillStyle = '#dbeafe';
+  ctx.font = '13.5px Arial, sans-serif';
+  ctx.fillText('Chứng nhận năng lực hoàn thành các dạng chuẩn: 1NF → 2NF → 3NF → BCNF → 4NF → 5NF', 40, 114);
+  ctx.restore();
+
+  const cardY = 160;
+  const leftW = 540;
+  drawRoundedRect(ctx, 40, cardY, leftW, 110, 10, '#f8fafc', '#e2e8f0', 1);
+
+  ctx.save();
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('Họ và tên học viên:', 56, cardY + 30);
+  ctx.fillText('Mã số sinh viên (MSSV):', 56, cardY + 60);
+  ctx.fillText('Thời gian xuất chứng nhận:', 56, cardY + 90);
+
+  ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(name, 230, cardY + 30);
+  ctx.fillText(mssv, 230, cardY + 60);
+  ctx.font = '13px Arial, sans-serif';
+  ctx.fillStyle = '#334155';
+  ctx.fillText(dateStr, 230, cardY + 90);
+  ctx.restore();
+
+  const rightX = 40 + leftW + 16;
+  const rightW = W - rightX - 40;
+  const isMasterDone = totalQuestions > 0 && totalScore === totalQuestions;
+  const rightBg = isMasterDone ? '#f0fdf4' : '#eff6ff';
+  const rightBorder = isMasterDone ? '#86efac' : '#bfdbfe';
+  drawRoundedRect(ctx, rightX, cardY, rightW, 110, 10, rightBg, rightBorder, 1);
+
+  ctx.save();
+  ctx.fillStyle = isMasterDone ? '#15803d' : '#1d4ed8';
+  ctx.font = 'bold 12px Arial, sans-serif';
+  ctx.fillText('TỔNG HỢP NĂNG LỰC TOÀN CHƯƠNG', rightX + 16, cardY + 28);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillText(`${totalScore} / ${totalQuestions} CÂU (${pct}%)`, rightX + 16, cardY + 58);
+
+  ctx.font = 'bold 13px Arial, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`Chặng vượt ải: ${doneStages} / ${totalStages} · Bài học: ${lessons.filter(l => l.doneStages === l.stagesCount).length} / ${lessons.length}`, rightX + 16, cardY + 84);
+  ctx.restore();
+
+  let curY = cardY + 110 + 24;
+  ctx.save();
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText('Chi tiết kết quả 5 bài học tương tác theo lộ trình Chuẩn hóa CSDL:', 40, curY);
+  ctx.restore();
+
+  curY += 14;
+
+  lessons.forEach(l => {
+    const isDone = l.doneStages === l.stagesCount && l.stagesCount > 0;
+    const cardBg = isDone ? '#ffffff' : '#f8fafc';
+    const cardBorder = isDone ? '#86efac' : '#e2e8f0';
+
+    drawRoundedRect(ctx, 40, curY, W - 80, cardH, 8, cardBg, cardBorder, isDone ? 1.5 : 1);
+
+    ctx.save();
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText(`BÀI ${l.num.toString().padStart(2, '0')}: ${l.title}`, 56, curY + 24);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px Arial, sans-serif';
+    wrapText(ctx, l.summary, 56, curY + 44, 600, 16, 2);
+
+    const badgeW = 200;
+    const badgeX = W - 40 - badgeW - 16;
+    const badgeY = curY + 22;
+
+    const bBg = isDone ? '#dcfce7' : (l.doneStages > 0 ? '#eff6ff' : '#f1f5f9');
+    const bBorder = isDone ? '#86efac' : (l.doneStages > 0 ? '#bfdbfe' : '#e2e8f0');
+    const bColor = isDone ? '#15803d' : (l.doneStages > 0 ? '#1d4ed8' : '#64748b');
+
+    drawRoundedRect(ctx, badgeX, badgeY, badgeW, 44, 7, bBg, bBorder, 1);
+
+    ctx.fillStyle = bColor;
+    ctx.font = 'bold 12.5px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    const statusText = isDone ? '✓ ĐÃ HOÀN THÀNH' : (l.doneStages > 0 ? 'ĐANG TIẾN HÀNH' : 'CHƯA BẮT ĐẦU');
+    ctx.fillText(statusText, badgeX + badgeW / 2, badgeY + 18);
+
+    ctx.font = '11.5px Arial, sans-serif';
+    ctx.fillText(`Chặng: ${l.doneStages}/${l.stagesCount} · Điểm: ${l.score}/${l.qCount}`, badgeX + badgeW / 2, badgeY + 36);
+    ctx.restore();
+
+    curY += cardH + gap;
+  });
+
+  curY += 10;
+  ctx.save();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.beginPath();
+  ctx.moveTo(40, curY);
+  ctx.lineTo(W - 40, curY);
+  ctx.stroke();
+
+  curY += 24;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11.5px Arial, sans-serif';
+  ctx.fillText('Chứng nhận kết quả học tập khóa học DBMS · Normalization Interactive Learning Hub · Client-side LocalStorage.', 40, curY);
+  ctx.textAlign = 'right';
+  ctx.fillText('Hệ thống học tập DBMS', W - 40, curY);
+  ctx.restore();
+
+  const safeMssv = (mssv && mssv !== 'Chưa điền MSSV' ? mssv : 'sv').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  const safeName = (name && name !== 'Học viên DBMS' ? name : 'hoc_vien').replace(/[^a-zA-Z0-9_-]+/g, '_');
+  const a = document.createElement('a');
+  a.download = `chung_nhan_tong_quan_normalization_${safeMssv}_${safeName}.png`;
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function exportMasterCSV() {
+  const mssv = (document.getElementById('hubStudentId')?.value || '').trim() || 'N/A';
+  const name = (document.getElementById('hubStudentName')?.value || '').trim() || 'N/A';
+
+  let csv = 'MSSV,HoVaTen,BaiSo,TenBai,SoChangHoanThanh,TongSoChang,DiemSo,TongDiem,TrangThai\n';
+  LESSON_METADATA.forEach(l => {
+    const prog = getStoredLessonData(l);
+    const doneStages = (prog.completedStages || []).length;
+    let score = 0;
+    Object.values(prog.scores || {}).forEach(v => { if (v) score++; });
+    const isDone = doneStages === l.stagesCount;
+    const status = isDone ? 'HoanThanh' : (doneStages > 0 ? 'DangHoc' : 'ChuaBatDau');
+    csv += `"${mssv}","${name}","${l.num}","${l.title}",${doneStages},${l.stagesCount},${score},${l.qCount},"${status}"\n`;
+  });
+
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bang_diem_normalization_${mssv}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function resetMasterProgress() {
+  if (confirm('Bạn có chắc chắn muốn xóa toàn bộ tiến trình học tập của TẤT CẢ 5 bài học trong chuyên đề Chuẩn hóa CSDL không?')) {
+    LESSON_METADATA.forEach(l => {
+      localStorage.removeItem(l.storageKey);
+    });
+    updateHubUI();
+    alert('Đã xóa sạch toàn bộ tiến trình học tập của chuyên đề Chuẩn hóa dữ liệu!');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateHubUI();
+  document.getElementById('hubExportPng')?.addEventListener('click', exportMasterCertificatePNG);
+  document.getElementById('hubExportCsv')?.addEventListener('click', exportMasterCSV);
+  document.getElementById('hubResetAll')?.addEventListener('click', resetMasterProgress);
+  document.getElementById('hubStudentId')?.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    LESSON_METADATA.forEach(l => {
+      const data = getStoredLessonData(l);
+      data.studentId = val;
+      localStorage.setItem(l.storageKey, JSON.stringify(data));
+    });
+  });
+  document.getElementById('hubStudentName')?.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    LESSON_METADATA.forEach(l => {
+      const data = getStoredLessonData(l);
+      data.studentName = val;
+      localStorage.setItem(l.storageKey, JSON.stringify(data));
+    });
+  });
+});
+</script>
+</body>
+</html>
