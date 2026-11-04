@@ -130,21 +130,22 @@ Current homepage sections:
   - `normalization/4th-normal-form/4th-normal-form.md` & `.html`
 
 - MySQL Server
-  - `MySQL/mysql-server/gioi-thieu-mysql/gioi-thieu-mysql.md`
-  - `MySQL/mysql-server/huong_dan_cai_dat_mysql_windows/huong_dan_cai_dat_mysql_windows.md`
-  - `MySQL/mysql-server/huong_dan_cai_dat_mysql_workbench_windows/huong_dan_cai_dat_mysql_workbench_windows.md`
-  - `MySQL/mysql-server/huong_dan_ket_noi_mysql_command_options/huong_dan_ket_noi_mysql_command_options.md`
-  - `MySQL/mysql-server/huong_dan_ket_noi_mysql_vscode/huong_dan_ket_noi_mysql_vscode.md`
-  - `MySQL/mysql-server/mysql-sample-database/mysql-sample-database.md`
-  - `MySQL/mysql-server/load-sample-database/load-sample-database.md`
-  - `MySQL/mysql-server/storage-engine/storage-engine.md`
-  - `MySQL/mysql-server/start-stop-MySQL/start-stop-MySQL.md`
+  - `MySQL/mysql-server/mysql-server.html`
+    - Central interactive hub aggregating 5 canonical lessons, 25 stages, 50 checkpoint questions, real-time aggregate score tracking, and master certificate export.
+  - `MySQL/mysql-server/gioi-thieu-mysql/gioi-thieu-mysql.md` & `.html`
+  - `MySQL/mysql-server/installation-and-connection/installation-and-connection.md` & `.html`
+  - `MySQL/mysql-server/start-stop-MySQL/start-stop-MySQL.md` & `.html`
+  - `MySQL/mysql-server/configuration-and-datadir/configuration-and-datadir.md` & `.html`
+  - `MySQL/mysql-server/storage-engine/storage-engine.md` & `.html`
 
 - MySQL Database Administration
-  - `MySQL/database-administration/database/create-use-drop-database.md`
-  - `MySQL/database-administration/show-command.md`
-  - `MySQL/database-administration/user-administration.md`
-  - `MySQL/database-administration/security/encryption-decryption.md`
+  - `MySQL/database-administration/database-administration.html`
+    - Central interactive hub aggregating 5 canonical lessons, 25 stages, 50 checkpoint questions, 5 auto-grading SQL labs (80 SQL exercises total), real-time aggregate score tracking, and master certificate export.
+  - `MySQL/database-administration/database/create-use-drop-database.md`, `.html` & `database-lifecycle-sql-lab.html`
+  - `MySQL/database-administration/show-command/show-command.md`, `.html` & `show-command-sql-lab.html`
+  - `MySQL/database-administration/backup-and-recovery/backup-and-recovery.md`, `.html` & `backup-recovery-sql-lab.html`
+  - `MySQL/database-administration/user-administration/user-administration.md`, `.html` & `user-administration-sql-lab.html`
+  - `MySQL/database-administration/security/encryption-decryption.md`, `.html` & `security-encryption-sql-lab.html`
 
 - MySQL SQL Statements
   - `MySQL/data-definition/`
@@ -164,6 +165,18 @@ Some older focused lessons remain in the repository for source preservation, but
   - Supersedes the separate basic `sql-create-table` homepage entry.
 - `MySQL/data-modification-transactions/modifying-data.md` is the canonical lesson for INSERT, UPDATE, DELETE, and advanced modification topics.
   - Supersedes the separate `insert-update-delete` homepage entry.
+- `MySQL/mysql-server/` is reorganized into 5 canonical lessons with stage-locked interactive learning HTML modules and a central Master Hub:
+  - `gioi-thieu-mysql/` integrates MySQL overview, RDBMS characteristics, and server architecture (supersedes loose `exploring-mysql-server-1.md` in navigation).
+  - `installation-and-connection/` integrates server setup, MySQL Workbench, CLI client, and VS Code (supersedes individual setup guides in navigation).
+  - `start-stop-MySQL/` integrates service management, graceful shutdown, and error log diagnosis (supersedes loose `exploring-mysql-server-2.md` in navigation).
+  - `configuration-and-datadir/` integrates option files, system variables, and data directory structure (supersedes loose `exploring-mysql-server-3.md` in navigation).
+  - `storage-engine/` integrates Pluggable Storage Engines and classicmodels sample database schema (supersedes separate `load-sample-database` in navigation).
+- `MySQL/database-administration/` is reorganized into 5 canonical lessons with stage-locked interactive learning HTML modules and a central Master Hub:
+  - `database/create-use-drop-database` integrates database creation, selection, drop operations, charset/collation standards, and production safeguard checklists (supersedes separate `create-database`, `select-database`, and `drop-database` folders in navigation).
+  - `show-command/` integrates `SHOW` metadata inspection, server metrics, LIKE patterns, and data dictionaries (`information_schema`/`performance_schema`).
+  - `backup-and-recovery/` integrates thread monitoring with `SHOW PROCESSLIST`/`KILL`, `mysqldump` logical backup options, and CLI restore pipelines.
+  - `user-administration/` integrates host matching syntax, `CREATE USER`, privilege management with `GRANT/REVOKE`, data dictionary inspection via `mysql.user`, and RBAC roles.
+  - `security/encryption-decryption` integrates encoding vs one-way hashing with salt, two-way AES encryption/decryption, key management best practices, and data-at-rest protection.
 ## Deployment Flow
 
 Current working branch and push target:
@@ -233,6 +246,10 @@ Workflow trigger paths:
 
 ## Update Notes
 
+- 2026-11-04: Upgraded all 5 MySQL Database Administration interactive SQL labs to Dual-Engine architecture with SQLite WebAssembly (`sql.js@1.10.3`), custom registered crypto/system functions, attached `information_schema` and `mysql` schemas, real-time live catalogs, resilient offline pure-JS fallback, and normalized comment stripping (`--`, `/* */`, `#`) to resolve statement truncation bugs.
+- 2026-11-03: Created 5 comprehensive interactive auto-grading SQL practice labs (80 exercises total) for MySQL Database Administration with pure in-browser simulation engines, real-time live catalogs, dual-panel playground/practice editors, hint reveals, auto-checking, CSV score export, and high-DPI Canvas 2x PNG report generators. Updated Master Hub and index.md.
+- 2026-11-03: Reorganized Database Management & MySQL Administration chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, instant feedback, Canvas 2x PNG report generation, and a central interactive Master Hub (`database-administration.html`) with cross-lesson synchronization and master certificate export. Created dedicated backup and recovery guide (`backup-and-recovery.md`), standardized folder structure for `show-command` and `user-administration`, and updated `index.md` bilingually.
+- 2026-10-29: Reorganized MySQL Server chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, instant feedback, Canvas 2x PNG report generation, and a central interactive Master Hub (`mysql-server.html`) with cross-lesson synchronization and master certificate export. Cleaned up empty files and consolidated navigation bilingually.
 - 2026-10-29: Reorganized Normalization chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, instant feedback, Canvas 2x PNG report generation, and a central interactive Master Hub (`normalization.html`) with cross-lesson synchronization and master certificate export. Updated `index.md` bilingually.
 - 2026-10-28: Reorganized Relational Model and Functional Dependencies chapter into 5 stage-locked interactive HTML lessons with checkpoint quizzes, PNG certificate export, and a central interactive learning hub (`relational-model-and-functional-dependencies.html`), updated `index.md` bilingually.
 - 2026-06-04: Refreshed `entity-relationship-model/er-model/` attribute and relationship

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 04: Cấu hình Hệ thống & Thư mục Dữ liệu · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về File cấu hình my.ini/my.cnf, các Option Groups, Biến hệ thống động/tĩnh và tổ chức lưu trữ trong Data Directory.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --teal: #00758f;
+  --teal-dark: #00546b;
+  --teal-sub: #e6f4f8;
+  --orange: #f29111;
+  --orange-sub: #fef5e7;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #00546b 0%, #00758f 50%, #0f4c75 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(0, 84, 107, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+.student-inputs input:focus { border-color: var(--teal); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--teal);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--teal-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../mysql-server.html" class="nav-back">← Quay lại Trung tâm MySQL Server Hub</a>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#fed7aa;margin-bottom:8px;background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:999px;">Lesson 04 · Cấu hình & Lưu trữ</div>
+    <h1>Cấu hình Hệ thống & Thư mục Dữ liệu MySQL</h1>
+    <p>Khám phá cấu trúc file cấu hình <code>my.ini</code>/<code>my.cnf</code>, phân biệt biến hệ thống động/tĩnh, quản trị thư mục dữ liệu <code>datadir</code> và hệ thống log (Redo, Undo, Binlog).</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Option Files & Thứ tự Ưu tiên (Precedence)</h2>
+        <div class="stage-desc">Quy tắc nạp file `my.ini` / `my.cnf` và thứ tự ghi đè tham số cấu hình</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Vị trí file cấu hình phổ biến:</h4>
+      <ul>
+        <li><b>Windows:</b> Thường nằm tại <code>C:\ProgramData\MySQL\MySQL Server 8.0\my.ini</code> (thư mục ProgramData bị ẩn mặc định trong File Explorer).</li>
+        <li><b>Linux:</b> Thường nằm tại <code>/etc/mysql/my.cnf</code> hoặc <code>/etc/my.cnf</code>.</li>
+      </ul>
+      
+      <h4>2. Quy tắc thứ tự ưu tiên (Precedence):</h4>
+      <p>Khi khởi động, `mysqld` tìm kiếm option files theo danh sách đường dẫn cố định. Nếu cùng một tham số cấu hình xuất hiện ở nhiều file khác nhau, <b>file đọc sau sẽ ghi đè giá trị của file đọc trước</b>. Ngoài ra, tham số truyền trực tiếp qua dòng lệnh (Command Line Arguments khi gõ <code>mysqld --port=3307</code>) có mức ưu tiên cao nhất, ghi đè toàn bộ file cấu hình.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong hệ thống phân cấp cấu hình của MySQL, nguồn thiết lập tham số nào có mức ưu tiên cao nhất (ghi đè mọi thiết lập khác)?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Tham số truyền trực tiếp qua dòng lệnh khi khởi động (Command-line options)</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> File cấu hình `my.ini` trong thư mục Windows</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> File cấu hình trong thư mục cá nhân người dùng `~/.my.cnf`</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Giá trị mặc định được biên dịch cứng trong mã nguồn</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Trên Windows, thư mục hệ thống mặc định chứa file cấu hình `my.ini` của MySQL Server 8.0 là thư mục nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> `C:\ProgramData\MySQL\MySQL Server 8.0\` (thư mục ẩn)</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> `C:\Windows\System32\config\`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> `D:\Downloads\`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> `C:\Users\Default\Desktop\`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Cấu trúc Option Groups: `[mysqld]`, `[client]`, `[mysql]`</h2>
+        <div class="stage-desc">Phân định phạm vi ảnh hưởng của từng khối tùy chọn trong file cấu hình</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Ví dụ cấu trúc các Option Groups chuẩn:</h4>
+      <pre><code># Nhóm chỉ áp dụng cho tiến trình máy chủ mysqld
+[mysqld]
+port=3306
+datadir="C:/ProgramData/MySQL/MySQL Server 8.0/Data"
+default_storage_engine=InnoDB
+max_connections=200
+innodb_buffer_pool_size=256M
+
+# Nhóm áp dụng chung cho mọi client kết nối (mysql, workbench, python...)
+[client]
+port=3306
+default-character-set=utf8mb4
+
+# Nhóm cấu hình riêng cho ứng dụng terminal mysql CLI
+[mysql]
+no-auto-rehash</code></pre>
+      
+      <p><b>Nguyên tắc quan trọng:</b> Nếu đặt một tham số máy chủ như <code>innodb_buffer_pool_size</code> vào nhóm <code>[client]</code>, các chương trình client khi khởi động sẽ báo lỗi cú pháp vì client không nhận diện được các tùy chọn của server daemon.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong file cấu hình MySQL, để thay đổi kích thước bộ đệm `innodb_buffer_pool_size` của máy chủ, tham số này BẮT BUỘC phải nằm trong Option Group nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> `[client]`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> `[mysql]`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> `[mysqld]`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> `[mysqldump]`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Mục đích của Option Group `[client]` trong file cấu hình là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Thiết lập các tùy chọn dùng chung cho mọi công cụ client (như port mặc định, charset kết nối)</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Định nghĩa bảng dữ liệu mới</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Xóa người dùng hệ thống</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Cài đặt card mạng</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Biến Hệ thống (System Variables): Global vs Session & Dynamic vs Static</h2>
+        <div class="stage-desc">Tra cứu bằng `SHOW VARIABLES` và cấu hình tức thời bằng `SET GLOBAL`</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Phân loại theo phạm vi (Scope):</h4>
+      <ul>
+        <li><b>GLOBAL:</b> Tác động đến hành vi của toàn bộ MySQL Server và áp dụng cho tất cả client kết nối sau thời điểm thay đổi.
+          <pre><code>SHOW GLOBAL VARIABLES LIKE 'max_connections';</code></pre>
+        </li>
+        <li><b>SESSION:</b> Chỉ có hiệu lực riêng cho kết nối hiện tại của phiên làm việc đó. Khi đóng phiên, thay đổi mất đi.
+          <pre><code>SHOW SESSION VARIABLES LIKE 'sql_mode';</code></pre>
+        </li>
+      </ul>
+      
+      <h4>2. Phân loại theo tính linh hoạt lúc runtime:</h4>
+      <ul>
+        <li><b>Dynamic Variables (Biến động):</b> Có thể thay đổi tức thì mà không cần restart server:
+          <pre><code>SET GLOBAL max_connections = 300;</code></pre>
+        </li>
+        <li><b>Static Variables (Biến tĩnh):</b> Chỉ đọc lúc khởi động server (như <code>datadir</code>, <code>port</code>). Không thể thay đổi bằng <code>SET GLOBAL</code>; bắt buộc phải sửa file cấu hình và restart service.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh SQL nào sau đây thay đổi giới hạn số kết nối đồng thời tối đa lên 250 có hiệu lực tức thời cho toàn server mà không cần restart?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> `SET GLOBAL max_connections = 250;`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> `ALTER SERVER SET connections = 250;`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> `UPDATE mysql.config SET max_connections = 250;`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> `RESTART MYSQL WITH connections = 250;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Tham số hệ thống nào sau đây là một <b>Biến tĩnh (Static Variable)</b> KHÔNG THỂ thay đổi bằng lệnh `SET GLOBAL` lúc runtime?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> `datadir` (Đường dẫn thư mục dữ liệu máy chủ)</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> `autocommit`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> `max_connections`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> `long_query_time`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Thư mục Dữ liệu `datadir` & Cấu trúc File Lưu trữ</h2>
+        <div class="stage-desc">Khám phá Tablespace `.ibd`, System Tablespace `ibdata1` và các schema thư mục</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cách xác định thư mục dữ liệu an toàn bằng SQL:</h4>
+      <pre><code>SHOW VARIABLES LIKE 'datadir';</code></pre>
+      
+      <h4>2. Tổ chức bên trong `datadir`:</h4>
+      <ul>
+        <li><b>Thư mục Schema:</b> Mỗi database (như <code>classicmodels</code>) có một thư mục con tương ứng mang tên database đó.</li>
+        <li><b>File Tablespace (<code>*.ibd</code>):</b> Trong chế độ mặc định <code>innodb_file_per_table=ON</code>, mỗi bảng có file <code>ten_bang.ibd</code> riêng chứa toàn bộ dữ liệu dòng và cây B-Tree chỉ mục của bảng.</li>
+        <li><b>System Tablespace (<code>ibdata1</code>):</b> File lưu trữ dùng chung của InnoDB (chứa doublewrite buffer, change buffer).</li>
+        <li><b>Cảnh báo nghiêm ngặt:</b> <i>Tuyệt đối không can thiệp, đổi tên hay xóa các file trong datadir bằng File Explorer khi mysqld đang chạy</i> vì sẽ dẫn đến hỏng cấu trúc Tablespace và không thể khôi phục CSDL.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong MySQL 8.0 với thiết lập `innodb_file_per_table = ON`, dữ liệu các dòng và cây chỉ mục B-Tree của bảng `customers` được lưu trong file có phần mở rộng nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `customers.ibd`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> `customers.sql`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> `customers.csv`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> `customers.txt`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Vì sao người quản trị KHÔNG ĐƯỢC tự ý copy/xóa thủ công file `.ibd` trong thư mục `datadir` khi máy chủ MySQL đang chạy?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> Vì các khối dữ liệu trong RAM (Buffer Pool) chưa đồng bộ với đĩa, dẫn đến lỗi bất nhất (Corruption)</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> Vì Windows sẽ tự động tắt máy</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> Vì MySQL sẽ tự động gửi email cảnh báo cho Oracle</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> Vì file đó chỉ là ảnh đại diện của bảng</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Hệ thống Log Dữ liệu: Redo Log, Undo Log & Binary Log</h2>
+        <div class="stage-desc">Nguyên lý Write-Ahead Logging (WAL), bảo đảm tính Durability và phục hồi PITR</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Loại Log</th>
+            <th>Cấp độ</th>
+            <th>Mục đích cốt lõi</th>
+            <th>Hành vi khi có sự cố</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Redo Log</b> (<code>#ib_redo*</code>)</td>
+            <td>Storage Engine (InnoDB)</td>
+            <td>Bảo đảm tính <b>Durability (Độ bền)</b> trong ACID theo nguyên lý <i>Write-Ahead Logging (WAL)</i>.</td>
+            <td>Khi server mất điện đột ngột, InnoDB đọc Redo Log để chạy lại (redo) các giao dịch đã COMMIT nhưng chưa kịp ghi ra đĩa.</td>
+          </tr>
+          <tr>
+            <td><b>Undo Log</b></td>
+            <td>Storage Engine (InnoDB)</td>
+            <td>Lưu trạng thái dữ liệu trước khi sửa đổi, phục vụ lệnh <b>ROLLBACK</b> và cơ chế đọc cô lập <b>MVCC</b>.</td>
+            <td>Nếu một transaction bị lỗi hoặc người dùng ROLLBACK, Undo log khôi phục các dòng về trạng thái ban đầu.</td>
+          </tr>
+          <tr>
+            <td><b>Binary Log (Binlog)</b></td>
+            <td>MySQL Server (SQL Layer)</td>
+            <td>Ghi lại tuần tự mọi sự kiện thay đổi dữ liệu để phục vụ <b>Nhân bản (Replication)</b> và <b>Khôi phục về điểm thời gian (PITR)</b>.</td>
+            <td>Dùng để đồng bộ dữ liệu sang Server Replica hoặc phục hồi CSDL về đúng thời điểm trước khi có lỗi con người.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> File log nào của InnoDB chịu trách nhiệm thực thi nguyên tắc "Write-Ahead Logging" để đảm bảo các transaction đã COMMIT không bị mất khi mất điện đột ngột?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> Redo Log</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> General Query Log</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> Slow Query Log</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> Error Log</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Loại log nào hoạt động ở tầng máy chủ (SQL Layer) để phục vụ sao chép dữ liệu giữa các máy chủ (Replication) và khôi phục CSDL về một thời điểm cụ thể trong quá khứ?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Binary Log (Binlog)</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Undo Log</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Redo Log</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Doublewrite Buffer</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: MySQL Configuration & Storage · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_mysql_srv_l4_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "0", explain: "Chính xác! Các tùy chọn dòng lệnh (Command-line arguments) có quyền ưu tiên cao nhất, đè lên mọi option file." },
+    q1_2: { correct: "0", explain: "Chính xác! Thư mục chuẩn trên Windows là C:\\ProgramData\\MySQL\\MySQL Server 8.0\\ (cần bật Show Hidden Files để thấy ProgramData)." }
+  },
+  2: {
+    q2_1: { correct: "2", explain: "Chính xác! Các cấu hình bộ nhớ của server daemon bắt buộc phải nằm trong khối [mysqld]." },
+    q2_2: { correct: "0", explain: "Chính xác! Khối [client] áp dụng đồng thời cho tất cả các client tiện ích kết nối vào máy chủ." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! Lệnh `SET GLOBAL max_connections = 250;` thay đổi biến động tức thì trên phạm vi toàn máy chủ." },
+    q3_2: { correct: "0", explain: "Chính xác! `datadir` là biến tĩnh (Static Variable), server chỉ nạp lúc khởi động nên không thể đổi qua SET GLOBAL." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! File `.ibd` là InnoDB Tablespace file chứa cả dòng dữ liệu và chỉ mục của bảng đó." },
+    q4_2: { correct: "0", explain: "Chính xác! Khi server đang chạy, Buffer Pool chưa flush hết trang dirty xuống file, thao tác đĩa thủ công sẽ phá hỏng dữ liệu." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Redo Log đảm bảo tính Durability theo cơ chế WAL, phục hồi các giao dịch đã commit khi xảy ra sự cố." },
+    q5_2: { correct: "0", explain: "Chính xác! Binary Log ghi lại các thay đổi dữ liệu phục vụ Master-Slave Replication và khôi phục Point-in-time." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#00546b');
+  grad.addColorStop(1, '#082032');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#00758f');
+  topGrad.addColorStop(1, '#0f4c75');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#fef5e7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 04 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('CẤU HÌNH HỆ THỐNG & THƯ MỤC DỮ LIỆU MYSQL', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Option Files & Thứ tự Ưu tiên (Precedence)',
+    'Chặng 2: Cấu trúc Option Groups: [mysqld], [client], [mysql]',
+    'Chặng 3: Biến Hệ thống: Global vs Session & Dynamic vs Static',
+    'Chặng 4: Thư mục Dữ liệu datadir & Cấu trúc File Lưu trữ',
+    'Chặng 5: Hệ thống Log Dữ liệu: Redo Log, Undo Log & Binlog'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_MySQL_Server_L4_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 04: Cau hinh He thong & Thu muc Du lieu MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_MySQL_Server_L4_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

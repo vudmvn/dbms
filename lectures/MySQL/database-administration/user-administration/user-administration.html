@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 04: Quản lý Người dùng, Phân quyền & Role · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về CREATE USER, GRANT, REVOKE, MySQL 8.0 Roles, SHOW GRANTS và nguyên tắc Least Privilege.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-dark: #1e3a8a;
+  --blue-sub: #eff6ff;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus { border-color: var(--blue); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--blue-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+      <a href="../database-administration.html" class="nav-back" style="margin-bottom:0">← Quay lại Trung tâm Database Administration Hub</a>
+      <a href="user-administration-sql-lab.html" class="btn btn-outline" style="background:rgba(255,255,255,0.18);color:#fff;border-color:rgba(255,255,255,0.35);font-weight:700">💻 Làm Bài tập SQL Tự chấm (16 bài) →</a>
+    </div>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#93c5fd;margin-bottom:8px;background:rgba(255,255,255,0.12);padding:4px 10px;border-radius:999px;">Lesson 04 · Quản lý Người dùng & Quyền</div>
+    <h1>Quản lý Người dùng, Phân quyền & Role trong MySQL</h1>
+    <p>Thiết lập tài khoản người dùng theo cú pháp <code>'user'@'host'</code>, phân cấp đặc quyền với <code>GRANT</code> / <code>REVOKE</code>, quản trị <code>ROLE</code> trong MySQL 8.0 và thực thi nguyên tắc Least Privilege.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Cấu trúc Account `'username'@'hostname'` & Tạo User</h2>
+        <div class="stage-desc">Phân biệt localhost và wildcard `%`, phương thức xác thực caching_sha2_password</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Định danh Account trong MySQL:</h4>
+      <p>Một tài khoản MySQL luôn bao gồm 2 phần độc lập gắn với nhau: <code>'username'@'hostname'</code>.</p>
+      <ul>
+        <li><code>'dev_user'@'localhost'</code>: Chỉ được phép đăng nhập khi chạy client từ chính máy chủ MySQL đó.</li>
+        <li><code>'dev_user'@'192.168.1.50'</code>: Chỉ được kết nối từ địa chỉ IP mạng nội bộ cụ thể này.</li>
+        <li><code>'dev_user'@'%'</code>: Được phép kết nối từ <b>bất kỳ IP nào</b> trên mạng (Wildcard `%`).</li>
+        <li><b>Lưu ý cực kỳ quan trọng:</b> <code>'dev_user'@'localhost'</code> và <code>'dev_user'@'%'</code> là <b>hai tài khoản hoàn toàn khác nhau</b> trong MySQL, có mật khẩu và bảng quyền độc lập!</li>
+      </ul>
+
+      <h4>2. Cú pháp khởi tạo tài khoản an toàn:</h4>
+      <pre><code>CREATE USER 'app_backend'@'%' IDENTIFIED BY 'StrongPassword!2026';</code></pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong cú pháp tài khoản MySQL `'api_user'@'%'`, ký tự wildcard `%` ở phần host có ý nghĩa gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Cho phép tài khoản này kết nối tới MySQL từ bất kỳ địa chỉ IP hoặc máy tính nào</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> Chỉ cho phép kết nối từ localhost</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> Bắt buộc phải đăng nhập bằng giao thức SSH</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Tài khoản này được hưởng 100% tài nguyên CPU</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Trong MySQL, nhận định nào sau đây là ĐÚNG khi nói về hai tài khoản `'john'@'localhost'` và `'john'@'%'`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> Đây là hai tài khoản hoàn toàn riêng biệt trong hệ thống bảo mật của MySQL, có thể sở hữu mật khẩu và quyền khác nhau</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> Đây là cùng một tài khoản, MySQL sẽ tự động gộp quyền lại</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> MySQL sẽ báo lỗi trùng tên tài khoản khi tạo</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> Tài khoản nào tạo sau sẽ tự động xóa tài khoản tạo trước</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Phân cấp Đặc quyền (Privilege Levels) & Cấp quyền với `GRANT`</h2>
+        <div class="stage-desc">4 cấp độ quyền: Toàn cục, Cơ sở dữ liệu, Bảng và Cột</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Bốn cấp độ phân quyền trong MySQL:</h4>
+      <table class="table-custom">
+        <thead><tr><th>Cấp độ</th><th>Cú pháp đối tượng</th><th>Ví dụ câu lệnh GRANT</th></tr></thead>
+        <tbody>
+          <tr><td><b>1. Toàn cục (Global)</b></td><td><code>*.*</code></td><td><code>GRANT SELECT, RELOAD ON *.* TO 'admin'@'localhost';</code></td></tr>
+          <tr><td><b>2. Cơ sở dữ liệu</b></td><td><code>ten_db.*</code></td><td><code>GRANT SELECT, INSERT, UPDATE, DELETE ON classicmodels.* TO 'dev'@'%';</code></td></tr>
+          <tr><td><b>3. Bảng (Table)</b></td><td><code>ten_db.ten_bang</code></td><td><code>GRANT SELECT ON classicmodels.customers TO 'sales'@'%';</code></td></tr>
+          <tr><td><b>4. Cột (Column)</b></td><td><code>(cot1, cot2) ON ...</code></td><td><code>GRANT SELECT (customerNumber, customerName) ON classicmodels.customers TO 'analyst'@'%';</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh nào cấp quyền ĐỌC (`SELECT`) và THÊM (`INSERT`) trên TẤT CẢ các bảng thuộc database `classicmodels` cho user `'web_app'@'%'`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> `GRANT SELECT, INSERT ON classicmodels.* TO 'web_app'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> `ALLOW SELECT, INSERT ON classicmodels TO 'web_app'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> `GRANT ALL ON *.* TO 'web_app'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> `SET PRIVILEGES SELECT, INSERT FOR 'web_app'@'%';`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Để bảo mật thông tin nhạy cảm, MySQL có hỗ trợ cấp quyền chỉ được đọc một số cột nhất định trong bảng (ví dụ chỉ đọc `customerName` mà không được đọc `creditLimit`) hay không?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Có, sử dụng cú pháp phân quyền cấp cột: `GRANT SELECT (customerName) ON classicmodels.customers TO ...`</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Không, MySQL chỉ phân quyền đến cấp bảng</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Chỉ có phiên bản trả phí Enterprise mới hỗ trợ</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Chỉ hỗ trợ cho kiểu dữ liệu số nguyên</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Thu hồi Quyền với `REVOKE` & Xem Quyền với `SHOW GRANTS`</h2>
+        <div class="stage-desc">Cú pháp thu hồi quyền an toàn và kiểm tra quyền tài khoản hiện hành</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Lệnh kiểm tra danh sách quyền (SHOW GRANTS):</h4>
+      <pre><code>-- Xem quyền của chính phiên làm việc hiện tại
+SHOW GRANTS;
+
+-- Xem quyền của một tài khoản cụ thể (yêu cầu quyền quản trị)
+SHOW GRANTS FOR 'dev_user'@'%';</code></pre>
+
+      <h4>2. Thu hồi quyền bằng lệnh REVOKE:</h4>
+      <pre><code>-- Thu hồi quyền DELETE và UPDATE trên database classicmodels
+REVOKE DELETE, UPDATE ON classicmodels.* FROM 'dev_user'@'%';
+
+-- Thu hồi toàn bộ mọi quyền
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'dev_user'@'%';</code></pre>
+      <p><i>Lưu ý:</i> Cấp độ đối tượng trong lệnh <code>REVOKE</code> phải khớp chính xác với cấp độ đã được <code>GRANT</code> trước đó.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh nào cho phép người quản trị kiểm tra chính xác toàn bộ danh sách các quyền đã được cấp cho tài khoản `'report_user'@'localhost'`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> `SHOW GRANTS FOR 'report_user'@'localhost';`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> `DESCRIBE USER 'report_user'@'localhost';`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> `CHECK PERMISSIONS 'report_user'@'localhost';`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> `SELECT * FROM mysql.passwords;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Để tước bỏ quyền XÓA (`DELETE`) dữ liệu trên bảng `orders` của user `'intern'@'%'`, cú pháp chuẩn là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> `REVOKE DELETE ON classicmodels.orders FROM 'intern'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> `REMOVE DELETE FROM 'intern'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> `DENY DELETE ON orders TO 'intern'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> `DELETE PRIVILEGE FROM 'intern'@'%';`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Quản trị Vai trò (Roles) trong MySQL 8.0</h2>
+        <div class="stage-desc">Tạo Role, gán quyền cho Role, gán Role cho User và kích hoạt Default Role</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Vai trò (Role) giải quyết vấn đề gì?</h4>
+      <p>Trong các tổ chức lớn có hàng trăm nhân viên, việc cấp quyền riêng lẻ cho từng người tốn thời gian và dễ nhầm lẫn. <b>Role</b> là một tập hợp các quyền được đặt tên đại diện cho một chức danh công việc.</p>
+
+      <h4>2. Quy trình 4 bước quản trị Role chuẩn:</h4>
+      <pre><code>-- Bước 1: Khởi tạo Role
+CREATE ROLE 'role_analyst', 'role_developer';
+
+-- Bước 2: Cấp quyền cho Role
+GRANT SELECT ON classicmodels.* TO 'role_analyst';
+
+-- Bước 3: Gán Role cho tài khoản người dùng
+GRANT 'role_analyst' TO 'alice'@'localhost', 'bob'@'localhost';
+
+-- Bước 4: Thiết lập Role mặc định kích hoạt tự động khi login
+SET DEFAULT ROLE ALL TO 'alice'@'localhost', 'bob'@'localhost';</code></pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Sau khi đã gán Role cho user bằng lệnh `GRANT 'role_read_only' TO 'user1'@'localhost';`, lệnh nào cần thực hiện để Role này tự động được kích hoạt mỗi khi user1 đăng nhập vào hệ thống?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `SET DEFAULT ROLE ALL TO 'user1'@'localhost';`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> `START ROLE ALWAYS;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> `ENABLE ROLE AUTOMATIC;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> Không cần làm gì vì mọi role luôn tự động kích hoạt</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Lợi ích lớn nhất của việc áp dụng Role Management trong quản trị cơ sở dữ liệu doanh nghiệp là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> Đơn giản hóa quản trị: khi thay đổi quyền của role, toàn bộ các user được gán role đó sẽ tự động được cập nhật quyền đồng loạt</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> Giúp truy vấn SELECT chạy nhanh gấp đôi</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> Không cần phải đặt mật khẩu cho tài khoản nữa</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> Tiết kiệm dung lượng RAM của máy chủ</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Vòng đời Tài khoản & Nguyên tắc Least Privilege</h2>
+        <div class="stage-desc">Đổi mật khẩu, khóa tài khoản (`ACCOUNT LOCK`), xóa user và thực thi an toàn thông tin</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Các thao tác vòng đời tài khoản:</h4>
+      <ul>
+        <li><b>Đổi mật khẩu người dùng:</b>
+          <pre><code>ALTER USER 'dev_user'@'%' IDENTIFIED BY 'NewSecurePass@2026';</code></pre>
+        </li>
+        <li><b>Tạm khóa tài khoản (Account Lock):</b> Khi nhân viên tạm nghỉ hoặc phát hiện nghi vấn bảo mật:
+          <pre><code>ALTER USER 'dev_user'@'%' ACCOUNT LOCK;
+-- Mở khóa lại:
+ALTER USER 'dev_user'@'%' ACCOUNT UNLOCK;</code></pre>
+        </li>
+        <li><b>Xóa vĩnh viễn tài khoản:</b>
+          <pre><code>DROP USER IF EXISTS 'dev_user'@'%';</code></pre>
+        </li>
+      </ul>
+
+      <h4>2. Nguyên tắc Tối thiểu Đặc quyền (Principle of Least Privilege):</h4>
+      <p><b>Quy tắc vàng:</b> Chỉ cấp cho người dùng hoặc ứng dụng đúng các quyền tối thiểu cần thiết để hoàn thành công việc của họ. <i>Tuyệt đối không bao giờ cấu hình ứng dụng web kết nối CSDL bằng tài khoản `root`!</i></p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi một nhân viên tạm thời nghỉ thai sản 6 tháng và công ty muốn vô hiệu hóa khả năng đăng nhập của tài khoản mà VẪN GIỮ NGUYÊN các phân quyền đã thiết lập, lệnh nào nên dùng?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> `ALTER USER 'emp'@'%' ACCOUNT LOCK;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> `DROP USER 'emp'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> `REVOKE ALL PRIVILEGES FROM 'emp'@'%';`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> `DELETE FROM mysql.user WHERE user = 'emp';`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Việc cấu hình ứng dụng web thương mại điện tử kết nối tới MySQL bằng tài khoản tối cao `root` vi phạm nghiêm trọng nguyên tắc an toàn thông tin nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Nguyên tắc Tối thiểu Đặc quyền (Principle of Least Privilege)</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Nguyên tắc Khóa chính duy nhất</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Nguyên tắc Dạng chuẩn 3NF</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Nguyên tắc Tối ưu hóa chi phí Cost-based</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: User Administration & Roles · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_dba_l4_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "0", explain: "Chính xác! Ký tự `%` trong hostname đại diện cho bất kỳ địa chỉ IP hoặc máy trạm nào." },
+    q1_2: { correct: "0", explain: "Chính xác! Trong MySQL, `'john'@'localhost'` và `'john'@'%'` là hai tài khoản độc lập hoàn toàn." }
+  },
+  2: {
+    q2_1: { correct: "0", explain: "Chính xác! Cú pháp chuẩn là `GRANT SELECT, INSERT ON db.* TO 'user'@'host';`." },
+    q2_2: { correct: "0", explain: "Chính xác! MySQL hỗ trợ cấp quyền chi tiết đến từng cột thuộc tính cụ thể trong bảng." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! Lệnh `SHOW GRANTS FOR 'user'@'host';` liệt kê tất cả các quyền đã cấp." },
+    q3_2: { correct: "0", explain: "Chính xác! Cú pháp lệnh là `REVOKE <privilege> ON <object> FROM <user>;`." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! Lệnh `SET DEFAULT ROLE ALL TO ...` kích hoạt role tự động khi đăng nhập." },
+    q4_2: { correct: "0", explain: "Chính xác! Role cho phép quản lý phân quyền tập trung và đồng bộ cho các nhóm người dùng." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Lệnh `ACCOUNT LOCK` khóa tài khoản an toàn mà không làm mất phân quyền." },
+    q5_2: { correct: "0", explain: "Chính xác! Nguyên tắc Least Privilege yêu cầu chỉ cấp đủ quyền tối thiểu cho nhiệm vụ của ứng dụng." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0f172a');
+  grad.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#1e3a8a');
+  topGrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 04 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('QUẢN LÝ NGƯỜI DÙNG, PHÂN QUYỀN & ROLE', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Cấu trúc Account username@host & Tạo User',
+    'Chặng 2: Phân cấp Quyền & Cấp quyền với GRANT',
+    'Chặng 3: Thu hồi Quyền (REVOKE) & Xem quyền (SHOW GRANTS)',
+    'Chặng 4: Quản trị Vai trò (Roles) trong MySQL 8.0',
+    'Chặng 5: Vòng đời Tài khoản & Nguyên tắc Least Privilege'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_DBA_L4_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 04: Quan ly Nguoi dung Phan quyen & Role trong MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_DBA_L4_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

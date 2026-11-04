@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MySQL Server · Trung tâm Bài học Tương tác Quản trị & Vận hành</title>
+<meta name="description" content="Trung tâm điều phối tiến trình học tập và kiểm tra Checkpoint tương tác cho toàn bộ chuyên đề MySQL Server: Kiến trúc mysqld, Cài đặt & Kết nối, Vòng đời Service, Cấu hình my.ini và Storage Engines.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --teal: #00758f;
+  --teal-dark: #00546b;
+  --teal-sub: #e6f4f8;
+  --orange: #f29111;
+  --orange-sub: #fef5e7;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --primary-grad: linear-gradient(135deg, #00546b 0%, #00758f 50%, #0f4c75 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 44px 0 38px;
+  box-shadow: 0 8px 24px rgba(0, 84, 107, 0.25);
+}
+header.hero .eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fed7aa;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+header.hero h1 {
+  margin: 0 0 12px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 15px;
+  color: #e2e8f0;
+  max-width: 860px;
+  line-height: 1.6;
+}
+
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus {
+  border-color: var(--teal);
+}
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: var(--teal);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--teal-dark);
+}
+.btn-outline {
+  border-color: var(--line);
+  background: #fff;
+  color: var(--text);
+}
+.btn-outline:hover {
+  background: #f1f5f9;
+}
+.btn-orange {
+  background: var(--orange);
+  color: #fff;
+}
+.btn-orange:hover {
+  background: #d97706;
+}
+
+main {
+  padding: 36px 0 60px;
+}
+
+.overview-banner {
+  background: linear-gradient(135deg, #e6f4f8 0%, #fef5e7 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.overview-banner h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: var(--teal-dark);
+}
+.overview-banner p {
+  margin: 0;
+  font-size: 14px;
+  color: #334155;
+  max-width: 650px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+.metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.metric-val {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+.metric-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-head h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text);
+}
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lesson-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+.lesson-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+.lesson-info {
+  flex: 1 1 540px;
+}
+.lesson-num {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.lesson-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.lesson-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.lesson-title a:hover {
+  color: var(--teal);
+}
+.lesson-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #475569;
+}
+.lesson-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.badge-status {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.badge-status.not-started {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.badge-status.in-progress {
+  background: var(--amber-sub);
+  color: var(--amber);
+}
+.badge-status.completed {
+  background: var(--green-sub);
+  color: var(--green);
+}
+
+.home-link-bar {
+  margin-top: 36px;
+  padding: 18px 24px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+}
+.home-link-bar a {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: none;
+}
+.home-link-bar a:hover {
+  text-decoration: underline;
+}
+
+footer.site-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Database Management System · MySQL Server</span>
+    <h1>Trung tâm Bài học Tương tác MySQL Server</h1>
+    <p>Hệ thống tự động chấm điểm và điều phối 5 bài học quy chuẩn về Vận hành & Quản trị MySQL Server. Bao gồm 25 chặng lý thuyết có khóa, 50 câu hỏi checkpoint, xuất báo cáo Retina PNG và cấp Chứng nhận Master chuyên đề.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <label for="hubStudentId" style="font-size:12.5px;font-weight:700">Sinh viên:</label>
+      <input type="text" id="hubStudentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="hubStudentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="hubStagesPill">Chặng: 0/25</span>
+      <span class="stat-pill" id="hubScorePill">Điểm: 0/500</span>
+      <button class="btn btn-orange" onclick="exportMasterCertificatePNG()">🏆 Chứng nhận Master PNG</button>
+      <button class="btn btn-outline" onclick="exportMasterCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetAllLessons()" style="color:#ef4444" title="Xóa toàn bộ điểm số của 5 bài">🔄 Reset Hub</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="overview-banner">
+    <div>
+      <h3>🎯 Tiến trình Học tập Chuyên đề MySQL Server</h3>
+      <p>Mỗi bài học được thiết kế 5 chặng bài bản với trắc nghiệm Checkpoint có điều kiện mở khóa. Điểm số và thông tin học viên tự động đồng bộ trên toàn bộ chuyên đề.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="syncAllState()">⚡ Cập nhật dữ liệu</button>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-label">Tổng bài học</span>
+      <span class="metric-val" id="metricLessons">5</span>
+      <span class="metric-sub">0/5 bài hoàn tất 100%</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Tổng chặng hoàn thành</span>
+      <span class="metric-val" id="metricStages">0 / 25</span>
+      <span class="metric-sub">Mỗi bài gồm 5 chặng tuần tự</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Tổng điểm tích lũy</span>
+      <span class="metric-val" id="metricScore">0 / 500</span>
+      <span class="metric-sub">Tự động chấm theo thời gian thực</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Chứng nhận Master</span>
+      <span class="metric-val" id="metricCert" style="font-size:20px;color:var(--amber)">Chưa mở</span>
+      <span class="metric-sub">Yêu cầu hoàn thành cả 5 bài</span>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Danh sách 5 Bài học Chuẩn hóa</h2>
+  </div>
+
+  <div class="lesson-list">
+
+    <!-- LESSON 01 -->
+    <div class="lesson-card" id="card-l1">
+      <div class="lesson-info">
+        <div class="lesson-num">Lesson 01 · Kiến trúc Hệ thống</div>
+        <h3 class="lesson-title"><a href="gioi-thieu-mysql/gioi-thieu-mysql.html">Tổng quan & Kiến trúc MySQL Server</a></h3>
+        <p class="lesson-desc">Khái niệm RDBMS, mô hình Client-Server, phân tích 3 tầng (Connection, SQL Layer, Storage Engine), vai trò của daemon <code>mysqld</code> và vùng đệm InnoDB Buffer Pool.</p>
+        <div class="lesson-meta">
+          <span>🎯 5 Chặng · 10 Checkpoints</span>
+          <span id="l1-progress">Đã hoàn thành: 0/5 chặng</span>
+          <span id="l1-score">Điểm: 0/100</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge-status not-started" id="l1-status">Chưa học</span>
+        <a href="gioi-thieu-mysql/gioi-thieu-mysql.html" class="btn btn-primary">Vào học →</a>
+      </div>
+    </div>
+
+    <!-- LESSON 02 -->
+    <div class="lesson-card" id="card-l2">
+      <div class="lesson-info">
+        <div class="lesson-num">Lesson 02 · Thiết lập & Kết nối</div>
+        <h3 class="lesson-title"><a href="installation-and-connection/installation-and-connection.html">Cài đặt, Công cụ Phát triển & Kết nối MySQL</a></h3>
+        <p class="lesson-desc">Cài đặt MySQL Server trên Windows, cấu hình MySQL Workbench GUI, kết nối dòng lệnh CLI (<code>mysql -h -P -u -p</code>), tích hợp trong VS Code và xử lý Error 1045 / 2003.</p>
+        <div class="lesson-meta">
+          <span>🎯 5 Chặng · 10 Checkpoints</span>
+          <span id="l2-progress">Đã hoàn thành: 0/5 chặng</span>
+          <span id="l2-score">Điểm: 0/100</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge-status not-started" id="l2-status">Chưa học</span>
+        <a href="installation-and-connection/installation-and-connection.html" class="btn btn-primary">Vào học →</a>
+      </div>
+    </div>
+
+    <!-- LESSON 03 -->
+    <div class="lesson-card" id="card-l3">
+      <div class="lesson-info">
+        <div class="lesson-num">Lesson 03 · Quản trị Vận hành</div>
+        <h3 class="lesson-title"><a href="start-stop-MySQL/start-stop-MySQL.html">Vòng đời Server & Quản lý Dịch vụ MySQL</a></h3>
+        <p class="lesson-desc">Start/Stop/Restart service trên Windows (<code>services.msc</code>, <code>net start</code>, PowerShell) và Linux (<code>systemctl</code>); nguyên lý Graceful Shutdown và đọc Error Log (<code>.err</code>).</p>
+        <div class="lesson-meta">
+          <span>🎯 5 Chặng · 10 Checkpoints</span>
+          <span id="l3-progress">Đã hoàn thành: 0/5 chặng</span>
+          <span id="l3-score">Điểm: 0/100</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge-status not-started" id="l3-status">Chưa học</span>
+        <a href="start-stop-MySQL/start-stop-MySQL.html" class="btn btn-primary">Vào học →</a>
+      </div>
+    </div>
+
+    <!-- LESSON 04 -->
+    <div class="lesson-card" id="card-l4">
+      <div class="lesson-info">
+        <div class="lesson-num">Lesson 04 · Cấu hình & Lưu trữ</div>
+        <h3 class="lesson-title"><a href="configuration-and-datadir/configuration-and-datadir.html">Cấu hình Hệ thống & Thư mục Dữ liệu MySQL</a></h3>
+        <p class="lesson-desc">Option files <code>my.ini</code>/<code>my.cnf</code>, quy tắc thứ tự ưu tiên, Option Groups (<code>[mysqld]</code>, <code>[client]</code>), Biến hệ thống Global/Session, thư mục <code>datadir</code> và hệ thống log (Redo, Undo, Binlog).</p>
+        <div class="lesson-meta">
+          <span>🎯 5 Chặng · 10 Checkpoints</span>
+          <span id="l4-progress">Đã hoàn thành: 0/5 chặng</span>
+          <span id="l4-score">Điểm: 0/100</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge-status not-started" id="l4-status">Chưa học</span>
+        <a href="configuration-and-datadir/configuration-and-datadir.html" class="btn btn-primary">Vào học →</a>
+      </div>
+    </div>
+
+    <!-- LESSON 05 -->
+    <div class="lesson-card" id="card-l5">
+      <div class="lesson-info">
+        <div class="lesson-num">Lesson 05 · Động cơ Lưu trữ & Dữ liệu Mẫu</div>
+        <h3 class="lesson-title"><a href="storage-engine/storage-engine.html">MySQL Storage Engines & CSDL Mẫu classicmodels</a></h3>
+        <p class="lesson-desc">Cơ chế Pluggable Storage Engine, đặc tính cốt lõi InnoDB (ACID, Row-level lock, MVCC), so sánh với MyISAM/Memory, cấu trúc 8 bảng quan hệ <code>classicmodels</code> và lệnh <code>SOURCE</code> nạp script.</p>
+        <div class="lesson-meta">
+          <span>🎯 5 Chặng · 10 Checkpoints</span>
+          <span id="l5-progress">Đã hoàn thành: 0/5 chặng</span>
+          <span id="l5-score">Điểm: 0/100</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge-status not-started" id="l5-status">Chưa học</span>
+        <a href="storage-engine/storage-engine.html" class="btn btn-primary">Vào học →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="home-link-bar">
+    <div>
+      <b>Khóa học Cơ sở Dữ liệu & Hệ quản trị CSDL (DBMS)</b> — Trường Quốc tế VNUIS
+    </div>
+    <div>
+      <a href="../../../index.html">← Quay về Trang chủ Khóa học</a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    DBMS Master Hub · MySQL Server Architecture & Administration · Tương thích hoàn toàn chế độ Offline
+  </div>
+</footer>
+
+<script>
+const LESSON_CONFIGS = [
+  {
+    id: 'l1',
+    storageKey: 'dbms_mysql_srv_l1_v1',
+    name: 'Lesson 01: Tổng quan & Kiến trúc MySQL Server',
+    totalStages: 5
+  },
+  {
+    id: 'l2',
+    storageKey: 'dbms_mysql_srv_l2_v1',
+    name: 'Lesson 02: Cài đặt, Công cụ & Kết nối MySQL',
+    totalStages: 5
+  },
+  {
+    id: 'l3',
+    storageKey: 'dbms_mysql_srv_l3_v1',
+    name: 'Lesson 03: Vòng đời Server & Quản lý Dịch vụ',
+    totalStages: 5
+  },
+  {
+    id: 'l4',
+    storageKey: 'dbms_mysql_srv_l4_v1',
+    name: 'Lesson 04: Cấu hình Hệ thống & Thư mục Dữ liệu',
+    totalStages: 5
+  },
+  {
+    id: 'l5',
+    storageKey: 'dbms_mysql_srv_l5_v1',
+    name: 'Lesson 05: MySQL Storage Engines & CSDL Mẫu classicmodels',
+    totalStages: 5
+  }
+];
+
+function getLessonState(storageKey) {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+    return JSON.parse(raw);
+  } catch(e) {
+    return { completedStages: [], scores: {}, studentId: '', studentName: '' };
+  }
+}
+
+function syncAllState() {
+  let totalStagesCompleted = 0;
+  let totalScore = 0;
+  let fullCompletedLessons = 0;
+  let commonStudentId = '';
+  let commonStudentName = '';
+
+  const sharedId = localStorage.getItem('dbms_student_id');
+  const sharedName = localStorage.getItem('dbms_student_name');
+  if (sharedId) commonStudentId = sharedId;
+  if (sharedName) commonStudentName = sharedName;
+
+  LESSON_CONFIGS.forEach(l => {
+    const data = getLessonState(l.storageKey);
+    const compCount = (data.completedStages || []).length;
+    const lessonScore = compCount * 20;
+
+    totalStagesCompleted += compCount;
+    totalScore += lessonScore;
+    if (compCount === l.totalStages) fullCompletedLessons++;
+
+    if (!commonStudentId && data.studentId) commonStudentId = data.studentId;
+    if (!commonStudentName && data.studentName) commonStudentName = data.studentName;
+
+    // Update card UI
+    const progEl = document.getElementById(`${l.id}-progress`);
+    const scoreEl = document.getElementById(`${l.id}-score`);
+    const statusEl = document.getElementById(`${l.id}-status`);
+
+    if (progEl) progEl.textContent = `Đã hoàn thành: ${compCount}/${l.totalStages} chặng`;
+    if (scoreEl) scoreEl.textContent = `Điểm: ${lessonScore}/100`;
+
+    if (statusEl) {
+      statusEl.className = 'badge-status';
+      if (compCount === 0) {
+        statusEl.classList.add('not-started');
+        statusEl.textContent = 'Chưa học';
+      } else if (compCount === l.totalStages) {
+        statusEl.classList.add('completed');
+        statusEl.textContent = '✓ Hoàn thành';
+      } else {
+        statusEl.classList.add('in-progress');
+        statusEl.textContent = `Đang học (${compCount}/${l.totalStages})`;
+      }
+    }
+  });
+
+  // Student inputs
+  const idInput = document.getElementById('hubStudentId');
+  const nameInput = document.getElementById('hubStudentName');
+  if (idInput && !idInput.value && commonStudentId) idInput.value = commonStudentId;
+  if (nameInput && !nameInput.value && commonStudentName) nameInput.value = commonStudentName;
+
+  // Header & Summary metrics
+  const hubStagesPill = document.getElementById('hubStagesPill');
+  const hubScorePill = document.getElementById('hubScorePill');
+  if (hubStagesPill) hubStagesPill.textContent = `Chặng: ${totalStagesCompleted}/25`;
+  if (hubScorePill) {
+    hubScorePill.textContent = `Điểm: ${totalScore}/500`;
+    if (totalScore === 500) hubScorePill.classList.add('success');
+    else hubScorePill.classList.remove('success');
+  }
+
+  const mLessons = document.getElementById('metricLessons');
+  const mStages = document.getElementById('metricStages');
+  const mScore = document.getElementById('metricScore');
+  const mCert = document.getElementById('metricCert');
+
+  if (mLessons) {
+    mLessons.textContent = `${fullCompletedLessons} / 5`;
+    mLessons.nextElementSibling.textContent = `${fullCompletedLessons}/5 bài hoàn tất 100%`;
+  }
+  if (mStages) {
+    mStages.textContent = `${totalStagesCompleted} / 25`;
+  }
+  if (mScore) {
+    mScore.textContent = `${totalScore} / 500`;
+  }
+  if (mCert) {
+    if (fullCompletedLessons === 5) {
+      mCert.textContent = 'Sẵn sàng cấp 🏆';
+      mCert.style.color = '#15803d';
+    } else {
+      mCert.textContent = `${Math.round((totalStagesCompleted / 25) * 100)}%`;
+      mCert.style.color = 'var(--amber)';
+    }
+  }
+}
+
+function saveHubStudent() {
+  const sId = (document.getElementById('hubStudentId')?.value || '').trim();
+  const sName = (document.getElementById('hubStudentName')?.value || '').trim();
+
+  if (sId) localStorage.setItem('dbms_student_id', sId);
+  if (sName) localStorage.setItem('dbms_student_name', sName);
+
+  LESSON_CONFIGS.forEach(l => {
+    const data = getLessonState(l.storageKey);
+    data.studentId = sId;
+    data.studentName = sName;
+    localStorage.setItem(l.storageKey, JSON.stringify(data));
+  });
+}
+
+function resetAllLessons() {
+  if (confirm("⚠️ CẢNH BÁO: Thao tác này sẽ xóa toàn bộ điểm số và tiến trình của cả 5 bài học trong chuyên đề MySQL Server! Bạn có chắc chắn không?")) {
+    LESSON_CONFIGS.forEach(l => {
+      localStorage.removeItem(l.storageKey);
+    });
+    alert("Đã làm mới dữ liệu toàn bộ chuyên đề MySQL Server.");
+    location.reload();
+  }
+}
+
+function exportMasterCertificatePNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 960;
+  const H = 680;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Outer border & background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#00546b');
+  grad.addColorStop(0.5, '#00758f');
+  grad.addColorStop(1, '#082032');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative border
+  ctx.strokeStyle = '#f29111';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(18, 18, W - 36, H - 36);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(26, 26, W - 52, H - 52);
+
+  // Inner parchment
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(42, 42, W - 84, H - 84, 14);
+  ctx.fill();
+
+  // Header banner
+  const headGrad = ctx.createLinearGradient(42, 42, W - 42, 42);
+  headGrad.addColorStop(0, '#00546b');
+  headGrad.addColorStop(1, '#0f4c75');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.roundRect(42, 42, W - 84, 110, [14, 14, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#fed7aa';
+  ctx.font = 'bold 12.5px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('HỆ QUẢN TRỊ CƠ SỞ DỮ LIỆU · KHÓA HỌC DBMS CHUẨN ĐẠI HỌC', W / 2, 75);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px system-ui, sans-serif';
+  ctx.fillText('CHỨNG NHẬN MASTER QUẢN TRỊ & VẬN HÀNH MYSQL SERVER', W / 2, 114);
+
+  // Student Section
+  const mssv = (document.getElementById('hubStudentId')?.value || localStorage.getItem('dbms_student_id') || 'N/A').trim();
+  const name = (document.getElementById('hubStudentName')?.value || localStorage.getItem('dbms_student_name') || 'Học viên Danh dự').trim();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#64748b';
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillText('Chứng nhận học viên đã hoàn thành xuất sắc toàn bộ các chặng bài học và kiểm tra checkpoint:', W / 2, 192);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.fillText(name, W / 2, 230);
+
+  ctx.font = 'bold 14px system-ui, sans-serif';
+  ctx.fillStyle = '#00758f';
+  ctx.fillText(`Mã số sinh viên (MSSV): ${mssv}`, W / 2, 258);
+
+  // Lesson Breakdown Table
+  let totalScore = 0;
+  let totalStages = 0;
+  let y = 302;
+
+  ctx.textAlign = 'left';
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(70, 278);
+  ctx.lineTo(W - 70, 278);
+  ctx.stroke();
+
+  LESSON_CONFIGS.forEach((l, idx) => {
+    const data = getLessonState(l.storageKey);
+    const compCount = (data.completedStages || []).length;
+    const lScore = compCount * 20;
+    totalStages += compCount;
+    totalScore += lScore;
+
+    const isPassed = compCount === l.totalStages;
+
+    // Bullet dot
+    ctx.fillStyle = isPassed ? '#15803d' : (compCount > 0 ? '#f29111' : '#94a3b8');
+    ctx.beginPath();
+    ctx.arc(85, y - 5, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Lesson name
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '13.5px system-ui, sans-serif';
+    ctx.fillText(`${idx + 1}. ${l.name}`, 105, y);
+
+    // Progress
+    ctx.fillStyle = '#64748b';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText(`${compCount}/5 chặng`, W - 240, y);
+
+    // Score badge
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isPassed ? '#15803d' : (compCount > 0 ? '#b45309' : '#64748b');
+    ctx.textAlign = 'right';
+    ctx.fillText(`${lScore}/100 đ`, W - 85, y);
+    ctx.textAlign = 'left';
+
+    y += 34;
+  });
+
+  // Footer summary box
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(70, 485, W - 140, 85, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết Chuyên đề:', 95, 518);
+
+  ctx.fillStyle = totalScore >= 400 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText(`${totalScore} / 500 ĐIỂM  (${totalStages}/25 Chặng)`, 95, 548);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#475569';
+  ctx.font = '13px system-ui, sans-serif';
+  ctx.fillText(`Ngày chứng nhận: ${new Date().toLocaleDateString('vi-VN')}`, W - 95, 520);
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.fillStyle = '#00758f';
+  ctx.fillText('Xác thực hệ thống: TỰ ĐỘNG KHÓA CHẶNG', W - 95, 548);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Bản quyền Khóa học Cơ sở Dữ liệu · VNUIS DBMS Interactive Learning Hub', W / 2, 608);
+
+  const link = document.createElement('a');
+  link.download = `Chung_nhan_Master_MySQL_Server_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportMasterCSV() {
+  const mssv = (document.getElementById('hubStudentId')?.value || localStorage.getItem('dbms_student_id') || '').trim();
+  const name = (document.getElementById('hubStudentName')?.value || localStorage.getItem('dbms_student_name') || '').trim();
+
+  let csv = "\uFEFFMSSV,HoVaTen,MaBaiHoc,TenBaiHoc,SoChangHoanThanh,TongChang,DiemSo,TrangThai,NgayXuat\n";
+
+  let grandTotal = 0;
+  let grandStages = 0;
+
+  LESSON_CONFIGS.forEach(l => {
+    const data = getLessonState(l.storageKey);
+    const cCount = (data.completedStages || []).length;
+    const lScore = cCount * 20;
+    grandTotal += lScore;
+    grandStages += cCount;
+    const status = cCount === l.totalStages ? 'Hoan thanh' : (cCount > 0 ? 'Dang hoc' : 'Chua hoc');
+
+    csv += `"${mssv}","${name}","${l.id}","${l.name}",${cCount},${l.totalStages},${lScore},"${status}","${new Date().toLocaleString('vi-VN')}"\n`;
+  });
+
+  csv += `"${mssv}","${name}","TOTAL","TONG KET TOAN BO CHUYEN DE",${grandStages},25,${grandTotal},"${grandTotal >= 400 ? 'DAT CHUNG NHAN' : 'CHUA HOAN TAT'}","${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Bang_diem_MySQL_Server_Tong_hop_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  syncAllState();
+  document.getElementById('hubStudentId')?.addEventListener('input', saveHubStudent);
+  document.getElementById('hubStudentName')?.addEventListener('input', saveHubStudent);
+});
+</script>
+
+</body>
+</html>

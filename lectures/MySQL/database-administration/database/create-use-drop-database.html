@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 01: Quản lý Vòng đời Database trong MySQL · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về Quản lý vòng đời Database trong MySQL: CREATE, USE, DROP DATABASE, Charset utf8mb4, Collation và checklist an toàn.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-dark: #1e3a8a;
+  --blue-sub: #eff6ff;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus { border-color: var(--blue); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--blue-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+      <a href="../database-administration.html" class="nav-back" style="margin-bottom:0">← Quay lại Trung tâm Database Administration Hub</a>
+      <a href="database-lifecycle-sql-lab.html" class="btn btn-outline" style="background:rgba(255,255,255,0.18);color:#fff;border-color:rgba(255,255,255,0.35);font-weight:700">💻 Làm Bài tập SQL Tự chấm (16 bài) →</a>
+    </div>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#93c5fd;margin-bottom:8px;background:rgba(255,255,255,0.12);padding:4px 10px;border-radius:999px;">Lesson 01 · Quản trị CSDL</div>
+    <h1>Quản lý Vòng đời Database trong MySQL</h1>
+    <p>Nắm vững kỹ thuật tạo lập, chọn database mặc định, xóa CSDL an toàn; cấu hình bảng mã ký tự utf8mb4, collation và danh mục kiểm tra an toàn trong môi trường doanh nghiệp.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Khái niệm Database & Schema trong MySQL</h2>
+        <div class="stage-desc">Quan hệ đồng nghĩa giữa Database và Schema, CSDL hiện hành và tên đối tượng đầy đủ</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Database và Schema trong MySQL là gì?</h4>
+      <p>Khác với một số hệ CSDL như Oracle hay PostgreSQL (nơi Schema là tập hợp các bảng thuộc sở hữu của một User nằm bên trong một Database), trong <b>MySQL</b> hai khái niệm <b>DATABASE</b> và <b>SCHEMA</b> là <b>từ đồng nghĩa hoàn toàn (Synonyms)</b>. Hai câu lệnh sau có hiệu lực tương đương 100%:</p>
+      <pre><code>CREATE DATABASE sales_db;
+CREATE SCHEMA sales_db;</code></pre>
+      
+      <h4>2. Tên đối tượng đầy đủ (Fully Qualified Name):</h4>
+      <p>Trong MySQL, một bảng có thể được truy xuất mà không cần chọn database trước bằng cách dùng tên đầy đủ theo cú pháp <code>ten_database.ten_bang</code>:</p>
+      <pre><code>SELECT * FROM classicmodels.customers;</code></pre>
+
+      <h4>3. Kiểm tra CSDL hiện hành:</h4>
+      <pre><code>SELECT DATABASE(); -- Trả về NULL nếu phiên làm việc chưa chọn database nào</code></pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong MySQL, nhận định nào sau đây là CHÍNH XÁC về mối quan hệ giữa thuật ngữ `DATABASE` và `SCHEMA`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Một Database chứa nhiều Schema bên trong</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> Database và Schema là hai từ đồng nghĩa hoàn toàn trong MySQL</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> Schema chỉ dùng cho bảng ảo (View) còn Database dùng cho bảng vật lý</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Schema là thư mục chứa file cài đặt máy chủ</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Khi vừa kết nối vào MySQL mà chưa thực thi lệnh chọn database, câu lệnh `SELECT DATABASE();` sẽ trả về kết quả gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> `NULL`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> `mysql`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> `root`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> Báo lỗi cú pháp</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Lệnh `USE` & Thiết lập CSDL Mặc định cho Session</h2>
+        <div class="stage-desc">Phạm vi ảnh hưởng của USE, lỗi kết nối và chuyển đổi database linh hoạt</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cú pháp và Bản chất của lệnh USE:</h4>
+      <pre><code>USE classicmodels;</code></pre>
+      <ul>
+        <li>Lệnh <code>USE</code> cho MySQL biết rằng tất cả các câu truy vấn không có tiền tố database sau đó sẽ mặc định tìm kiếm các bảng trong database được chỉ định.</li>
+        <li><b>Phạm vi (Scope):</b> Lệnh <code>USE</code> chỉ tác động đến <b>phiên làm việc (Session)</b> hiện tại của kết nối đó, hoàn toàn không làm ảnh hưởng tới các kết nối khác của người dùng khác trên server.</li>
+        <li>Nếu chỉ định một database không tồn tại, MySQL trả về lỗi: <code>ERROR 1049 (42000): Unknown database 'ten_db'</code>.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi client A thực hiện câu lệnh `USE sales;`, điều gì xảy ra với kết nối của client B đang làm việc trên cùng một MySQL server?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> Client B cũng tự động bị chuyển sang database sales</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> Client B không bị ảnh hưởng vì lệnh USE chỉ có tác dụng trong phạm vi session hiện tại của Client A</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> Server sẽ khóa toàn bộ các database khác</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> Client B bị ngắt kết nối</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Nếu một phiên làm việc đang ở trong database `hr`, làm cách nào để truy vấn dữ liệu từ bảng `orders` của database `sales` mà KHÔNG CẦN đổi database mặc định bằng lệnh USE?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Sử dụng cú pháp tên đầy đủ: `SELECT * FROM sales.orders;`</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Không thể thực hiện được, bắt buộc phải USE sales trước</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Copy bảng orders sang database hr</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Đổi tên bảng thành hr.orders</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Tạo Database với `CREATE DATABASE`, Charset & Collation</h2>
+        <div class="stage-desc">Cú pháp chuẩn, mệnh đề IF NOT EXISTS, chuẩn utf8mb4 và Collation utf8mb4_0900_ai_ci</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cú pháp khởi tạo Database tiêu chuẩn:</h4>
+      <pre><code>CREATE DATABASE IF NOT EXISTS ecommerce_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_0900_ai_ci;</code></pre>
+      
+      <h4>2. Vì sao phải sử dụng `utf8mb4` thay vì `utf8` (utf8mb3)?</h4>
+      <ul>
+        <li>Bảng mã <code>utf8</code> cũ của MySQL thực chất chỉ là <code>utf8mb3</code> (chỉ hỗ trợ tối đa 3 bytes cho một ký tự), không thể lưu trữ các biểu tượng cảm xúc (Emoji 😀), một số ký tự Hán tự hiếm và các ký tự đặc biệt.</li>
+        <li><code>utf8mb4</code> (4 bytes per character) là chuẩn bắt buộc hiện đại, hỗ trợ toàn diện Unicode.</li>
+      </ul>
+
+      <h4>3. Ý nghĩa của Collation `utf8mb4_0900_ai_ci`:</h4>
+      <ul>
+        <li><code>0900</code>: Tuân thủ thuật toán sắp xếp của chuẩn Unicode 9.0.0.</li>
+        <li><code>ai</code> (Accent-Insensitive): Không phân biệt dấu thanh điệu khi so sánh (ví dụ: 'e' bằng 'é').</li>
+        <li><code>ci</code> (Case-Insensitive): Không phân biệt chữ hoa chữ thường ('A' bằng 'a').</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Vì sao trong MySQL hiện đại (từ 8.0 trở lên), chuẩn bảng mã `utf8mb4` được khuyến nghị sử dụng thay thế cho `utf8` (utf8mb3)?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> Vì utf8mb4 hỗ trợ đầy đủ 4-byte Unicode, cho phép lưu trữ emoji và toàn bộ các bộ ký tự quốc tế</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> Vì utf8mb4 chạy nhanh hơn gấp 10 lần RAM</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> Vì utf8mb4 tự động mã hóa mật khẩu</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> Vì utf8 không cho phép tạo quá 5 bảng</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Trong tên Collation `utf8mb4_0900_ai_ci`, hai hậu tố `_ai` và `_ci` có ý nghĩa lần lượt là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> Accent-Insensitive (không phân biệt dấu) và Case-Insensitive (không phân biệt hoa/thường)</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> Auto-Index và Custom-Index</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> Artificial Intelligence và Computational Intelligence</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> All-Inclusive và Complete-Isolation</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Khám phá Siêu dữ liệu Định nghĩa Database</h2>
+        <div class="stage-desc">Lệnh `SHOW CREATE DATABASE` và truy vấn danh mục `INFORMATION_SCHEMA.SCHEMATA`</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Xem câu lệnh DDL khởi tạo database:</h4>
+      <pre><code>SHOW CREATE DATABASE classicmodels;</code></pre>
+      <p>Kết quả hiển thị chính xác cú pháp DDL, bao gồm charset và collation đang được áp dụng.</p>
+
+      <h4>2. Tra cứu toàn diện qua `INFORMATION_SCHEMA.SCHEMATA`:</h4>
+      <pre><code>SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME
+FROM INFORMATION_SCHEMA.SCHEMATA
+WHERE SCHEMA_NAME NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys');</code></pre>
+      <p>Bảng <code>SCHEMATA</code> cho phép lọc, sắp xếp và báo cáo các database tồn tại trên máy chủ.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh SQL nào hiển thị chính xác câu lệnh DDL đã được dùng để tạo ra database `classicmodels` kèm theo thiết lập Charset và Collation của nó?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `SHOW CREATE DATABASE classicmodels;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> `DESCRIBE classicmodels;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> `SHOW DATABASE STATUS classicmodels;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> `SELECT * FROM classicmodels;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Bảng hệ thống nào trong MySQL lưu trữ danh sách siêu dữ liệu (metadata) của tất cả các database trên máy chủ?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> `INFORMATION_SCHEMA.SCHEMATA`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> `mysql.tables`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> `sys.schemas_list`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> `performance_schema.db`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Xóa Database với `DROP DATABASE` & Checklist An toàn</h2>
+        <div class="stage-desc">Hậu quả xóa vật lý trên ổ đĩa, mệnh đề IF EXISTS và các CSDL hệ thống cấm xóa</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Tác động của câu lệnh `DROP DATABASE`:</h4>
+      <pre><code>DROP DATABASE IF EXISTS test_lab;</code></pre>
+      <ul>
+        <li><b>Xóa vĩnh viễn:</b> Tất cả các tables, views, stored routines, triggers và các file dữ liệu vật lý (thư mục con trong <code>datadir</code>) bị xóa khỏi đĩa cứng. <i>MySQL không có cơ chế Recycle Bin để Undo!</i></li>
+      </ul>
+
+      <h4>2. Checklist an toàn trước khi thực hiện DROP DATABASE:</h4>
+      <ul>
+        <li><b>Xác minh môi trường:</b> Đảm bảo bạn đang kết nối vào máy chủ local/test, không phải production.</li>
+        <li><b>Thực hiện Backup trước:</b> Luôn chạy <code>mysqldump</code> để có bản dự phòng trước khi drop.</li>
+        <li><b>Tuyệt đối KHÔNG xóa 4 Database Hệ thống:</b>
+          <ul>
+            <li><code>mysql</code>: Chứa thông tin tài khoản người dùng, phân quyền và dữ liệu quản trị cốt lõi.</li>
+            <li><code>information_schema</code>: Từ điển dữ liệu siêu dữ liệu ANSI.</li>
+            <li><code>performance_schema</code>: Thu thập dữ liệu hiệu năng máy chủ.</li>
+            <li><code>sys</code>: Tập hợp các view hỗ trợ chẩn đoán DBA.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Cơ sở dữ liệu nào sau đây là CSDL hệ thống cốt lõi lưu trữ bảng quản lý tài khoản người dùng và phân quyền trong MySQL, TUYỆT ĐỐI KHÔNG ĐƯỢC XÓA?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> `mysql`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> `classicmodels`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> `sakila`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> `world`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Vì sao trong các kịch bản tự động hóa hoặc script deploy CSDL, người ta thường viết `DROP DATABASE IF EXISTS db_name;` thay vì chỉ viết `DROP DATABASE db_name;`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Để tránh script bị dừng do gặp lỗi (Error 1008) nếu database đó chưa từng tồn tại</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Để lưu bản sao lưu vào thùng rác</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Để tăng tốc độ đọc đĩa</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Để đổi tên database thay vì xóa</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: Database Lifecycle Management · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_dba_l1_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "1", explain: "Chính xác! Trong MySQL, CREATE DATABASE và CREATE SCHEMA là hai từ đồng nghĩa hoàn toàn." },
+    q1_2: { correct: "0", explain: "Chính xác! Hàm DATABASE() trả về NULL nếu phiên làm việc hiện tại chưa chọn CSDL mặc định." }
+  },
+  2: {
+    q2_1: { correct: "1", explain: "Chính xác! Lệnh USE chỉ có hiệu lực cục bộ trong phiên (session) của client đó." },
+    q2_2: { correct: "0", explain: "Chính xác! Dùng cú pháp đầy đủ `database_name.table_name` cho phép truy vấn bảng ở CSDL bất kỳ." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! utf8mb4 hỗ trợ 4 byte Unicode đầy đủ bao gồm emoji và các tập ký tự mở rộng." },
+    q3_2: { correct: "0", explain: "Chính xác! _ai là Accent-Insensitive (không phân biệt dấu), _ci là Case-Insensitive (không phân biệt hoa thường)." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! Lệnh `SHOW CREATE DATABASE` hiển thị câu lệnh DDL định nghĩa database kèm charset/collation." },
+    q4_2: { correct: "0", explain: "Chính xác! View `INFORMATION_SCHEMA.SCHEMATA` lưu trữ metadata của tất cả database." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Database `mysql` chứa các bảng hệ thống lưu trữ user và privileges, cấm xóa." },
+    q5_2: { correct: "0", explain: "Chính xác! Mệnh đề IF EXISTS giúp lệnh thực thi an toàn mà không ngắt kịch bản tự động khi DB không tồn tại." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0f172a');
+  grad.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#1e3a8a');
+  topGrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 01 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('QUẢN LÝ VÒNG ĐỜI DATABASE TRONG MYSQL', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Khái niệm Database & Schema trong MySQL',
+    'Chặng 2: Lệnh USE & Thiết lập CSDL Mặc định',
+    'Chặng 3: Tạo Database, Chuẩn utf8mb4 & Collation',
+    'Chặng 4: Khám phá Siêu dữ liệu Định nghĩa Database',
+    'Chặng 5: Xóa Database với DROP DATABASE & An toàn'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_DBA_L1_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 01: Quan ly Vong doi Database trong MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_DBA_L1_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

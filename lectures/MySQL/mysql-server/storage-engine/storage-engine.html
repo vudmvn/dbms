@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 05: MySQL Storage Engines & CSDL Mẫu classicmodels · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về Pluggable Storage Engines (InnoDB, MyISAM, Memory), cấu trúc lược đồ CSDL mẫu chuẩn classicmodels và quy trình import dữ liệu.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --teal: #00758f;
+  --teal-dark: #00546b;
+  --teal-sub: #e6f4f8;
+  --orange: #f29111;
+  --orange-sub: #fef5e7;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #00546b 0%, #00758f 50%, #0f4c75 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(0, 84, 107, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+.student-inputs input:focus { border-color: var(--teal); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--teal);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--teal-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../mysql-server.html" class="nav-back">← Quay lại Trung tâm MySQL Server Hub</a>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#fed7aa;margin-bottom:8px;background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:999px;">Lesson 05 · Động cơ Lưu trữ & Dữ liệu Mẫu</div>
+    <h1>MySQL Storage Engines & CSDL Mẫu classicmodels</h1>
+    <p>Nghiên cứu cơ chế Pluggable Storage Engine, đặc tính cốt lõi của InnoDB so với MyISAM/Memory, và mô hình CSDL mẫu chuẩn doanh nghiệp <code>classicmodels</code>.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Khái niệm Pluggable Storage Engine trong MySQL</h2>
+        <div class="stage-desc">Kiến trúc cắm rút độc đáo và tính độc lập dữ liệu vật lý</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Storage Engine là gì?</h4>
+      <p><b>Storage Engine</b> (động cơ lưu trữ) là thành phần phần mềm trực tiếp chịu trách nhiệm thực hiện các thao tác: <i>tạo bảng, đọc, ghi, khóa (locking), lập chỉ mục (indexing) và khôi phục dữ liệu vật lý</i> trên thiết bị lưu trữ.</p>
+      
+      <h4>2. Sự khác biệt ở cấp độ bảng (Per-table Engine):</h4>
+      <p>Trong MySQL, bạn có thể chỉ định Storage Engine cho từng bảng độc lập khi tạo bảng bằng mệnh đề <code>ENGINE = ...</code>:</p>
+      <pre><code>CREATE TABLE user_sessions (
+    session_id VARCHAR(64) PRIMARY KEY,
+    user_id INT,
+    last_active TIMESTAMP
+) ENGINE = MEMORY; -- Lưu bảng này trong RAM để truy cập siêu tốc</code></pre>
+      <p>Nếu không chỉ định rõ, MySQL sẽ tự động gán engine mặc định được quy định bởi biến <code>default_storage_engine</code> (mặc định là <b>InnoDB</b>).</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Mệnh đề SQL nào được dùng trong câu lệnh `CREATE TABLE` để chỉ định Storage Engine cụ thể cho bảng đó?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> `USING ENGINE = ...`</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> `ENGINE = ...`</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> `STORAGE = ...`</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> `TYPE = ...` (cú pháp lỗi thời trước MySQL 5.1)</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Khẳng định nào sau đây là ĐÚNG về việc áp dụng Storage Engine trong một cơ sở dữ liệu MySQL?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> Tất cả các bảng trong cùng một database bắt buộc phải dùng chung một engine duy nhất</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> Các bảng trong cùng một database có thể sử dụng các storage engine khác nhau tùy theo nhu cầu nghiệp vụ</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> Khi đã tạo bảng thì vĩnh viễn không thể đổi sang storage engine khác</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> Chỉ có một engine duy nhất tồn tại trong MySQL là MyISAM</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">InnoDB Engine — Tiêu chuẩn Doanh nghiệp</h2>
+        <div class="stage-desc">Giao dịch ACID, Khóa cấp dòng (Row-level locking) và Toàn vẹn Khóa ngoại</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>5 Tính năng then chốt biến InnoDB thành Engine mặc định của MySQL:</h4>
+      <ul>
+        <li><b>Hỗ trợ Giao dịch ACID trọn vẹn:</b> Hỗ trợ các lệnh <code>COMMIT</code>, <code>ROLLBACK</code> và <code>SAVEPOINT</code>.</li>
+        <li><b>Khóa cấp dòng (Row-level Locking):</b> Khi cập nhật một dòng, chỉ có đúng dòng đó bị khóa; các tiến trình khác vẫn có thể đọc/ghi các dòng khác trong cùng một bảng bình thường, mang lại hiệu năng đồng thời (concurrency) cực cao.</li>
+        <li><b>Ràng buộc Khóa ngoại (Foreign Key Constraints):</b> Tự động kiểm tra tính toàn vẹn tham chiếu giữa các bảng với các cơ chế <code>CASCADE</code>, <code>RESTRICT</code>, <code>SET NULL</code>.</li>
+        <li><b>Kiểm soát Đồng thời Đa phiên bản (MVCC):</b> Cho phép các câu lệnh SELECT đọc dữ liệu nhất quán mà không bị chặn bởi các lệnh UPDATE/INSERT (Non-blocking reads).</li>
+        <li><b>Phục hồi khi gặp sự cố (Crash Recovery):</b> Tự động sử dụng Redo Log và Undo Log để tái lập tính nhất quán của dữ liệu ngay khi khởi động lại sau crash.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Cơ chế khóa nào giúp InnoDB đạt được hiệu năng xử lý đồng thời (concurrency) vượt trội hơn hẳn so với MyISAM trong các hệ thống OLTP?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> Khóa cấp toàn bảng (Table-level locking)</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> Khóa cấp dòng (Row-level locking)</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> Khóa toàn bộ cơ sở dữ liệu (Database-level locking)</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> Không sử dụng bất kỳ cơ chế khóa nào</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Tính năng nào của InnoDB cho phép câu lệnh SELECT đọc dữ liệu tại thời điểm quá khứ của một transaction mà không phải chờ câu lệnh UPDATE của transaction khác hoàn tất?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Multi-Version Concurrency Control (MVCC)</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Full-text search</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Table partitioning</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Doublewrite buffer</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">So sánh InnoDB, MyISAM, Memory, CSV & Tiêu chí Lựa chọn</h2>
+        <div class="stage-desc">Bảng đối sánh tính năng và hướng dẫn lựa chọn theo từng kịch bản sử dụng</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Tính năng</th>
+            <th>InnoDB</th>
+            <th>MyISAM</th>
+            <th>MEMORY</th>
+            <th>CSV</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Hỗ trợ Giao dịch (Transactions)</b></td>
+            <td><b style="color:#15803d;">CÓ (ACID)</b></td>
+            <td>Không</td>
+            <td>Không</td>
+            <td>Không</td>
+          </tr>
+          <tr>
+            <td><b>Cơ chế Khóa (Locking)</b></td>
+            <td>Khóa cấp dòng (Row)</td>
+            <td>Khóa cấp bảng (Table)</td>
+            <td>Khóa cấp bảng (Table)</td>
+            <td>Khóa cấp bảng (Table)</td>
+          </tr>
+          <tr>
+            <td><b>Ràng buộc Khóa ngoại (Foreign Key)</b></td>
+            <td><b style="color:#15803d;">CÓ</b></td>
+            <td>Không</td>
+            <td>Không</td>
+            <td>Không</td>
+          </tr>
+          <tr>
+            <td><b>Nơi lưu trữ dữ liệu</b></td>
+            <td>Đĩa cứng (.ibd)</td>
+            <td>Đĩa cứng (.MYD, .MYI)</td>
+            <td><b>RAM (Bộ nhớ trong)</b></td>
+            <td>File văn bản .csv</td>
+          </tr>
+          <tr>
+            <td><b>Kịch bản áp dụng tối ưu</b></td>
+            <td>Hệ thống Web, Thương mại điện tử, Ngân hàng (OLTP)</td>
+            <td>Chỉ đọc tĩnh, ghi log tuần tự cũ</td>
+            <td>Bảng tạm, bộ nhớ đệm Cache, tra cứu nhanh</td>
+            <td>Xuất nhập dữ liệu dạng bảng tính Excel</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi cần tạo một bảng lưu session đăng nhập người dùng tạm thời cần tốc độ đọc/ghi cực nhanh và chấp nhận mất dữ liệu khi máy chủ restart, engine nào là lựa chọn hàng đầu?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> MEMORY</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> CSV</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> ARCHIVE</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> BLACKHOLE</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Hạn chế nghiêm trọng nhất của MyISAM so với InnoDB trong môi trường có nhiều thao tác ghi dữ liệu đồng thời là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> MyISAM chỉ hỗ trợ khóa cấp bảng (Table-level locking), mọi thao tác ghi sẽ chặn toàn bộ bảng</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> MyISAM không thể lưu trữ số nguyên</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> MyISAM không cho phép đặt tên bảng quá 5 ký tự</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> MyISAM bắt buộc phải kết nối Internet mới đọc được</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Cấu trúc CSDL Mẫu Doanh nghiệp `classicmodels`</h2>
+        <div class="stage-desc">Khám phá mô hình quan hệ bán hàng 8 bảng kinh điển của MySQL</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Mô hình quan hệ 8 bảng trong CSDL `classicmodels`:</h4>
+      <p><code>classicmodels</code> là cơ sở dữ liệu mẫu chuẩn của MySQL mô phỏng hoạt động kinh doanh bán xe và mô hình cổ điển của một công ty thương mại:</p>
+      <ul>
+        <li><b>offices (Văn phòng đại diện):</b> Lưu các chi nhánh toàn cầu. <code>officeCode</code> là khóa chính.</li>
+        <li><b>employees (Nhân viên):</b> Quan hệ nhiều-1 với offices. Có mối quan hệ <i>tự tham chiếu (Self-referencing Foreign Key)</i>: cột <code>reportsTo</code> trỏ về chính <code>employeeNumber</code> của người quản lý.</li>
+        <li><b>customers (Khách hàng):</b> Mỗi khách hàng được gán cho một nhân viên bán hàng qua <code>salesRepEmployeeNumber</code>.</li>
+        <li><b>orders (Đơn đặt hàng):</b> Quan hệ 1-nhiều với customers (một khách có nhiều đơn).</li>
+        <li><b>orderdetails (Chi tiết đơn hàng):</b> Bảng cầu nối liên kết đơn hàng với sản phẩm. Khóa chính ghép: <code>(orderNumber, productCode)</code>.</li>
+        <li><b>products & productlines:</b> Danh mục sản phẩm và dòng sản phẩm phân loại (Classic Cars, Motorcycles, Planes...).</li>
+        <li><b>payments (Thanh toán):</b> Lưu lịch sử thanh toán của khách hàng. Khóa chính ghép: <code>(customerNumber, checkNumber)</code>.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong bảng `employees` của CSDL mẫu classicmodels, cột `reportsTo` thể hiện mối quan hệ nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> Khóa ngoại tự tham chiếu (Self-referencing Foreign Key) trỏ về employeeNumber của cấp trên</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> Khóa ngoại trỏ sang bảng customers</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> Khóa chính ghép</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> Cột lưu ngày sinh của nhân viên</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Bảng `orderdetails` trong classicmodels sử dụng khóa chính là gì để đảm bảo mỗi mặt hàng chỉ xuất hiện một lần trong một đơn hàng?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> Khóa ghép gồm `(orderNumber, productCode)`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> Chỉ riêng cột orderNumber</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> Chỉ riêng cột productCode</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> Cột priceEach</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Quy trình Nạp & Kiểm tra Dữ liệu Mẫu (`SOURCE`)</h2>
+        <div class="stage-desc">Import script `classicmodels.sql` và kiểm tra toàn vẹn dữ liệu</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Các bước nạp dữ liệu mẫu bằng dòng lệnh MySQL CLI:</h4>
+      <pre><code># Bước 1: Mở Command Prompt hoặc Terminal, kết nối vào MySQL
+mysql -u root -p
+
+# Bước 2: Thực thi script nạp dữ liệu bằng lệnh SOURCE (dùng dấu chéo xuôi '/')
+SOURCE E:/MinhVD/Github/DBMS/lectures/MySQL/mysql-server/mysql-sample-database/classicmodels.sql;
+
+# Bước 3: Kiểm tra database đã được tạo thành công
+SHOW DATABASES LIKE 'classicmodels';
+USE classicmodels;
+SHOW TABLES;</code></pre>
+      
+      <h4>2. Xác minh số lượng dòng dữ liệu:</h4>
+      <pre><code>-- Kiểm tra số lượng khách hàng (chuẩn là 122 dòng)
+SELECT COUNT(*) FROM customers;
+
+-- Kiểm tra số lượng đơn hàng (chuẩn là 326 dòng)
+SELECT COUNT(*) FROM orders;</code></pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong MySQL Command Line Client, lệnh nào được sử dụng để đọc và thực thi toàn bộ các câu lệnh SQL từ một file script ngoài ổ đĩa?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> `SOURCE <duong_dan_file>;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> `IMPORT <duong_dan_file>;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> `LOAD <duong_dan_file>;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> `OPEN <duong_dan_file>;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Khi truyền đường dẫn file vào lệnh `SOURCE` trên Windows, cú pháp dấu phân cách thư mục nào được khuyến nghị để tránh lỗi escape ký tự đặc biệt?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Sử dụng dấu gạch chéo xuôi `/` (Forward slash: `C:/path/file.sql`)</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Sử dụng dấu gạch ngang `-`</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Sử dụng dấu hai chấm `:`</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Sử dụng dấu sao `*`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: MySQL Storage Engines & Sample Database · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_mysql_srv_l5_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "1", explain: "Chính xác! Mệnh đề `ENGINE = ...` đặt ở cuối câu lệnh CREATE TABLE để chỉ định engine cho bảng." },
+    q1_2: { correct: "1", explain: "Chính xác! Mỗi bảng trong cùng một database có thể được cấu hình engine lưu trữ độc lập." }
+  },
+  2: {
+    q2_1: { correct: "1", explain: "Chính xác! Khóa cấp dòng (Row-level locking) chỉ khóa đúng hàng đang chỉnh sửa, tối ưu cho ứng dụng OLTP." },
+    q2_2: { correct: "0", explain: "Chính xác! MVCC (Multi-Version Concurrency Control) cung cấp bản đọc ảnh chụp nhất quán mà không chặn lệnh ghi." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! Engine MEMORY lưu toàn bộ dữ liệu trên RAM, truy xuất siêu nhanh nhưng sẽ mất khi restart server." },
+    q3_2: { correct: "0", explain: "Chính xác! Khóa cấp bảng của MyISAM khiến mọi truy vấn UPDATE/INSERT khóa toàn bộ bảng, gây tắc nghẽn nghiêm trọng." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! `reportsTo` là khóa ngoại trỏ ngược lại chính khóa chính employeeNumber của bảng employees." },
+    q4_2: { correct: "0", explain: "Chính xác! Khóa chính của orderdetails là cặp ghép (orderNumber, productCode)." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Lệnh `SOURCE` trong mysql client dùng để thực thi toàn bộ script SQL từ file đĩa." },
+    q5_2: { correct: "0", explain: "Chính xác! Dùng dấu gạch chéo xuôi `/` giúp tránh xung đột ký tự escape `\\` của đường dẫn Windows." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#00546b');
+  grad.addColorStop(1, '#082032');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#00758f');
+  topGrad.addColorStop(1, '#0f4c75');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#fef5e7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 05 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('STORAGE ENGINES & CSDL MẪU CLASSICMODELS', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Khái niệm Pluggable Storage Engine trong MySQL',
+    'Chặng 2: InnoDB Engine — Tiêu chuẩn Doanh nghiệp',
+    'Chặng 3: So sánh InnoDB, MyISAM, Memory, CSV & Tiêu chí Lựa chọn',
+    'Chặng 4: Cấu trúc CSDL Mẫu Doanh nghiệp classicmodels',
+    'Chặng 5: Quy trình Nạp & Kiểm tra Dữ liệu Mẫu (SOURCE)'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_MySQL_Server_L5_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 05: MySQL Storage Engines & CSDL Mau classicmodels",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_MySQL_Server_L5_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

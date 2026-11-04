@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 01: Tổng quan & Kiến trúc MySQL Server · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về Tổng quan và Kiến trúc MySQL Server, vai trò của tiến trình mysqld và giao diện Storage Engine.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --teal: #00758f;
+  --teal-dark: #00546b;
+  --teal-sub: #e6f4f8;
+  --orange: #f29111;
+  --orange-sub: #fef5e7;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #00546b 0%, #00758f 50%, #0f4c75 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(0, 84, 107, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus { border-color: var(--teal); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: var(--teal);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-outline {
+  border-color: var(--line);
+  background: #fff;
+  color: var(--text);
+}
+.btn-outline:hover { background: #f1f5f9; }
+.btn-orange {
+  background: var(--orange);
+  color: #fff;
+}
+.btn-orange:hover { background: #d97706; }
+main {
+  padding: 36px 0 60px;
+}
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+  position: relative;
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+}
+.stage-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 6px 0 0;
+  color: var(--text);
+}
+.stage-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--teal);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--teal-dark);
+}
+.theory-box p {
+  margin: 0 0 10px;
+}
+.theory-box p:last-child {
+  margin-bottom: 0;
+}
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.q-stem {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: all 0.15s;
+}
+.opt-label:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.opt-label.correct {
+  background: var(--green-sub);
+  border-color: #86efac;
+  color: var(--green);
+  font-weight: 600;
+}
+.opt-label.incorrect {
+  background: var(--red-sub);
+  border-color: #fca5a5;
+  color: var(--red);
+}
+.feedback-box {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  display: none;
+}
+.feedback-box.show {
+  display: block;
+}
+.feedback-box.correct {
+  background: var(--green-sub);
+  color: var(--green);
+  border: 1px solid #86efac;
+}
+.feedback-box.incorrect {
+  background: var(--red-sub);
+  color: var(--red);
+  border: 1px solid #fca5a5;
+}
+.diagram-box {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 14px 0;
+  text-align: center;
+}
+.diagram-box img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.table-custom {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.table-custom th, .table-custom td {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  text-align: left;
+}
+.table-custom th {
+  background: #f1f5f9;
+  font-weight: 700;
+  color: var(--text);
+}
+.lock-banner {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../mysql-server.html" class="nav-back">← Quay lại Trung tâm MySQL Server Hub</a>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#fed7aa;margin-bottom:8px;background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:999px;">Lesson 01 · Kiến trúc Hệ thống</div>
+    <h1>Tổng quan & Kiến trúc MySQL Server</h1>
+    <p>Khám phá kiến trúc phân tầng của MySQL Server, cơ chế xử lý truy vấn của tiến trình <code>mysqld</code>, phân biệt client/server và giao diện Pluggable Storage Engine.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">MySQL trong Hệ sinh thái RDBMS & Đặc tính Cốt lõi</h2>
+        <div class="stage-desc">Khái niệm RDBMS, mô hình Client-Server và tính tuân thủ ACID</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. MySQL là gì?</h4>
+      <p><b>MySQL</b> là một Hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở (<i>Open-source Relational Database Management System - RDBMS</i>) được bảo trợ và phát triển bởi Tập đoàn Oracle. MySQL tổ chức dữ liệu thành các bảng gồm dòng (rows) và cột (columns), sử dụng chuẩn <b>SQL (Structured Query Language)</b> để thao tác dữ liệu.</p>
+      
+      <h4>2. Các đặc tính cốt lõi của MySQL:</h4>
+      <ul>
+        <li><b>Mô hình Client-Server:</b> Máy chủ MySQL (tiến trình <code>mysqld</code>) chạy nền tập trung, phục vụ đồng thời hàng nghìn kết nối từ các client khác nhau (ứng dụng web, script, GUI tool).</li>
+        <li><b>Đa luồng (Multi-threaded):</b> Được thiết kế theo cơ chế đa luồng giúp tận dụng tối đa sức mạnh của CPU đa lõi để xử lý các truy vấn đồng thời.</li>
+        <li><b>Tuân thủ ACID:</b> Khi sử dụng storage engine mặc định (InnoDB), MySQL đảm bảo đầy đủ 4 tính chất: <i>Atomicity (Nguyên tử), Consistency (Nhất quán), Isolation (Cô lập), Durability (Bền vững)</i>.</li>
+        <li><b>Hệ thống xác thực mạnh mẽ:</b> Hỗ trợ mã hóa kết nối qua SSL/TLS và thuật toán băm mật khẩu hiện đại <code>caching_sha2_password</code>.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1 (2 câu hỏi - Yêu cầu đạt 100% để mở Chặng 2)</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong kiến trúc Client-Server của MySQL, thành phần nào đóng vai trò là tiến trình daemon máy chủ chạy ngầm để tiếp nhận kết nối và điều phối cơ sở dữ liệu?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> <code>mysql.exe</code></label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> <code>mysqld.exe</code></label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> <code>MySQL Workbench</code></label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> <code>mysqldump.exe</code></label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Để đảm bảo hệ thống cơ sở dữ liệu xử lý an toàn các giao dịch ngân hàng theo tiêu chuẩn ACID, MySQL sử dụng storage engine mặc định nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> MyISAM</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> MEMORY</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> InnoDB</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> ARCHIVE</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Kiến trúc Đa tầng của MySQL Server</h2>
+        <div class="stage-desc">Phân tích 3 tầng: Connection Layer, SQL Layer và Storage Engine Layer</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Sơ đồ Kiến trúc Đa tầng trong MySQL Server:</h4>
+      <pre><code>+-------------------------------------------------------------+
+| Tầng 1: Connection & Thread Handling (Quản lý Kết nối)      |
+| -> Xác thực (Authentication), Kiểm tra quyền, Thread Pool   |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| Tầng 2: SQL Layer (Bộ máy Xử lý SQL)                        |
+| -> Parser & Preprocessor: Phân tích cú pháp & kiểm tra bảng |
+| -> Optimizer: Bộ tối ưu hóa chọn Execution Plan tốt nhất    |
+| -> Query Execution Engine: Bộ máy thực thi lệnh             |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+| Tầng 3: Pluggable Storage Engine API                        |
+| -> Giao tiếp thống nhất với InnoDB, MyISAM, Memory, CSV...  |
++-------------------------------------------------------------+
+                              |
+                              v
+             File System / Data Directory (Đĩa cứng)</code></pre>
+      
+      <h4>Nhiệm vụ của từng tầng:</h4>
+      <ul>
+        <li><b>Tầng 1 (Connection Layer):</b> Quản lý kết nối từ client (TCP/IP port 3306 hoặc local Unix Socket/Named Pipe). Cấp phát một luồng (thread) xử lý riêng cho mỗi client và xác thực username/password.</li>
+        <li><b>Tầng 2 (SQL Layer):</b>
+          <ul>
+            <li><i>Parser (Bộ phân tích cú pháp):</i> Tạo cây cú pháp (Parse Tree) và kiểm tra lỗi chính tả SQL.</li>
+            <li><i>Preprocessor:</i> Kiểm tra sự tồn tại của database, table, cột và quyền người dùng.</li>
+            <li><i>Optimizer (Bộ tối ưu hóa):</i> Tính toán chi phí thực thi (cost-based optimizer), quyết định thứ tự JOIN và chọn Index tối ưu nhất.</li>
+          </ul>
+        </li>
+        <li><b>Tầng 3 (Storage Engine Layer):</b> Chịu trách nhiệm lưu trữ và truy xuất các dòng dữ liệu thực tế từ đĩa cứng hoặc RAM.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong kiến trúc MySQL, thành phần nào có nhiệm vụ tính toán chi phí (Cost-based) để lựa chọn chỉ mục (Index) và thứ tự JOIN các bảng hiệu quả nhất?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> SQL Parser</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> Query Optimizer</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> Connection Pool</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> Storage Engine Handler</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Việc kiểm tra cú pháp lệnh SQL (như phát hiện thiếu dấu phẩy, gõ sai từ khóa SELECT) được thực hiện ở tầng nào của MySQL?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Tầng Storage Engine</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Tầng File System</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Tầng SQL Layer (bởi SQL Parser)</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Tầng Hệ điều hành</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Tiến trình máy chủ `mysqld` & Vòng đời Xử lý Query</h2>
+        <div class="stage-desc">Quy trình từ lúc Client gửi gói tin đến khi nhận Result Set</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Vòng đời hoàn chỉnh của một truy vấn SQL:</h4>
+      <ol>
+        <li><b>Client gửi truy vấn:</b> Ứng dụng gửi câu lệnh SQL qua giao thức mạng MySQL Protocol (mặc định port 3306).</li>
+        <li><b>Kiểm tra kết nối & quyền:</b> Luồng phục vụ (thread) của connection đó tiếp nhận gói tin và xác thực quyền SELECT/UPDATE trên đối tượng.</li>
+        <li><b>Phân tích & Tối ưu:</b> Bộ Parser tạo cây cú pháp, Optimizer xây dựng kế hoạch thực thi (Execution Plan).</li>
+        <li><b>Gọi Storage Engine:</b> Execution engine gọi các hàm trừu tượng trong Storage Engine API (ví dụ: <code>rnd_next()</code>, <code>index_read()</code>).</li>
+        <li><b>Truy xuất dữ liệu đĩa/RAM:</b> Storage Engine (ví dụ InnoDB) đọc trang dữ liệu (Data Pages) từ <b>Buffer Pool</b> trong RAM; nếu chưa có trong RAM, nạp từ đĩa cứng xuống.</li>
+        <li><b>Trả kết quả:</b> Server gửi tập kết quả (Result Set) về client từng khối qua giao thức mạng.</li>
+      </ol>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Vùng nhớ RAM quan trọng bậc nhất của InnoDB dùng để lưu tạm các trang dữ liệu (data pages) và chỉ mục nhằm giảm thiểu đọc đĩa cứng được gọi là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> InnoDB Buffer Pool</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> Query Cache</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> Thread Stack</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> Redo Log File</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Khi một ứng dụng web kết nối đến MySQL Server, máy chủ phân bổ tài nguyên xử lý cho kết nối đó như thế nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> Tạo một tiến trình máy tính hoàn toàn mới (Fork Process riêng biệt)</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> Cấp phát một luồng thực thi riêng (Thread) từ Thread Pool của tiến trình mysqld</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> Bắt buộc mọi kết nối phải dùng chung một luồng tuần tự duy nhất</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> Lưu tạm kết nối vào file văn bản trên ổ đĩa</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Phân biệt `mysqld`, `mysql` CLI, và MySQL Workbench</h2>
+        <div class="stage-desc">Hiểu rõ ranh giới giữa Service Daemon, Công cụ Dòng lệnh và Giao diện Đồ họa</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Thành phần</th>
+            <th>Bản chất</th>
+            <th>Vai trò chính</th>
+            <th>Môi trường điển hình</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>mysqld</code></td>
+            <td>Daemon Process</td>
+            <td>Lắng nghe port 3306, thực thi query, bảo vệ file dữ liệu, lưu trữ đĩa</td>
+            <td>Chạy ngầm (Windows Service hoặc Linux systemd)</td>
+          </tr>
+          <tr>
+            <td><code>mysql</code></td>
+            <td>Command Line Client</td>
+            <td>Tiện ích dòng lệnh nhẹ, kết nối tới mysqld và gửi câu lệnh SQL trực tiếp</td>
+            <td>Terminal, Script bash, Remote SSH, CI/CD</td>
+          </tr>
+          <tr>
+            <td><code>MySQL Workbench</code></td>
+            <td>GUI Application</td>
+            <td>Môi trường đồ họa: thiết kế mô hình EER, viết SQL, giám sát hiệu năng</td>
+            <td>Máy tính của lập trình viên / Quản trị viên (DBA)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><b>Ghi nhớ quan trọng:</b> Client (dù là Workbench hay CLI hay ứng dụng Spring Boot / Node.js) <i>không trực tiếp chạm vào các file dữ liệu trên ổ đĩa</i>, mà luôn phải giao tiếp qua tiến trình <code>mysqld</code>.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Nhận định nào sau đây là ĐÚNG khi nói về mối quan hệ giữa MySQL Workbench và mysqld?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> MySQL Workbench là bộ máy lưu trữ dữ liệu trực tiếp thay thế cho mysqld</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> MySQL Workbench là một ứng dụng đồ họa (GUI Client) gửi truy vấn đến mysqld qua kết nối mạng</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> Khi tắt máy tính, mysqld sẽ dừng còn MySQL Workbench vẫn tự động lưu dữ liệu</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> MySQL Workbench và mysqld bắt buộc phải cài đặt trên cùng một máy tính vật lý</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Cổng mạng mặc định theo quy chuẩn quốc tế mà tiến trình MySQL Server (mysqld) lắng nghe các kết nối TCP/IP là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> 8080</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> 5432</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> 3306</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> 1433</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Giao diện Pluggable Storage Engine & Tính Độc lập Dữ liệu</h2>
+        <div class="stage-desc">Kiến trúc cắm rút Storage Engine độc đáo và lợi ích vận hành</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Kiến trúc Pluggable Storage Engine</h4>
+      <p>Điểm làm nên sự khác biệt của MySQL so với các hệ CSDL khác (như PostgreSQL, Oracle Database) là <b>kiến trúc lưu trữ dạng mô-đun cắm rút (Pluggable Storage Engine Architecture)</b>. Tầng SQL Layer hoàn toàn tách biệt với tầng lưu trữ vật lý.</p>
+      
+      <h4>2. Giao diện Handler API:</h4>
+      <ul>
+        <li>Tầng trên của MySQL giao tiếp với các engine thông qua một tập các hàm giao diện tiêu chuẩn gọi là <b>Handler API</b>.</li>
+        <li>Tất cả các engine (InnoDB, MyISAM, Memory, CSV...) đều phải hiện thực hóa (implement) các thao tác chuẩn như: <i>mở bảng, đọc dòng kế tiếp, tìm theo chỉ mục, chèn dòng mới, cập nhật dòng, xóa dòng</i>.</li>
+        <li><b>Lợi ích:</b> Người dùng có thể chọn các engine khác nhau cho từng bảng cụ thể trong cùng một cơ sở dữ liệu tùy thuộc vào đặc thù truy vấn (ví dụ: dùng <code>MEMORY</code> cho bảng session tra cứu cực nhanh, dùng <code>InnoDB</code> cho bảng giao dịch mua hàng).</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Ưu điểm lớn nhất của kiến trúc "Pluggable Storage Engine" trong MySQL là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> Tách biệt hoàn toàn tầng phân tích SQL với tầng lưu trữ, cho phép chọn engine tối ưu cho từng bảng cụ thể</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> Giúp MySQL có thể chạy mà không cần CPU hoặc RAM</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> Không cần thiết kế khóa chính và khóa ngoại trong bảng</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> Tự động viết code backend thay cho lập trình viên</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Để kiểm tra danh sách tất cả các Storage Engine đang được MySQL Server hiện tại hỗ trợ và trạng thái hoạt động của chúng, câu lệnh SQL nào được sử dụng?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> <code>SHOW DATABASES;</code></label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> <code>SHOW ENGINES;</code></label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> <code>SHOW STATUS;</code></label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> <code>SHOW PLUGINS;</code></label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: MySQL Server Architecture · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_mysql_srv_l1_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "1", explain: "Chính xác! mysqld (MySQL Daemon) là tiến trình nền máy chủ cốt lõi xử lý kết nối, phân tích SQL và quản lý dữ liệu." },
+    q1_2: { correct: "2", explain: "Chính xác! InnoDB là storage engine mặc định hỗ trợ đầy đủ giao dịch ACID, khóa cấp dòng và khóa ngoại." }
+  },
+  2: {
+    q2_1: { correct: "1", explain: "Chính xác! Query Optimizer tính toán chi phí (cost) các đường đi để chọn Execution Plan nhanh nhất." },
+    q2_2: { correct: "2", explain: "Chính xác! SQL Parser thuộc SQL Layer phân tích cú pháp câu lệnh và báo lỗi nếu sai cú pháp." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! Buffer Pool là vùng nhớ RAM chính của InnoDB đệm các khối dữ liệu và chỉ mục đọc ghi." },
+    q3_2: { correct: "1", explain: "Chính xác! MySQL gán một thread riêng cho mỗi connection từ client để phục vụ truy vấn độc lập." }
+  },
+  4: {
+    q4_1: { correct: "1", explain: "Chính xác! MySQL Workbench là client đồ họa, giao tiếp với máy chủ mysqld qua kết nối mạng chuẩn." },
+    q4_2: { correct: "2", explain: "Chính xác! Cổng mạng mặc định chuẩn của MySQL Server là 3306." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Kiến trúc Pluggable cho phép linh hoạt chỉ định engine phù hợp cho từng bảng." },
+    q5_2: { correct: "1", explain: "Chính xác! Câu lệnh `SHOW ENGINES;` hiển thị tất cả các storage engine có sẵn và trạng thái DEFAULT." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  // Restore answers
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#00546b');
+  grad.addColorStop(1, '#082032');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Inner card
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  // Header band
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#00758f');
+  topGrad.addColorStop(1, '#0f4c75');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  // Header text
+  ctx.fillStyle = '#fef5e7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 01 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('TỔNG QUAN & KIẾN TRÚC MYSQL SERVER', 65, 105);
+
+  // Student Info
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  // Divider
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  // Stage list
+  const stages = [
+    'Chặng 1: MySQL trong Hệ sinh thái RDBMS & Đặc tính Cốt lõi',
+    'Chặng 2: Kiến trúc Đa tầng của MySQL Server',
+    'Chặng 3: Tiến trình mysqld & Vòng đời Xử lý Query',
+    'Chặng 4: Phân biệt mysqld, mysql CLI và MySQL Workbench',
+    'Chặng 5: Pluggable Storage Engine & Tính Độc lập Dữ liệu'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  // Score summary Box
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_MySQL_Server_L1_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 01: Tong quan & Kien truc MySQL Server",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_MySQL_Server_L1_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

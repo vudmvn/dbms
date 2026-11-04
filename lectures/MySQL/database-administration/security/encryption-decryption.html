@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 05: An toàn Dữ liệu & Các hàm Mã hóa trong MySQL · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về Encoding (HEX, BASE64), Hashing (MD5, SHA2), Mã hóa đối xứng AES và lưu trữ mật khẩu chuẩn OWASP.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-dark: #1e3a8a;
+  --blue-sub: #eff6ff;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus { border-color: var(--blue); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--blue-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:gap:10px;margin-bottom:8px">
+      <a href="../database-administration.html" class="nav-back" style="margin-bottom:0">← Quay lại Trung tâm Database Administration Hub</a>
+      <a href="security-encryption-sql-lab.html" class="btn btn-outline" style="background:rgba(255,255,255,0.18);color:#fff;border-color:rgba(255,255,255,0.35);font-weight:700">💻 Làm Bài tập SQL Tự chấm (16 bài) →</a>
+    </div>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#93c5fd;margin-bottom:8px;background:rgba(255,255,255,0.12);padding:4px 10px;border-radius:999px;">Lesson 05 · Bảo mật & Mã hóa</div>
+    <h1>An toàn Dữ liệu & Các hàm Mã hóa trong MySQL</h1>
+    <p>Phân biệt ba trụ cột Encoding, Hashing và Encryption; thực hành các hàm HEX, BASE64, SHA2, thuật toán đối xứng AES và tuân thủ khuyến nghị lưu trữ mật khẩu của OWASP.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Ba Trụ cột: Encoding, Hashing và Encryption</h2>
+        <div class="stage-desc">Hiểu rõ mục đích, tính khả nghịch và phân biệt ranh giới bảo mật</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>1. Encoding (Mã hóa biểu diễn)</th>
+            <th>2. Hashing (Băm một chiều)</th>
+            <th>3. Encryption (Mã hóa bảo mật)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Mục tiêu</b></td>
+            <td>Chuyển đổi dữ liệu nhị phân sang định dạng text an toàn để truyền mạng</td>
+            <td>Kiểm tra tính toàn vẹn (Integrity), tạo chữ ký số (Checksum)</td>
+            <td>Bảo mật dữ liệu nhạy cảm (Confidentiality)</td>
+          </tr>
+          <tr>
+            <td><b>Có thể giải mã?</b></td>
+            <td><b>CÓ</b> — Không cần mật khẩu hay khóa bí mật</td>
+            <td><b>KHÔNG</b> — Hàm toán học 1 chiều (One-way function)</td>
+            <td><b>CÓ</b> — Bắt buộc phải có đúng Khóa bí mật (Secret Key)</td>
+          </tr>
+          <tr>
+            <td><b>Hàm trong MySQL</b></td>
+            <td><code>HEX</code>, <code>UNHEX</code>, <code>TO_BASE64</code>, <code>FROM_BASE64</code></td>
+            <td><code>MD5</code>, <code>SHA1</code>, <code>SHA2</code></td>
+            <td><code>AES_ENCRYPT</code>, <code>AES_DECRYPT</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p><b>Cảnh báo quan trọng:</b> <i>Encoding (như Base64) hoàn toàn KHÔNG PHẢI là bảo mật! Bất kỳ ai cũng có thể giải mã Base64 tức thì.</i></p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Kỹ thuật nào sau đây là phép biến đổi toán học một chiều (One-way), KHÔNG THỂ giải mã ngược lại để lấy dữ liệu gốc?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Hashing (Hàm băm dữ liệu)</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> Base64 Encoding</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> Mã hóa AES (AES Encryption)</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Hexadecimal Encoding</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Khẳng định nào sau đây là ĐÚNG về kỹ thuật mã hóa biểu diễn Base64?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> Base64 chỉ là hình thức chuyển đổi biểu diễn dữ liệu sang dạng text, bất kỳ ai cũng có thể decode được mà không cần secret key</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> Base64 là thuật toán mã hóa tối tân nhất của NSA</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> Base64 giúp nén dung lượng dữ liệu giảm đi một nửa</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> Dùng Base64 là đủ để bảo vệ số thẻ tín dụng</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Các hàm Biểu diễn Dữ liệu: `HEX`, `UNHEX`, `BASE64`</h2>
+        <div class="stage-desc">Chuyển đổi nhị phân sang ký tự đọc được và giải mã ngược lại</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Các hàm chuyển đổi Hexadecimal:</h4>
+      <pre><code>-- Chuyển text sang chuỗi Hex:
+SELECT HEX('MySQL'); -- Trả về '4D7953514C'
+
+-- Khôi phục từ Hex về chuỗi gốc:
+SELECT UNHEX('4D7953514C'); -- Trả về 'MySQL'</code></pre>
+
+      <h4>2. Các hàm chuyển đổi Base64:</h4>
+      <pre><code>-- Mã hóa Base64:
+SELECT TO_BASE64('Database Management'); -- Trả về 'RGF0YWJhc2UgTWFuYWdlbWVudA=='
+
+-- Giải mã Base64:
+SELECT CONVERT(FROM_BASE64('RGF0YWJhc2UgTWFuYWdlbWVudA==') USING utf8mb4);</code></pre>
+      <p><i>Ứng dụng thực tế:</i> Dữ liệu sau khi mã hóa AES là nhị phân (binary data). Việc bọc hàm <code>HEX()</code> hoặc <code>TO_BASE64()</code> giúp hiển thị an toàn trên terminal hoặc nhúng vào chuỗi JSON/REST API mà không bị lỗi ký tự điều khiển.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong MySQL, cặp hàm nào được sử dụng để chuyển đổi một chuỗi nhị phân sang định dạng Base64 và ngược lại?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> `TO_BASE64()` và `FROM_BASE64()`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> `ENCODE_BASE64()` và `DECODE_BASE64()`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> `B64_IN()` và `B64_OUT()`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> `BASE64_MAKE()` và `BASE64_OPEN()`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Vì sao khi lưu trữ hoặc truyền tải kết quả mã hóa từ hàm `AES_ENCRYPT()`, lập trình viên thường bọc thêm hàm `HEX()` hoặc `TO_BASE64()` bên ngoài?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Vì đầu ra của AES là dữ liệu nhị phân (raw binary), bọc HEX/BASE64 giúp biến nó thành chuỗi ký tự ASCII an toàn cho JSON và database</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Để tăng gấp đôi độ bảo mật của thuật toán</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Vì nếu không bọc HEX thì máy tính sẽ bị quá tải nhiệt</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> Để đổi ngôn ngữ sang tiếng Anh</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Các hàm Băm Kiểm tra Toàn vẹn: `MD5`, `SHA1`, `SHA2`</h2>
+        <div class="stage-desc">Chuẩn SHA-256 của NIST, nguy cơ va chạm MD5 và ứng dụng kiểm tra Checksum</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Các hàm băm phổ biến trong MySQL:</h4>
+      <ul>
+        <li><code>MD5('str')</code>: Trả về chuỗi băm 128-bit (32 ký tự hex). <i>Đã lỗi thời, không an toàn do dễ va chạm (collision attack).</i></li>
+        <li><code>SHA1('str')</code>: Trả về chuỗi băm 160-bit (40 ký tự hex). <i>Không khuyến nghị cho bảo mật mới.</i></li>
+        <li><code>SHA2(str, hash_length)</code>: Chuẩn an toàn hiện đại (SHA-2 do NIST phê chuẩn). Hỗ trợ độ dài: <code>224</code>, <code>256</code>, <code>384</code>, <code>512</code>.
+          <pre><code>SELECT SHA2('Contract_V1.pdf', 256);</code></pre>
+        </li>
+      </ul>
+
+      <h4>2. Ứng dụng của Hashing:</h4>
+      <p>Tạo mã kiểm tra toàn vẹn (Checksum). Nếu nội dung tài liệu bị sửa đổi dù chỉ 1 ký tự, giá trị băm SHA-256 sẽ thay đổi hoàn toàn (hiệu ứng tuyết lở - Avalanche Effect).</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Cú pháp nào sau đây trong MySQL tính toán giá trị băm an toàn theo chuẩn SHA-256 (cho ra chuỗi 64 ký tự hex) của chuỗi 'secret_doc'?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> `SELECT SHA2('secret_doc', 256);`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> `SELECT SHA256('secret_doc');`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> `SELECT HASH('secret_doc', 'SHA256');`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> `SELECT MD5_256('secret_doc');`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Vì sao các tổ chức bảo mật quốc tế khuyến nghị KHÔNG NÊN tiếp tục dùng thuật toán MD5 trong các ứng dụng bảo mật mới?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> Vì MD5 đã bị chứng minh là dễ bị tấn công va chạm (Collision attack), kẻ xấu có thể tạo ra 2 file khác nhau có cùng mã hash</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> Vì MD5 chỉ chạy được trên hệ điều hành 32-bit</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> Vì MD5 bắt buộc phải kết nối Internet mới tạo được hash</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> Vì hàm MD5 chỉ hỗ trợ tối đa 5 ký tự</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Mã hóa & Giải mã Hai chiều với `AES_ENCRYPT` / `AES_DECRYPT`</h2>
+        <div class="stage-desc">Thuật toán đối xứng AES, kiểu dữ liệu VARBINARY/BLOB và kết quả NULL khi sai key</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cú pháp mã hóa và giải mã AES:</h4>
+      <pre><code>-- 1. Mã hóa chuỗi với khóa bí mật:
+SET @key = 'MySecretEncryptionKey@2026';
+SET @ciphertext = AES_ENCRYPT('So_The_Tin_Dung_1234', @key);
+
+-- 2. Giải mã đúng khóa:
+SELECT CAST(AES_DECRYPT(@ciphertext, @key) AS CHAR) AS decrypted_val;
+
+-- 3. Giải mã khi đưa SAI khóa:
+SELECT AES_DECRYPT(@ciphertext, 'WrongKey123'); -- Trả về NULL!</code></pre>
+
+      <h4>2. Lưu ý về kiểu dữ liệu lưu trữ cột:</h4>
+      <p>Vì đầu ra của <code>AES_ENCRYPT</code> là chuỗi nhị phân thuần túy, cột lưu trữ trong bảng bắt buộc phải có kiểu <b><code>VARBINARY</code></b> hoặc <b><code>BLOB</code></b>. Nếu cố tình lưu vào cột <code>VARCHAR</code> thông thường có thể làm hỏng ciphertext do các quy tắc chuyển đổi ký tự (charset collation).</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi thực thi câu lệnh `AES_DECRYPT(cipher_data, key)` với một khóa giải mã KHÔNG CHÍNH XÁC, MySQL sẽ trả về kết quả gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `NULL`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> Báo lỗi Fatal Error và ngắt server</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> Trả về chuỗi rỗng `""`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> Tự động khóa bảng lại</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Để lưu trữ dữ liệu mã hóa nhị phân sinh ra từ hàm `AES_ENCRYPT` một cách toàn vẹn không bị lỗi charset, cột trong bảng nên được khai báo kiểu dữ liệu nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> `VARBINARY` hoặc `BLOB`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> `VARCHAR(100)`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> `TEXT`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> `CHAR(50)`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Quản lý Khóa Bí mật & Hướng dẫn Lưu Mật khẩu OWASP</h2>
+        <div class="stage-desc">Nguy cơ lộ key trong query log và khuyến nghị sử dụng Argon2id / bcrypt</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Nguy cơ khi viết cứng Secret Key trong SQL:</h4>
+      <p>Nếu bạn viết: <code>AES_ENCRYPT(card_num, 'pass123')</code>, khóa <code>'pass123'</code> sẽ bị ghi lại dưới dạng văn bản rõ trong <b>General Query Log</b>, <b>Slow Query Log</b> và có thể bị nhìn thấy trong lệnh <code>SHOW PROCESSLIST</code>.</p>
+      <p><i>Giải pháp:</i> Thực hiện mã hóa/giải mã ở tầng ứng dụng (Application Layer - Backend Service), hoặc truyền key an toàn qua biến môi trường (Environment Variables) bảo mật.</p>
+
+      <h4>2. Tiêu chuẩn lưu mật khẩu người dùng theo OWASP:</h4>
+      <ul>
+        <li><b>TUYỆT ĐỐI KHÔNG:</b> Dùng MD5, SHA-1, SHA-256 hoặc AES để lưu mật khẩu tài khoản người dùng!</li>
+        <li><b>Lý do:</b> Thuật toán SHA-256 tính toán quá nhanh (hàng tỷ hash/giây trên GPU), khiến hacker dễ dàng crack bằng từ điển hoặc bảng cầu vồng (Rainbow Table).</li>
+        <li><b>Khuyến nghị chính thức của OWASP:</b> Luôn sử dụng các thuật toán <i>Password-Hashing thích ứng chậm (Slow adaptive hashing with Salt)</i> như: <b>Argon2id</b>, <b>bcrypt</b>, hoặc <b>PBKDF2</b> tại tầng backend của ứng dụng.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Theo khuyến nghị an toàn thông tin của tổ chức OWASP, phương pháp nào sau đây là chuẩn mực và an toàn nhất để lưu trữ mật khẩu đăng nhập người dùng?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> Sử dụng thuật toán băm chậm có Salt như Argon2id hoặc bcrypt ở tầng ứng dụng Backend</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> Lưu thẳng bằng hàm MD5() trong database</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> Dùng hàm TO_BASE64() để che giấu</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> Lưu mật khẩu dưới dạng văn bản thuần (Plaintext)</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Rủi ro bảo mật lớn nhất khi lập trình viên viết cứng (hard-code) khóa bí mật giải mã trực tiếp trong câu lệnh SQL gửi lên database là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Khóa bí mật có thể bị lộ trong các file MySQL Query Log, Error Log và danh sách tiến trình SHOW PROCESSLIST</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Làm cho câu lệnh SELECT chạy chậm hơn</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Gây cháy card mạng</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Bắt buộc phải restart lại máy chủ</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: Data Security, Hashing & Encryption · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_dba_l5_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "0", explain: "Chính xác! Hàm băm (Hashing) là hàm một chiều, không thể dịch ngược để lấy dữ liệu gốc." },
+    q1_2: { correct: "0", explain: "Chính xác! Base64 là kỹ thuật encoding biểu diễn text, không yêu cầu khóa bí mật để giải mã." }
+  },
+  2: {
+    q2_1: { correct: "0", explain: "Chính xác! Cặp hàm `TO_BASE64` và `FROM_BASE64` là các hàm chuẩn trong MySQL." },
+    q2_2: { correct: "0", explain: "Chính xác! Đầu ra nhị phân thô của AES được bọc HEX/BASE64 để truyền tải và lưu trữ an toàn." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! Hàm `SHA2(str, 256)` tạo chuỗi băm an toàn 256-bit chuẩn của NIST." },
+    q3_2: { correct: "0", explain: "Chính xác! MD5 dễ bị tấn công va chạm (Collision attack), không còn an toàn cho chữ ký số." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! Nếu sai khóa giải mã hoặc dữ liệu bị hỏng, AES_DECRYPT trả về NULL." },
+    q4_2: { correct: "0", explain: "Chính xác! Kiểu VARBINARY hoặc BLOB đảm bảo lưu đúng từng byte nhị phân mà không bị biến dạng bởi charset." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! OWASP khuyến nghị các thuật toán băm chậm có Salt như Argon2id, bcrypt hoặc PBKDF2." },
+    q5_2: { correct: "0", explain: "Chính xác! Hard-code key trong câu lệnh SQL khiến key lưu trữ lộ liễu trong log hệ thống và processlist." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0f172a');
+  grad.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#1e3a8a');
+  topGrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 05 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('AN TOÀN DỮ LIỆU & CÁC HÀM MÃ HÓA MYSQL', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Ba Trụ cột: Encoding, Hashing và Encryption',
+    'Chặng 2: Các hàm Biểu diễn Dữ liệu: HEX, BASE64',
+    'Chặng 3: Các hàm Băm Kiểm tra Toàn vẹn: MD5, SHA2',
+    'Chặng 4: Mã hóa Đối xứng AES_ENCRYPT / AES_DECRYPT',
+    'Chặng 5: Quản lý Khóa & Hướng dẫn Mật khẩu OWASP'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_DBA_L5_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 05: An toan Du lieu & Cac ham Ma hoa trong MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_DBA_L5_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

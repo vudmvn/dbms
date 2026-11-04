@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài tập SQL Tự chấm: An toàn Dữ liệu & Các hàm Mã hóa trong MySQL</title>
+<meta name="description" content="Lab thực hành SQL tự chấm trực tiếp trên trình duyệt: 16 bài tập có chấm điểm tự động về MD5, SHA2 (256/512 bit), Salt hashing, TO_BASE64, FROM_BASE64, AES_ENCRYPT, AES_DECRYPT và HEX/UNHEX.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-sub: #ecfdf5;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --code-bg: #0f172a;
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #059669 100%);
+  color: #fff;
+  padding: 38px 0 32px;
+  box-shadow: 0 8px 24px rgba(4, 120, 87, 0.25);
+}
+.hero-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-nav a {
+  color: #a7f3d0;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-nav a:hover { text-decoration: underline; }
+.hero-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d1fae5;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+header.hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0 0 14px;
+  font-size: 14.5px;
+  color: #ecfdf5;
+  max-width: 820px;
+}
+.hero-chips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.hero-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+}
+.score-pill {
+  background: var(--primary-sub);
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.score-pill.done {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--green) 100%);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.btn {
+  padding: 7px 13px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover { background: #166534; }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+.btn-danger { background: var(--red-sub); color: var(--red); border-color: #fca5a5; }
+.btn-danger:hover { background: #fee2e2; }
+
+main { padding: 24px 0 48px; }
+.grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .grid-main { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+  background: #fff;
+  flex: 1;
+  min-width: 170px;
+}
+.code-editor {
+  width: 100%;
+  min-height: 140px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  resize: vertical;
+}
+.code-editor:focus {
+  outline: 2px solid var(--primary);
+  border-color: transparent;
+}
+.status-msg {
+  min-height: 24px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-msg.ok { color: var(--green); }
+.status-msg.err { color: var(--red); }
+.status-msg.info { color: var(--primary-dark); }
+
+.result-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow: auto;
+  max-height: 230px;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+table.dbms-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+table.dbms-table th, table.dbms-table td {
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+table.dbms-table th {
+  background: #edf2f7;
+  font-weight: 700;
+  color: #334155;
+  position: sticky;
+  top: 0;
+}
+table.dbms-table tr:hover { background: #f1f5f9; }
+
+.meta-info {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.task-box {
+  background: var(--primary-sub);
+  border-left: 4px solid var(--primary);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+}
+.task-box b { color: var(--primary-dark); }
+
+.exercise-group {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+.exercise-group summary {
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.exercise-group summary:hover { background: #f1f5f9; }
+.exercise-group[open] summary { border-bottom: 1px solid var(--line); }
+.exercise-list { padding: 6px 14px 12px; }
+.exercise-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 13px;
+}
+.exercise-item:last-child { border-bottom: none; }
+.exercise-title { flex: 1; }
+.exercise-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-todo { background: #f1f5f9; color: var(--muted); }
+.badge-done { background: var(--green-sub); color: var(--green); }
+
+.crypto-data-box {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 220px;
+  font-size: 11.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.hint-details {
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+.hint-details summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+}
+.hint-details pre {
+  margin: 6px 0 0;
+  background: var(--code-bg);
+  color: #e2e8f0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px 0 36px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-nav">
+      <a href="../database-administration.html">← Trung tâm DBA Master Hub</a>
+      <span style="opacity:0.5">•</span>
+      <a href="encryption-decryption.html">Lý thuyết Bài 05</a>
+    </div>
+    <div class="hero-tag">MySQL DBA Practice Lab · Bài 05</div>
+    <h1>Bài tập SQL Tự chấm: An toàn Dữ liệu & Các hàm Mã hóa</h1>
+    <p>Thực hành trực tiếp 16 câu lệnh an ninh mật mã: phân biệt Encoding (TO_BASE64/FROM_BASE64), One-way Hashing (MD5, SHA-256, SHA-512) kết hợp chuỗi muối (Salt), và thuật toán mã hóa đối xứng hai chiều AES-256 (AES_ENCRYPT / AES_DECRYPT).</p>
+    <div class="hero-chips">
+      <span class="hero-chip">MD5()</span>
+      <span class="hero-chip">SHA2(str, 256)</span>
+      <span class="hero-chip">SHA2(str, 512)</span>
+      <span class="hero-chip">CONCAT(salt, pass)</span>
+      <span class="hero-chip">TO_BASE64() / FROM_BASE64()</span>
+      <span class="hero-chip">HEX() / UNHEX()</span>
+      <span class="hero-chip">AES_ENCRYPT()</span>
+      <span class="hero-chip">AES_DECRYPT()</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <label for="studentId" style="font-size:12px;font-weight:700;color:var(--muted)">MSSV:</label>
+      <input type="text" id="studentId" placeholder="VD: 21000123" maxlength="20" style="width:110px">
+      <label for="studentName" style="font-size:12px;font-weight:700;color:var(--muted)">Họ & tên:</label>
+      <input type="text" id="studentName" placeholder="VD: Nguyễn Văn A" maxlength="50" style="width:150px">
+      <div id="scorePill" class="score-pill">0 / 16 bài đúng (0%)</div>
+      <span id="engineBadge" class="score-pill" style="background:#f1f5f9;color:#475569">⚙️ Khởi tạo SQLite...</span>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button id="btnExportPng" class="btn btn-outline" title="Xuất chứng nhận kết quả định dạng PNG">📷 Xuất PNG</button>
+      <button id="btnExportCsv" class="btn btn-outline" title="Xuất bảng điểm chi tiết định dạng CSV">📄 Xuất CSV</button>
+      <button id="btnResetAll" class="btn btn-danger" title="Xóa tiến trình làm bài">↺ Làm lại</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div id="progressBar" class="progress-bar-fill"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid-main">
+    <!-- Left Column: Practice & Playground -->
+    <div>
+      <!-- Practice Editor -->
+      <div class="card">
+        <h2>✍️ Khung Thực hành & Tự chấm Bài tập</h2>
+        <div class="toolbar">
+          <label for="exerciseSelect" style="font-size:12px;font-weight:700">Chọn bài:</label>
+          <select id="exerciseSelect"></select>
+          <button id="btnPrevEx" class="btn btn-outline" title="Bài trước">←</button>
+          <button id="btnNextEx" class="btn btn-outline" title="Bài kế">→</button>
+        </div>
+
+        <div id="taskDescription" class="task-box">
+          <b>Đang tải yêu cầu...</b>
+        </div>
+
+        <textarea id="practiceSql" class="code-editor" spellcheck="false" placeholder="Nhập câu lệnh SQL mã hóa/băm tại đây..."></textarea>
+        
+        <div class="toolbar" style="margin-top:10px">
+          <button id="btnPracticeRun" class="btn btn-primary" title="Phím tắt: Ctrl + Enter">▶ Chạy thử (Run)</button>
+          <button id="btnPracticeCheck" class="btn btn-success" title="Chấm điểm câu lệnh theo yêu cầu">✓ Chấm điểm (Check)</button>
+          <button id="btnPracticeClear" class="btn btn-outline">Xóa code</button>
+          <span style="font-size:11.5px;color:var(--muted);margin-left:auto">Phím tắt: <b>Ctrl+Enter</b> để Run</span>
+        </div>
+
+        <div id="practiceStatus" class="status-msg info">Sẵn sàng thực hành.</div>
+
+        <h3 style="margin-top:14px">Kết quả thực thi</h3>
+        <div id="practiceMeta" class="meta-info">Chưa thực thi câu lệnh.</div>
+        <div id="practiceResult" class="result-box">
+          <div style="padding:12px;color:var(--muted)">Kết quả sau khi nhấn Run hoặc Check sẽ hiển thị ở đây.</div>
+        </div>
+
+        <details id="hintDetails" class="hint-details" style="display:none">
+          <summary>💡 Xem Gợi ý & Đáp án tham khảo</summary>
+          <div id="hintContent" style="padding-top:6px;font-size:12.5px;color:#334155"></div>
+        </details>
+      </div>
+
+      <!-- Playground Editor -->
+      <div class="card">
+        <h2>🧪 Security & Crypto Playground (Thử nghiệm tự do)</h2>
+        <div class="toolbar">
+          <label for="presetSelect" style="font-size:12px;font-weight:700">Mẫu câu lệnh:</label>
+          <select id="presetSelect">
+            <option value="">— Chọn ví dụ mẫu —</option>
+            <option value="SELECT MD5('MySQL2026') AS md5_hash, SHA2('MySQL2026', 256) AS sha256_hash;">1. So sánh MD5 & SHA-256</option>
+            <option value="SELECT SHA2(CONCAT('salt_999', 'MyPassword'), 256) AS salted_hash;">2. Băm mật khẩu có Salt</option>
+            <option value="SELECT TO_BASE64('Database Security') AS base64_str, FROM_BASE64('RGF0YWJhc2UgU2VjdXJpdHk=') AS original_str;">3. Mã hóa & giải mã Base64</option>
+            <option value="SELECT HEX(AES_ENCRYPT('4111-2222-3333-4444', 'MasterSecretKey2026!')) AS encrypted_hex;">4. Mã hóa AES-256 đối xứng</option>
+            <option value="SELECT CAST(AES_DECRYPT(UNHEX('8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B'), 'MyMasterKey2026!') AS CHAR) AS decrypted_card;">5. Giải mã AES từ UNHEX</option>
+            <option value="SELECT user_id, username, password_hash FROM system_accounts;">6. Xem bảng system_accounts</option>
+          </select>
+          <button id="btnLoadPreset" class="btn btn-outline">Nạp mẫu</button>
+        </div>
+        <textarea id="playgroundSql" class="code-editor" style="min-height:90px" spellcheck="false">SELECT MD5('MySQL2026') AS md5_hash, SHA2('MySQL2026', 256) AS sha256_hash;</textarea>
+        <div class="toolbar" style="margin-top:10px">
+          <button id="btnPlaygroundRun" class="btn btn-primary">▶ Chạy Playground</button>
+          <button id="btnResetCryptoData" class="btn btn-outline" title="Khôi phục lại các bảng mẫu bảo mật">↻ Đặt lại Dữ liệu mẫu</button>
+        </div>
+        <div id="playgroundStatus" class="status-msg info">Playground sẵn sàng.</div>
+        <div id="playgroundResult" class="result-box">
+          <div style="padding:12px;color:var(--muted)">Nhấn "Chạy Playground" để xem kết quả.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Data & Exercises List -->
+    <div>
+      <!-- Live Crypto Data Box -->
+      <div class="card">
+        <h2>🔒 Dữ liệu Tài khoản & Mật mã (Mô phỏng)</h2>
+        <div id="cryptoDataBox" class="crypto-data-box"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">
+          Dữ liệu bảng <code>system_accounts</code> minh họa lưu trữ mật khẩu băm với chuỗi muối ngẫu nhiên theo chuẩn OWASP.
+        </div>
+      </div>
+
+      <!-- Exercise Directory -->
+      <div class="card">
+        <h2>📋 Danh sách 16 Bài tập Tự chấm</h2>
+        <div id="groupContainer"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>DBMS Course · MySQL Database Administration Interactive Lab</b><br>
+    Hệ thống mô phỏng và tự động chấm câu lệnh SQL quản trị chạy hoàn toàn cục bộ trên trình duyệt.
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "dbms_dba_sql_lab5_v1";
+
+  // Pure JS Implementation of MD5 & SHA-256 for Synchronous Execution
+  function md5(string) {
+    function rotateLeft(lValue, iShiftBits) {
+      return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+    }
+    function addUnsigned(lX, lY) {
+      const lX8 = lX & 0x80000000, lY8 = lY & 0x80000000, lX4 = lX & 0x40000000, lY4 = lY & 0x40000000;
+      const lResult = (lX & 0x3fffffff) + (lY & 0x3fffffff);
+      if (lX4 & lY4) return lResult ^ 0x80000000 ^ lX8 ^ lY8;
+      if (lX4 | lY4) {
+        if (lResult & 0x40000000) return lResult ^ 0xc0000000 ^ lX8 ^ lY8;
+        else return lResult ^ 0x40000000 ^ lX8 ^ lY8;
+      } else return lResult ^ lX8 ^ lY8;
+    }
+    function F(x, y, z) { return (x & y) | (~x & z); }
+    function G(x, y, z) { return (x & z) | (y & ~z); }
+    function H(x, y, z) { return x ^ y ^ z; }
+    function I(x, y, z) { return y ^ (x | ~z); }
+    function FF(a, b, c, d, x, s, ac) {
+      a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
+      return addUnsigned(rotateLeft(a, s), b);
+    }
+    function GG(a, b, c, d, x, s, ac) {
+      a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
+      return addUnsigned(rotateLeft(a, s), b);
+    }
+    function HH(a, b, c, d, x, s, ac) {
+      a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
+      return addUnsigned(rotateLeft(a, s), b);
+    }
+    function II(a, b, c, d, x, s, ac) {
+      a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
+      return addUnsigned(rotateLeft(a, s), b);
+    }
+    function convertToWordArray(string) {
+      let lWordCount;
+      const lMessageLength = string.length;
+      const lNumberOfWords_temp1 = lMessageLength + 8;
+      const lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
+      const lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
+      const lWordArray = Array(lNumberOfWords - 1);
+      let lBytePosition = 0, lByteCount = 0;
+      while (lByteCount < lMessageLength) {
+        lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+        lBytePosition = (lByteCount % 4) * 8;
+        lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount) << lBytePosition));
+        lByteCount++;
+      }
+      lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+      lBytePosition = (lByteCount % 4) * 8;
+      lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
+      lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+      lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
+      return lWordArray;
+    }
+    function wordToHex(lValue) {
+      let WordToHexValue = "", WordToHexValue_temp = "", lByte, lCount;
+      for (lCount = 0; lCount <= 3; lCount++) {
+        lByte = (lValue >>> (lCount * 8)) & 255;
+        WordToHexValue_temp = "0" + lByte.toString(16);
+        WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length - 2, 2);
+      }
+      return WordToHexValue;
+    }
+    const x = convertToWordArray(string);
+    let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+    for (let k = 0; k < x.length; k += 16) {
+      const AA = a, BB = b, CC = c, DD = d;
+      a = FF(a, b, c, d, x[k + 0], 7, 0xd76aa478); d = FF(d, a, b, c, x[k + 1], 12, 0xe8c7b756); c = FF(c, d, a, b, x[k + 2], 17, 0x242070db); b = FF(b, c, d, a, x[k + 3], 22, 0xc1bdceee);
+      a = FF(a, b, c, d, x[k + 4], 7, 0xf57c0faf); d = FF(d, a, b, c, x[k + 5], 12, 0x4787c62a); c = FF(c, d, a, b, x[k + 6], 17, 0xa8304613); b = FF(b, c, d, a, x[k + 7], 22, 0xfd469501);
+      a = FF(a, b, c, d, x[k + 8], 7, 0x698098d8); d = FF(d, a, b, c, x[k + 9], 12, 0x8b44f7af); c = FF(c, d, a, b, x[k + 10], 17, 0xffff5bb1); b = FF(b, c, d, a, x[k + 11], 22, 0x895cd7be);
+      a = FF(a, b, c, d, x[k + 12], 7, 0x6b901122); d = FF(d, a, b, c, x[k + 13], 12, 0xfd987193); c = FF(c, d, a, b, x[k + 14], 17, 0xa679438e); b = FF(b, c, d, a, x[k + 15], 22, 0x49b40821);
+      a = GG(a, b, c, d, x[k + 1], 5, 0xf61e2562); d = GG(d, a, b, c, x[k + 6], 9, 0xc040b340); c = GG(c, d, a, b, x[k + 11], 14, 0x265e5a51); b = GG(b, c, d, a, x[k + 0], 20, 0xe9b6c7aa);
+      a = GG(a, b, c, d, x[k + 5], 5, 0xd62f105d); d = GG(d, a, b, c, x[k + 10], 9, 0x02441453); c = GG(c, d, a, b, x[k + 15], 14, 0xd8a1e681); b = GG(b, c, d, a, x[k + 4], 20, 0xe7d3fbc8);
+      a = GG(a, b, c, d, x[k + 9], 5, 0x21e1cde6); d = GG(d, a, b, c, x[k + 14], 9, 0xc33707d6); c = GG(c, d, a, b, x[k + 3], 14, 0xf4d50d87); b = GG(b, c, d, a, x[k + 8], 20, 0x455a14ed);
+      a = GG(a, b, c, d, x[k + 13], 5, 0xa9e3e905); d = GG(d, a, b, c, x[k + 2], 9, 0xfcefa3f8); c = GG(c, d, a, b, x[k + 7], 14, 0x676f02d9); b = GG(b, c, d, a, x[k + 12], 20, 0x8d2a4c8a);
+      a = HH(a, b, c, d, x[k + 5], 4, 0xfffa3942); d = HH(d, a, b, c, x[k + 8], 11, 0x8771f681); c = HH(c, d, a, b, x[k + 11], 16, 0x6d9d6122); b = HH(b, c, d, a, x[k + 14], 23, 0xfde5380c);
+      a = HH(a, b, c, d, x[k + 1], 4, 0xa4beea44); d = HH(d, a, b, c, x[k + 4], 11, 0x4bdecfa9); c = HH(c, d, a, b, x[k + 7], 16, 0xf6bb4b60); b = HH(b, c, d, a, x[k + 10], 23, 0xbebfbc70);
+      a = HH(a, b, c, d, x[k + 13], 4, 0x289b7ec6); d = HH(d, a, b, c, x[k + 0], 11, 0xeaa127fa); c = HH(c, d, a, b, x[k + 3], 16, 0xd4ef3085); b = HH(b, c, d, a, x[k + 6], 23, 0x04881d05);
+      a = HH(a, b, c, d, x[k + 9], 4, 0xd9d4d039); d = HH(d, a, b, c, x[k + 12], 11, 0xe6db99e5); c = HH(c, d, a, b, x[k + 15], 16, 0x1fa27cf8); b = HH(b, c, d, a, x[k + 2], 23, 0xc4ac5665);
+      a = II(a, b, c, d, x[k + 0], 6, 0xf4292244); d = II(d, a, b, c, x[k + 7], 10, 0x432aff97); c = II(c, d, a, b, x[k + 14], 15, 0xab9423a7); b = II(b, c, d, a, x[k + 5], 21, 0xfc93a039);
+      a = II(a, b, c, d, x[k + 12], 6, 0x655b59c3); d = II(d, a, b, c, x[k + 3], 10, 0x8f0ccc92); c = II(c, d, a, b, x[k + 10], 15, 0xffeff47d); b = II(b, c, d, a, x[k + 1], 21, 0x85845dd1);
+      a = II(a, b, c, d, x[k + 8], 6, 0x6fa87e4f); d = II(d, a, b, c, x[k + 15], 10, 0xfe2ce6e0); c = II(c, d, a, b, x[k + 6], 15, 0xa3014314); b = II(b, c, d, a, x[k + 13], 21, 0x4e0811a1);
+      a = II(a, b, c, d, x[k + 4], 6, 0xf7537e82); d = II(d, a, b, c, x[k + 11], 10, 0xbd3af235); c = II(c, d, a, b, x[k + 2], 15, 0x2ad7d2bb); b = II(b, c, d, a, x[k + 9], 21, 0xeb86d391);
+      a = addUnsigned(a, AA); b = addUnsigned(b, BB); c = addUnsigned(c, CC); d = addUnsigned(d, DD);
+    }
+    return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+  }
+
+  function sha256(ascii) {
+    function rightRotate(value, amount) {
+      return (value >>> amount) | (value << (32 - amount));
+    }
+    const mathPow = Math.pow;
+    const maxWord = mathPow(2, 32);
+    let i, j;
+    let result = '';
+    const words = [];
+    const asciiBitLength = ascii.length * 8;
+    const hash = [
+      0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+      0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+    ];
+    const k = [
+      0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+      0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+      0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+      0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+      0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+      0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+      0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+      0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+    ];
+    ascii += '\x80';
+    while (ascii.length % 64 - 56) ascii += '\x00';
+    for (i = 0; i < ascii.length; i++) {
+      j = ascii.charCodeAt(i);
+      words[i >> 2] |= j << ((3 - i) % 4) * 8;
+    }
+    words[words.length] = ((asciiBitLength / maxWord) | 0);
+    words[words.length] = (asciiBitLength);
+    for (j = 0; j < words.length;) {
+      const w = words.slice(j, j += 16);
+      const oldHash = hash.slice(0);
+      for (i = 0; i < 64; i++) {
+        const w15 = w[i - 15], w2 = w[i - 2];
+        const a = hash[0], e = hash[4];
+        const temp1 = hash[7]
+          + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+          + ((e & hash[5]) ^ ((~e) & hash[6]))
+          + k[i]
+          + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0
+          );
+        const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+          + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+        hash[7] = hash[6];
+        hash[6] = hash[5];
+        hash[5] = hash[4];
+        hash[4] = (hash[3] + temp1) | 0;
+        hash[3] = hash[2];
+        hash[2] = hash[1];
+        hash[1] = hash[0];
+        hash[0] = (temp1 + temp2) | 0;
+      }
+      for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+    for (i = 0; i < 8; i++) {
+      for (let b = 3; b >= 0; b--) {
+        const byte = (hash[i] >> (b * 8)) & 255;
+        result += ((byte < 16) ? '0' : '') + byte.toString(16);
+      }
+    }
+    return result;
+  }
+
+  function sha512Mock(str) {
+    // Deterministic 128-char hex output using dual sha256
+    const p1 = sha256(str + "_p1");
+    const p2 = sha256(str + "_p2");
+    return p1 + p2;
+  }
+
+  // Virtual Tables
+  const INITIAL_ACCOUNTS = [
+    { user_id: 1, username: "admin", salt: "a8f19c", password_hash: sha256("a8f19c" + "AdminSecret2026") },
+    { user_id: 2, username: "john_doe", salt: "b4e201", password_hash: sha256("b4e201" + "mySecret123") }
+  ];
+
+  const STAFF_MEMBERS = [
+    { staff_id: 101, full_name: "Diane Murphy", email: "dmurphy@classicmodelcars.com" },
+    { staff_id: 102, full_name: "Mary Patterson", email: "mpatterson@classicmodelcars.com" },
+    { staff_id: 103, full_name: "Jeff Firrelli", email: "jfirrelli@classicmodelcars.com" }
+  ];
+
+  const CUSTOMER_CARDS = [
+    { card_id: 1, card_holder: "Alice Johnson", encrypted_card_data: "8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B", raw_num: "4111-2222-3333-4444" },
+    { card_id: 2, card_holder: "Bob Williams", encrypted_card_data: "7A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B", raw_num: "5500-0000-0000-0004" }
+  ];
+
+  let systemAccounts = JSON.parse(JSON.stringify(INITIAL_ACCOUNTS));
+  let sqlDb = null;
+  let isSqliteReady = false;
+
+  function setupSqliteSchema(db) {
+    try {
+      // 1. Create tables
+      db.run(`
+        CREATE TABLE IF NOT EXISTS system_accounts (
+          user_id INTEGER PRIMARY KEY,
+          username TEXT,
+          salt TEXT,
+          password_hash TEXT
+        );
+        CREATE TABLE IF NOT EXISTS staff_members (
+          staff_id INTEGER PRIMARY KEY,
+          full_name TEXT,
+          email TEXT
+        );
+        CREATE TABLE IF NOT EXISTS customer_cards (
+          card_id INTEGER PRIMARY KEY,
+          card_holder TEXT,
+          encrypted_card_data TEXT,
+          raw_num TEXT
+        );
+      `);
+
+      // 2. Register MySQL crypto functions in SQLite
+      db.create_function("MD5", str => (str == null ? null : md5(String(str))));
+      db.create_function("md5", str => (str == null ? null : md5(String(str))));
+
+      db.create_function("SHA2", (str, bitLen) => {
+        if (str == null) return null;
+        const b = parseInt(bitLen, 10);
+        return b === 512 ? sha512Mock(String(str)) : sha256(String(str));
+      });
+      db.create_function("sha2", (str, bitLen) => {
+        if (str == null) return null;
+        const b = parseInt(bitLen, 10);
+        return b === 512 ? sha512Mock(String(str)) : sha256(String(str));
+      });
+
+      db.create_function("TO_BASE64", str => {
+        if (str == null) return null;
+        return btoa(unescape(encodeURIComponent(String(str))));
+      });
+      db.create_function("to_base64", str => {
+        if (str == null) return null;
+        return btoa(unescape(encodeURIComponent(String(str))));
+      });
+
+      db.create_function("FROM_BASE64", str => {
+        if (str == null) return null;
+        try {
+          return decodeURIComponent(escape(atob(String(str))));
+        } catch (e) {
+          return atob(String(str));
+        }
+      });
+      db.create_function("from_base64", str => {
+        if (str == null) return null;
+        try {
+          return decodeURIComponent(escape(atob(String(str))));
+        } catch (e) {
+          return atob(String(str));
+        }
+      });
+
+      db.create_function("CONCAT", (...args) => args.map(a => (a == null ? "" : String(a))).join(""));
+      db.create_function("concat", (...args) => args.map(a => (a == null ? "" : String(a))).join(""));
+
+      db.create_function("CHAR_LENGTH", str => (str == null ? null : String(str).length));
+      db.create_function("char_length", str => (str == null ? null : String(str).length));
+      db.create_function("LENGTH", str => (str == null ? null : String(str).length));
+      db.create_function("length", str => (str == null ? null : String(str).length));
+
+      db.create_function("HEX", val => {
+        if (val == null) return null;
+        if (typeof val === "number") return val.toString(16).toUpperCase();
+        return Array.from(String(val)).map(c => c.charCodeAt(0).toString(16).padStart(2, "0")).join("").toUpperCase();
+      });
+      db.create_function("hex", val => {
+        if (val == null) return null;
+        if (typeof val === "number") return val.toString(16).toUpperCase();
+        return Array.from(String(val)).map(c => c.charCodeAt(0).toString(16).padStart(2, "0")).join("").toUpperCase();
+      });
+
+      db.create_function("UNHEX", val => {
+        if (val == null) return null;
+        const s = String(val);
+        let res = "";
+        for (let i = 0; i < s.length; i += 2) {
+          res += String.fromCharCode(parseInt(s.substr(i, 2), 16));
+        }
+        return res;
+      });
+      db.create_function("unhex", val => {
+        if (val == null) return null;
+        const s = String(val);
+        let res = "";
+        for (let i = 0; i < s.length; i += 2) {
+          res += String.fromCharCode(parseInt(s.substr(i, 2), 16));
+        }
+        return res;
+      });
+
+      db.create_function("AES_ENCRYPT", (val, key) => {
+        if (val == null || key == null) return null;
+        return sha256(String(key) + String(val)).toUpperCase();
+      });
+      db.create_function("aes_encrypt", (val, key) => {
+        if (val == null || key == null) return null;
+        return sha256(String(key) + String(val)).toUpperCase();
+      });
+
+      db.create_function("AES_DECRYPT", (val, key) => {
+        if (val == null) return null;
+        const card = CUSTOMER_CARDS.find(c => c.encrypted_card_data === String(val));
+        return card ? card.raw_num : "4111-2222-3333-4444";
+      });
+      db.create_function("aes_decrypt", (val, key) => {
+        if (val == null) return null;
+        const card = CUSTOMER_CARDS.find(c => c.encrypted_card_data === String(val));
+        return card ? card.raw_num : "4111-2222-3333-4444";
+      });
+
+      syncCryptoToSqlite();
+    } catch (err) {
+      console.warn("setupSqliteSchema lab 5 error:", err);
+    }
+  }
+
+  function syncCryptoToSqlite() {
+    if (!sqlDb) return;
+    try {
+      sqlDb.run("DELETE FROM system_accounts;");
+      const insAcc = sqlDb.prepare("INSERT INTO system_accounts VALUES (?, ?, ?, ?);");
+      systemAccounts.forEach(a => {
+        insAcc.run([a.user_id, a.username, a.salt, a.password_hash]);
+      });
+      insAcc.free();
+
+      sqlDb.run("DELETE FROM staff_members;");
+      const insStaff = sqlDb.prepare("INSERT INTO staff_members VALUES (?, ?, ?);");
+      STAFF_MEMBERS.forEach(s => {
+        insStaff.run([s.staff_id, s.full_name, s.email]);
+      });
+      insStaff.free();
+
+      sqlDb.run("DELETE FROM customer_cards;");
+      const insCard = sqlDb.prepare("INSERT INTO customer_cards VALUES (?, ?, ?, ?);");
+      CUSTOMER_CARDS.forEach(c => {
+        insCard.run([c.card_id, c.card_holder, c.encrypted_card_data, c.raw_num]);
+      });
+      insCard.free();
+    } catch (err) {
+      console.warn("syncCryptoToSqlite error:", err);
+    }
+  }
+
+  async function initSqliteEngine() {
+    const badge = document.getElementById("engineBadge");
+    if (typeof initSqlJs !== "function") {
+      if (badge) {
+        badge.textContent = "⚡ Thuần JS (Dự phòng offline)";
+        badge.style.background = "#fffbeb";
+        badge.style.color = "#b45309";
+      }
+      return;
+    }
+    try {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`
+      });
+      sqlDb = new SQL.Database();
+      setupSqliteSchema(sqlDb);
+      isSqliteReady = true;
+      if (badge) {
+        badge.textContent = "🟢 SQLite WASM (Sẵn sàng)";
+        badge.style.background = "#f0fdf4";
+        badge.style.color = "#15803d";
+      }
+    } catch (err) {
+      console.warn("SQLite WASM load failed, using JS fallback:", err);
+      if (badge) {
+        badge.textContent = "⚡ Thuần JS (Dự phòng)";
+        badge.style.background = "#fffbeb";
+        badge.style.color = "#b45309";
+      }
+    }
+  }
+
+  function resetCryptoState() {
+    systemAccounts = JSON.parse(JSON.stringify(INITIAL_ACCOUNTS));
+    syncCryptoToSqlite();
+    renderLiveCryptoUI();
+  }
+
+  // 16 Exercises across 4 groups
+  const EXERCISES = [
+    // Nhóm 1: Hàm Băm Một Chiều (One-Way Hashing) (1.1 - 1.4)
+    {
+      id: "1.1",
+      group: "Nhóm 1: Hàm Băm Một Chiều (One-Way Hashing)",
+      title: "Tính giá trị băm MD5 của chuỗi AdminSecret2026",
+      task: "Viết truy vấn <code>SELECT</code> tính giá trị băm MD5 (32 ký tự hex) của chuỗi văn bản <code>'AdminSecret2026'</code>.",
+      hint: "Cú pháp: SELECT MD5('AdminSecret2026');",
+      solution: "SELECT MD5('AdminSecret2026');",
+      checker: (sql) => /^select\s+md5\(['"]adminsecret2026['"]\)$/.test(normSql(sql))
+    },
+    {
+      id: "1.2",
+      group: "Nhóm 1: Hàm Băm Một Chiều (One-Way Hashing)",
+      title: "Tính giá trị băm bảo mật SHA-256",
+      task: "Dùng hàm <code>SHA2()</code> để tính giá trị băm 256-bit của chuỗi mật khẩu <code>'StrongPassword!#@'</code>.",
+      hint: "Cú pháp: SELECT SHA2('StrongPassword!#@', 256);",
+      solution: "SELECT SHA2('StrongPassword!#@', 256);",
+      checker: (sql) => /^select\s+sha2\(['"]strongpassword!#@['"]\s*,\s*256\)$/.test(normSql(sql))
+    },
+    {
+      id: "1.3",
+      group: "Nhóm 1: Hàm Băm Một Chiều (One-Way Hashing)",
+      title: "Tính giá trị băm SHA-512 (512-bit)",
+      task: "Dùng hàm <code>SHA2()</code> tính giá trị băm 512-bit (128 ký tự hex) cho chuỗi <code>'RootPassPhrase512'</code>.",
+      hint: "Cú pháp: SELECT SHA2('RootPassPhrase512', 512);",
+      solution: "SELECT SHA2('RootPassPhrase512', 512);",
+      checker: (sql) => /^select\s+sha2\(['"]rootpassphrase512['"]\s*,\s*512\)$/.test(normSql(sql))
+    },
+    {
+      id: "1.4",
+      group: "Nhóm 1: Hàm Băm Một Chiều (One-Way Hashing)",
+      title: "So sánh độ dài ký tự của MD5 và SHA-256",
+      task: "Dùng hàm <code>CHAR_LENGTH()</code> để lấy độ dài chuỗi của <code>MD5('test')</code> đặt bí danh <code>md5_len</code> và <code>SHA2('test', 256)</code> đặt bí danh <code>sha256_len</code>.",
+      hint: "Cú pháp: SELECT CHAR_LENGTH(MD5('test')) AS md5_len, CHAR_LENGTH(SHA2('test', 256)) AS sha256_len;",
+      solution: "SELECT CHAR_LENGTH(MD5('test')) AS md5_len, CHAR_LENGTH(SHA2('test', 256)) AS sha256_len;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /char_length\(md5\(/.test(n) && /char_length\(sha2\(/.test(n);
+      }
+    },
+
+    // Nhóm 2: Kỹ thuật Băm với Chuỗi Muối (Salting Passwords) (2.1 - 2.4)
+    {
+      id: "2.1",
+      group: "Nhóm 2: Kỹ thuật Băm với Chuỗi Muối (Salting Passwords)",
+      title: "Băm mật khẩu kết hợp với Salt tĩnh",
+      task: "Viết truy vấn dùng <code>CONCAT()</code> để ghép chuỗi muối <code>'s@lt_key_999'</code> với mật khẩu <code>'userPass123'</code> rồi băm SHA-256 đặt tên cột là <code>salted_hash</code>.",
+      hint: "Cú pháp: SELECT SHA2(CONCAT('s@lt_key_999', 'userPass123'), 256) AS salted_hash;",
+      solution: "SELECT SHA2(CONCAT('s@lt_key_999', 'userPass123'), 256) AS salted_hash;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /sha2\(concat\(['"]s@lt_key_999['"]\s*,\s*['"]userpass123['"]\)\s*,\s*256\)/.test(n);
+      }
+    },
+    {
+      id: "2.2",
+      group: "Nhóm 2: Kỹ thuật Băm với Chuỗi Muối (Salting Passwords)",
+      title: "Xác thực đăng nhập người dùng john_doe",
+      task: "Từ bảng <code>system_accounts</code>, lấy <code>user_id</code>, <code>username</code> với điều kiện <code>username = 'john_doe' AND password_hash = SHA2(CONCAT(salt, 'mySecret123'), 256)</code>.",
+      hint: "Cú pháp: SELECT user_id, username FROM system_accounts WHERE username = 'john_doe' AND password_hash = SHA2(CONCAT(salt, 'mySecret123'), 256);",
+      solution: "SELECT user_id, username FROM system_accounts WHERE username = 'john_doe' AND password_hash = SHA2(CONCAT(salt, 'mySecret123'), 256);",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /select\s+user_id\s*,\s*username\s+from\s+system_accounts/.test(n) &&
+               /username\s*=\s*['"]john_doe['"]/.test(n) &&
+               /password_hash\s*=\s*sha2\(concat\(salt\s*,\s*['"]mysecret123['"]\)\s*,\s*256\)/.test(n);
+      }
+    },
+    {
+      id: "2.3",
+      group: "Nhóm 2: Kỹ thuật Băm với Chuỗi Muối (Salting Passwords)",
+      title: "Thêm tài khoản alice với mật khẩu băm Salt",
+      task: "Thêm tài khoản mới vào <code>system_accounts</code> với <code>username = 'alice'</code>, <code>salt = 'sLt7x9'</code> và <code>password_hash = SHA2(CONCAT('sLt7x9', 'AlicePass2026!'), 256)</code>.",
+      hint: "Cú pháp: INSERT INTO system_accounts (username, salt, password_hash) VALUES ('alice', 'sLt7x9', SHA2(CONCAT('sLt7x9', 'AlicePass2026!'), 256));",
+      solution: "INSERT INTO system_accounts (username, salt, password_hash) VALUES ('alice', 'sLt7x9', SHA2(CONCAT('sLt7x9', 'AlicePass2026!'), 256));",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /insert\s+into\s+system_accounts/.test(n) && /['"]alice['"]/.test(n) && /['"]slt7x9['"]/.test(n) && /sha2\(concat/.test(n);
+      }
+    },
+    {
+      id: "2.4",
+      group: "Nhóm 2: Kỹ thuật Băm với Chuỗi Muối (Salting Passwords)",
+      title: "Kiểm tra độ dài chuẩn 64 ký tự của SHA-256",
+      task: "Từ bảng <code>system_accounts</code>, lấy cột <code>username</code> và <code>CHAR_LENGTH(password_hash) AS hash_length</code> để kiểm chứng tất cả hash SHA-256 đều đúng 64 ký tự.",
+      hint: "Cú pháp: SELECT username, CHAR_LENGTH(password_hash) AS hash_length FROM system_accounts;",
+      solution: "SELECT username, CHAR_LENGTH(password_hash) AS hash_length FROM system_accounts;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /select\s+username\s*,\s*char_length\(password_hash\)/.test(n) && /from\s+system_accounts/.test(n);
+      }
+    },
+
+    // Nhóm 3: Mã hóa Chuỗi Base64 (Encoding & Decoding) (3.1 - 3.4)
+    {
+      id: "3.1",
+      group: "Nhóm 3: Mã hóa Chuỗi Base64 (Encoding & Decoding)",
+      title: "Mã hóa chuỗi sang định dạng Base64",
+      task: "Dùng hàm <code>TO_BASE64()</code> để mã hóa chuỗi văn bản <code>'Database Administration 2026'</code> đặt tên cột là <code>base64_output</code>.",
+      hint: "Cú pháp: SELECT TO_BASE64('Database Administration 2026') AS base64_output;",
+      solution: "SELECT TO_BASE64('Database Administration 2026') AS base64_output;",
+      checker: (sql) => /^select\s+to_base64\(['"]database administration 2026['"]\)/.test(normSql(sql))
+    },
+    {
+      id: "3.2",
+      group: "Nhóm 3: Mã hóa Chuỗi Base64 (Encoding & Decoding)",
+      title: "Giải mã chuỗi từ Base64 về bản rõ",
+      task: "Dùng hàm <code>FROM_BASE64()</code> để khôi phục lại chuỗi ký tự ban đầu từ mã Base64 <code>'TXlTUUwgU2VjdXJpdHk='</code> đặt tên cột là <code>original_text</code>.",
+      hint: "Cú pháp: SELECT FROM_BASE64('TXlTUUwgU2VjdXJpdHk=') AS original_text;",
+      solution: "SELECT FROM_BASE64('TXlTUUwgU2VjdXJpdHk=') AS original_text;",
+      checker: (sql) => /^select\s+from_base64\(['"]txl0uvwgu2vjd3jpnk0=['"]\)/.test(normSql(sql))
+    },
+    {
+      id: "3.3",
+      group: "Nhóm 3: Mã hóa Chuỗi Base64 (Encoding & Decoding)",
+      title: "Mã hóa email nhân viên trong bảng staff_members",
+      task: "Từ bảng <code>staff_members</code>, lấy cột <code>email</code> và tạo cột <code>TO_BASE64(email) AS encoded_email</code>.",
+      hint: "Cú pháp: SELECT email, TO_BASE64(email) AS encoded_email FROM staff_members;",
+      solution: "SELECT email, TO_BASE64(email) AS encoded_email FROM staff_members;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /select\s+email\s*,\s*to_base64\(email\)/.test(n) && /from\s+staff_members/.test(n);
+      }
+    },
+    {
+      id: "3.4",
+      group: "Nhóm 3: Mã hóa Chuỗi Base64 (Encoding & Decoding)",
+      title: "Kiểm chứng tính đảo ngược (Reversibility) của Base64",
+      task: "Viết truy vấn lồng <code>FROM_BASE64(TO_BASE64('SecretInfo'))</code> đặt tên cột là <code>verified_text</code> để chứng minh Base64 là mã hóa 2 chiều không an toàn.",
+      hint: "Cú pháp: SELECT FROM_BASE64(TO_BASE64('SecretInfo')) AS verified_text;",
+      solution: "SELECT FROM_BASE64(TO_BASE64('SecretInfo')) AS verified_text;",
+      checker: (sql) => /^select\s+from_base64\(to_base64\(['"]secretinfo['"]\)\)/.test(normSql(sql))
+    },
+
+    // Nhóm 4: Mã hóa Hai Chiều Đối Xứng AES (AES-256) (4.1 - 4.4)
+    {
+      id: "4.1",
+      group: "Nhóm 4: Mã hóa Hai Chiều Đối Xứng AES (AES-256)",
+      title: "Mã hóa số thẻ bằng AES_ENCRYPT và chuyển HEX",
+      task: "Mã hóa số thẻ <code>'4111-2222-3333-4444'</code> bằng hàm <code>AES_ENCRYPT()</code> với khóa <code>'MyMasterKey2026!'</code>, sau đó dùng <code>HEX()</code> bọc ngoài để dễ lưu trữ.",
+      hint: "Cú pháp: SELECT HEX(AES_ENCRYPT('4111-2222-3333-4444', 'MyMasterKey2026!')) AS encrypted_card;",
+      solution: "SELECT HEX(AES_ENCRYPT('4111-2222-3333-4444', 'MyMasterKey2026!')) AS encrypted_card;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /hex\(aes_encrypt\(['"]4111-2222-3333-4444['"]\s*,\s*['"]mymasterkey2026!['"]\)\)/.test(n);
+      }
+    },
+    {
+      id: "4.2",
+      group: "Nhóm 4: Mã hóa Hai Chiều Đối Xứng AES (AES-256)",
+      title: "Giải mã thẻ tín dụng từ chuỗi HEX với AES_DECRYPT",
+      task: "Dùng <code>UNHEX('8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B')</code> rồi giải mã bằng <code>AES_DECRYPT(..., 'MyMasterKey2026!')</code> và ép kiểu <code>CAST(... AS CHAR)</code>.",
+      hint: "Cú pháp: SELECT CAST(AES_DECRYPT(UNHEX('8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B'), 'MyMasterKey2026!') AS CHAR) AS decrypted_card;",
+      solution: "SELECT CAST(AES_DECRYPT(UNHEX('8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B'), 'MyMasterKey2026!') AS CHAR) AS decrypted_card;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /aes_decrypt\(unhex\(/.test(n) && /mymasterkey2026!/.test(n);
+      }
+    },
+    {
+      id: "4.3",
+      group: "Nhóm 4: Mã hóa Hai Chiều Đối Xứng AES (AES-256)",
+      title: "Truy vấn và giải mã danh sách thẻ từ customer_cards",
+      task: "Từ bảng <code>customer_cards</code>, lấy <code>card_id</code>, <code>card_holder</code> và giải mã <code>CAST(AES_DECRYPT(encrypted_card_data, 'MyMasterKey2026!') AS CHAR) AS decrypted_card_number</code>.",
+      hint: "Cú pháp: SELECT card_id, card_holder, CAST(AES_DECRYPT(encrypted_card_data, 'MyMasterKey2026!') AS CHAR) AS decrypted_card_number FROM customer_cards;",
+      solution: "SELECT card_id, card_holder, CAST(AES_DECRYPT(encrypted_card_data, 'MyMasterKey2026!') AS CHAR) AS decrypted_card_number FROM customer_cards;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /select\s+card_id\s*,\s*card_holder/.test(n) && /aes_decrypt\(encrypted_card_data/.test(n) && /from\s+customer_cards/.test(n);
+      }
+    },
+    {
+      id: "4.4",
+      group: "Nhóm 4: Mã hóa Hai Chiều Đối Xứng AES (AES-256)",
+      title: "Thêm thẻ khách hàng mới mã hóa trực tiếp với AES_ENCRYPT",
+      task: "Thêm một thẻ mới vào <code>customer_cards</code> với <code>card_holder = 'Robert Smith'</code> và <code>encrypted_card_data = AES_ENCRYPT('9876-5432-1098-7654', 'MyMasterKey2026!')</code>.",
+      hint: "Cú pháp: INSERT INTO customer_cards (card_holder, encrypted_card_data) VALUES ('Robert Smith', AES_ENCRYPT('9876-5432-1098-7654', 'MyMasterKey2026!'));",
+      solution: "INSERT INTO customer_cards (card_holder, encrypted_card_data) VALUES ('Robert Smith', AES_ENCRYPT('9876-5432-1098-7654', 'MyMasterKey2026!'));",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /insert\s+into\s+customer_cards/.test(n) && /['"]robert smith['"]/.test(n) && /aes_encrypt\(['"]9876-5432-1098-7654['"]/.test(n);
+      }
+    }
+  ];
+
+  function stripComments(s) {
+    return String(s || "")
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/--[^\r\n]*/g, " ")
+      .replace(/#[^\r\n]*/g, " ");
+  }
+
+  function normSql(s) {
+    return stripComments(s)
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/;+\s*$/, "")
+      .toLowerCase();
+  }
+
+  // Simulator for Security, Hashing & AES Functions
+  function executeSecuritySql(rawSql) {
+    const rawClean = stripComments(rawSql).trim();
+    if (!rawClean) {
+      throw new Error("EMPTY_SQL");
+    }
+
+    const norm = normSql(rawSql);
+
+    // If it's a SELECT query and SQLite is ready, execute directly via SQLite WASM!
+    if (/^select\b/i.test(norm) && sqlDb) {
+      try {
+        const querySql = stripComments(rawSql).trim().replace(/;+\s*$/, "");
+        const res = sqlDb.exec(querySql);
+        if (res.length > 0) {
+          return {
+            columns: res[0].columns,
+            rows: res[0].values
+          };
+        } else {
+          return {
+            columns: [],
+            rows: []
+          };
+        }
+      } catch (sqliteErr) {
+        // Fall back to custom emulator below
+      }
+    }
+
+    // SELECT from system_accounts
+    if (/from\s+system_accounts/i.test(norm)) {
+      if (/username\s*=\s*['"]john_doe['"]/i.test(norm)) {
+        return {
+          columns: ["user_id", "username"],
+          rows: [[2, "john_doe"]]
+        };
+      }
+      if (/char_length\(password_hash\)/i.test(norm)) {
+        return {
+          columns: ["username", "hash_length"],
+          rows: systemAccounts.map(a => [a.username, 64])
+        };
+      }
+      return {
+        columns: ["user_id", "username", "salt", "password_hash"],
+        rows: systemAccounts.map(a => [a.user_id, a.username, a.salt, a.password_hash])
+      };
+    }
+
+    // INSERT into system_accounts
+    if (/^insert\s+into\s+system_accounts/i.test(norm)) {
+      const uMatch = rawSql.match(/['"]alice['"]/i);
+      const sMatch = rawSql.match(/['"]sLt7x9['"]/i);
+      if (uMatch && sMatch) {
+        systemAccounts.push({
+          user_id: 3,
+          username: "alice",
+          salt: "sLt7x9",
+          password_hash: sha256("sLt7x9" + "AlicePass2026!")
+        });
+        syncCryptoToSqlite();
+        renderLiveCryptoUI();
+        return {
+          columns: ["Status"],
+          rows: [["Query OK, 1 row affected (Account 'alice' stored with salted SHA-256)."]]
+        };
+      }
+      return {
+        columns: ["Status"],
+        rows: [["Query OK, 1 row affected."]]
+      };
+    }
+
+    // SELECT from staff_members
+    if (/from\s+staff_members/i.test(norm)) {
+      return {
+        columns: ["email", "encoded_email"],
+        rows: STAFF_MEMBERS.map(s => [s.email, btoa(s.email)])
+      };
+    }
+
+    // SELECT from customer_cards
+    if (/from\s+customer_cards/i.test(norm)) {
+      if (/aes_decrypt/i.test(norm)) {
+        return {
+          columns: ["card_id", "card_holder", "decrypted_card_number"],
+          rows: CUSTOMER_CARDS.map(c => [c.card_id, c.card_holder, c.raw_num])
+        };
+      }
+      return {
+        columns: ["card_id", "card_holder", "encrypted_card_data"],
+        rows: CUSTOMER_CARDS.map(c => [c.card_id, c.card_holder, c.encrypted_card_data])
+      };
+    }
+
+    // INSERT into customer_cards
+    if (/^insert\s+into\s+customer_cards/i.test(norm)) {
+      return {
+        columns: ["Status"],
+        rows: [["Query OK, 1 row affected (Card encrypted and stored)."]]
+      };
+    }
+
+    // Direct Functions in SELECT
+    // MD5
+    let m = rawSql.match(/select\s+md5\(['"]([^'"]+)['"]\)/i);
+    if (m && !/char_length/i.test(norm)) {
+      return {
+        columns: [`MD5('${m[1]}')`],
+        rows: [[md5(m[1])]]
+      };
+    }
+
+    // SHA2
+    m = rawSql.match(/select\s+sha2\(['"]([^'"]+)['"]\s*,\s*(\d+)\)/i);
+    if (m && !/char_length/i.test(norm)) {
+      const bitLen = parseInt(m[2], 10);
+      const hashVal = bitLen === 512 ? sha512Mock(m[1]) : sha256(m[1]);
+      return {
+        columns: [`SHA2('${m[1]}', ${bitLen})`],
+        rows: [[hashVal]]
+      };
+    }
+
+    // SHA2 + CONCAT
+    m = rawSql.match(/select\s+sha2\(concat\(['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\)\s*,\s*256\)/i);
+    if (m) {
+      const combined = m[1] + m[2];
+      return {
+        columns: ["salted_hash"],
+        rows: [[sha256(combined)]]
+      };
+    }
+
+    // CHAR_LENGTH comparisons
+    if (/char_length\(md5/i.test(norm) && /char_length\(sha2/i.test(norm)) {
+      return {
+        columns: ["md5_len", "sha256_len"],
+        rows: [[32, 64]]
+      };
+    }
+
+    // TO_BASE64
+    m = rawSql.match(/select\s+to_base64\(['"]([^'"]+)['"]\)/i);
+    if (m && !/from_base64/i.test(norm)) {
+      return {
+        columns: ["base64_output"],
+        rows: [[btoa(m[1])]]
+      };
+    }
+
+    // FROM_BASE64
+    m = rawSql.match(/select\s+from_base64\(['"]([^'"]+)['"]\)/i);
+    if (m && !/to_base64/i.test(norm)) {
+      return {
+        columns: ["original_text"],
+        rows: [[atob(m[1])]]
+      };
+    }
+
+    // FROM_BASE64(TO_BASE64('...'))
+    m = rawSql.match(/select\s+from_base64\(to_base64\(['"]([^'"]+)['"]\)\)/i);
+    if (m) {
+      return {
+        columns: ["verified_text"],
+        rows: [[m[1]]]
+      };
+    }
+
+    // HEX(AES_ENCRYPT(...))
+    m = rawSql.match(/hex\(aes_encrypt\(['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\)\)/i);
+    if (m) {
+      return {
+        columns: ["encrypted_card"],
+        rows: [["8E8C78FA6BAF1522A1692131C3925F4C1E5564478330CAFCB76378A690B7583B"]]
+      };
+    }
+
+    // CAST(AES_DECRYPT(UNHEX(...)))
+    if (/aes_decrypt\(unhex/i.test(norm)) {
+      return {
+        columns: ["decrypted_card"],
+        rows: [["4111-2222-3333-4444"]]
+      };
+    }
+
+    // General SELECT
+    if (/^select\s+/i.test(norm)) {
+      return {
+        columns: ["Result"],
+        rows: [["Computed cryptographic function output."]]
+      };
+    }
+
+    throw new Error(`Cú pháp chưa hỗ trợ trong Lab Security & Crypto: "${rawSql}". Vui lòng sử dụng MD5, SHA2, TO_BASE64, FROM_BASE64, HEX, UNHEX, AES_ENCRYPT hoặc AES_DECRYPT.`);
+  }
+
+  function renderTableHtml(cols, rows) {
+    if (!rows || rows.length === 0) {
+      return '<div style="padding:12px;color:var(--muted)">Tập kết quả rỗng (0 dòng).</div>';
+    }
+    let html = '<table class="dbms-table"><thead><tr>';
+    cols.forEach(c => { html += `<th>${escapeHtml(c)}</th>`; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(r => {
+      html += '<tr>';
+      r.forEach(val => {
+        html += `<td>${val === null ? '<i style="color:var(--muted)">NULL</i>' : escapeHtml(String(val))}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderLiveCryptoUI() {
+    const box = document.getElementById("cryptoDataBox");
+    let html = '<div style="font-weight:700;color:var(--primary-dark);margin-bottom:4px">Bảng system_accounts:</div>';
+    html += '<table class="dbms-table"><thead><tr><th>user_id</th><th>username</th><th>salt</th><th>password_hash (SHA-256)</th></tr></thead><tbody>';
+    systemAccounts.forEach(a => {
+      html += `<tr>
+        <td>${a.user_id}</td>
+        <td><strong>${escapeHtml(a.username)}</strong></td>
+        <td><code>${escapeHtml(a.salt)}</code></td>
+        <td style="font-size:10.5px">${a.password_hash.slice(0, 24)}...</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    box.innerHTML = html;
+  }
+
+  // UI bindings
+  const exerciseSelect = document.getElementById("exerciseSelect");
+  const taskDescription = document.getElementById("taskDescription");
+  const practiceSql = document.getElementById("practiceSql");
+  const practiceStatus = document.getElementById("practiceStatus");
+  const practiceMeta = document.getElementById("practiceMeta");
+  const practiceResult = document.getElementById("practiceResult");
+  const hintDetails = document.getElementById("hintDetails");
+  const hintContent = document.getElementById("hintContent");
+
+  const playgroundSql = document.getElementById("playgroundSql");
+  const playgroundStatus = document.getElementById("playgroundStatus");
+  const playgroundResult = document.getElementById("playgroundResult");
+  const presetSelect = document.getElementById("presetSelect");
+
+  const studentIdInput = document.getElementById("studentId");
+  const studentNameInput = document.getElementById("studentName");
+  const scorePill = document.getElementById("scorePill");
+  const progressBar = document.getElementById("progressBar");
+
+  let solvedExercises = new Set();
+  let currentExIndex = 0;
+
+  function loadProgress() {
+    try {
+      studentIdInput.value = localStorage.getItem("dbms_student_id") || "";
+      studentNameInput.value = localStorage.getItem("dbms_student_name") || "";
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        solvedExercises = new Set(parsed.solved || []);
+      }
+    } catch (e) {
+      console.warn("Storage unavailable:", e);
+    }
+    updateScoreUI();
+  }
+
+  function saveProgress() {
+    try {
+      localStorage.setItem("dbms_student_id", studentIdInput.value.trim());
+      localStorage.setItem("dbms_student_name", studentNameInput.value.trim());
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        solved: Array.from(solvedExercises),
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.warn("Save failed:", e);
+    }
+  }
+
+  function updateScoreUI() {
+    const total = EXERCISES.length;
+    const count = solvedExercises.size;
+    const pct = Math.round((count / total) * 100);
+
+    scorePill.textContent = `${count} / ${total} bài đúng (${pct}%)`;
+    if (count === total) scorePill.classList.add("done");
+    else scorePill.classList.remove("done");
+    progressBar.style.width = pct + "%";
+
+    EXERCISES.forEach((ex, idx) => {
+      const b = document.getElementById(`badge-ex-${idx}`);
+      if (b) {
+        if (solvedExercises.has(ex.id)) {
+          b.className = "exercise-badge badge-done";
+          b.textContent = "✓ Đã đúng";
+        } else {
+          b.className = "exercise-badge badge-todo";
+          b.textContent = "Chưa làm";
+        }
+      }
+    });
+  }
+
+  function buildExerciseUI() {
+    exerciseSelect.innerHTML = "";
+    EXERCISES.forEach((ex, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = `Bài ${ex.id}: ${ex.title}`;
+      exerciseSelect.appendChild(opt);
+    });
+
+    const groups = {};
+    EXERCISES.forEach((ex, idx) => {
+      if (!groups[ex.group]) groups[ex.group] = [];
+      groups[ex.group].push({ ex, idx });
+    });
+
+    const container = document.getElementById("groupContainer");
+    container.innerHTML = "";
+    Object.keys(groups).forEach(gName => {
+      const gDetails = document.createElement("details");
+      gDetails.className = "exercise-group";
+      gDetails.open = true;
+
+      const summary = document.createElement("summary");
+      summary.textContent = gName;
+      gDetails.appendChild(summary);
+
+      const listDiv = document.createElement("div");
+      listDiv.className = "exercise-list";
+
+      groups[gName].forEach(item => {
+        const row = document.createElement("div");
+        row.className = "exercise-item";
+        row.innerHTML = `
+          <div class="exercise-title">
+            <a href="#" style="color:var(--text);font-weight:600;text-decoration:none" data-idx="${item.idx}">
+              Bài ${item.ex.id}: ${escapeHtml(item.ex.title)}
+            </a>
+          </div>
+          <span id="badge-ex-${item.idx}" class="exercise-badge badge-todo">Chưa làm</span>
+        `;
+        row.querySelector("a").addEventListener("click", e => {
+          e.preventDefault();
+          selectExercise(item.idx);
+        });
+        listDiv.appendChild(row);
+      });
+
+      gDetails.appendChild(listDiv);
+      container.appendChild(gDetails);
+    });
+  }
+
+  function selectExercise(idx) {
+    currentExIndex = idx;
+    exerciseSelect.value = idx;
+    const ex = EXERCISES[idx];
+
+    taskDescription.innerHTML = `<b>Bài ${ex.id} · ${escapeHtml(ex.title)}:</b><div style="margin-top:5px">${ex.task}</div>`;
+    practiceSql.value = `-- Bài ${ex.id}: ${ex.title}\n`;
+    practiceStatus.className = "status-msg info";
+    practiceStatus.textContent = solvedExercises.has(ex.id) ? "✓ Bài này bạn đã giải đúng trước đó." : "Viết câu lệnh và nhấn 'Chấm điểm (Check)'.";
+    practiceResult.innerHTML = '<div style="padding:12px;color:var(--muted)">Kết quả sẽ xuất hiện ở đây.</div>';
+    practiceMeta.textContent = "Chưa chạy.";
+
+    hintDetails.style.display = "block";
+    hintDetails.open = false;
+    hintContent.innerHTML = `<b>Gợi ý:</b> ${escapeHtml(ex.hint)}<pre><code>${escapeHtml(ex.solution)}</code></pre>`;
+
+    practiceSql.focus();
+  }
+
+  // Practice actions
+  document.getElementById("btnPracticeRun").addEventListener("click", () => {
+    const sql = practiceSql.value;
+    if (!stripComments(sql).trim()) {
+      practiceStatus.className = "status-msg info";
+      practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+      practiceMeta.textContent = "Chưa có câu lệnh nào.";
+      return;
+    }
+    try {
+      const start = performance.now();
+      const res = executeSecuritySql(sql);
+      const timeMs = (performance.now() - start).toFixed(1);
+      practiceStatus.className = "status-msg ok";
+      practiceStatus.textContent = `✓ Chạy thành công (${timeMs} ms).`;
+      practiceMeta.textContent = `${res.rows.length} dòng trả về • ${timeMs} ms`;
+      practiceResult.innerHTML = renderTableHtml(res.columns, res.rows);
+    } catch (e) {
+      if (e.message === "EMPTY_SQL") {
+        practiceStatus.className = "status-msg info";
+        practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+        practiceMeta.textContent = "Chưa có câu lệnh nào.";
+        return;
+      }
+      practiceStatus.className = "status-msg err";
+      practiceStatus.textContent = `✗ Lỗi: ${e.message}`;
+      practiceResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+      practiceMeta.textContent = "Thực thi thất bại.";
+    }
+  });
+
+  document.getElementById("btnPracticeCheck").addEventListener("click", () => {
+    const ex = EXERCISES[currentExIndex];
+    const sql = practiceSql.value;
+    if (!stripComments(sql).trim()) {
+      practiceStatus.className = "status-msg info";
+      practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+      practiceMeta.textContent = "Chưa có câu lệnh nào.";
+      return;
+    }
+
+    try {
+      const res = executeSecuritySql(sql);
+      practiceResult.innerHTML = renderTableHtml(res.columns, res.rows);
+
+      const isCorrect = ex.checker(sql, res);
+      if (isCorrect) {
+        solvedExercises.add(ex.id);
+        saveProgress();
+        updateScoreUI();
+        practiceStatus.className = "status-msg ok";
+        practiceStatus.textContent = `🎉 CHÍNH XÁC! Bạn đã vượt qua Bài ${ex.id}!`;
+        practiceMeta.textContent = `Bài tập ${ex.id} đã hoàn thành xuất sắc.`;
+      } else {
+        practiceStatus.className = "status-msg err";
+        practiceStatus.textContent = `✗ Câu lệnh chạy được nhưng chưa đúng hoàn toàn yêu cầu bài toán. Vui lòng xem gợi ý!`;
+        practiceMeta.textContent = "Kiểm tra lại hàm băm MD5/SHA2, tham số độ dài bit, chuỗi muối hoặc khóa AES.";
+      }
+    } catch (e) {
+      if (e.message === "EMPTY_SQL") {
+        practiceStatus.className = "status-msg info";
+        practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+        practiceMeta.textContent = "Chưa có câu lệnh nào.";
+        return;
+      }
+      practiceStatus.className = "status-msg err";
+      practiceStatus.textContent = `✗ Lỗi cú pháp/thực thi: ${e.message}`;
+      practiceResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+      practiceMeta.textContent = "Không thể chấm điểm do câu lệnh gặp lỗi.";
+    }
+  });
+
+  document.getElementById("btnPracticeClear").addEventListener("click", () => {
+    practiceSql.value = "";
+    practiceSql.focus();
+  });
+
+  exerciseSelect.addEventListener("change", e => selectExercise(parseInt(e.target.value, 10)));
+  document.getElementById("btnPrevEx").addEventListener("click", () => {
+    if (currentExIndex > 0) selectExercise(currentExIndex - 1);
+  });
+  document.getElementById("btnNextEx").addEventListener("click", () => {
+    if (currentExIndex < EXERCISES.length - 1) selectExercise(currentExIndex + 1);
+  });
+
+  // Playground actions
+  document.getElementById("btnPlaygroundRun").addEventListener("click", () => {
+    const sql = playgroundSql.value;
+    if (!stripComments(sql).trim()) {
+      playgroundStatus.className = "status-msg info";
+      playgroundStatus.textContent = "ℹ️ Vui lòng nhập câu lệnh SQL trước khi chạy.";
+      return;
+    }
+    try {
+      const start = performance.now();
+      const res = executeSecuritySql(sql);
+      const timeMs = (performance.now() - start).toFixed(1);
+      playgroundStatus.className = "status-msg ok";
+      playgroundStatus.textContent = `✓ Chạy thành công (${timeMs} ms).`;
+      playgroundResult.innerHTML = renderTableHtml(res.columns, res.rows);
+    } catch (e) {
+      playgroundStatus.className = "status-msg err";
+      playgroundStatus.textContent = `✗ ${e.message}`;
+      playgroundResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+    }
+  });
+      playgroundStatus.textContent = `✗ ${e.message}`;
+      playgroundResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+    }
+  });
+
+  document.getElementById("btnLoadPreset").addEventListener("click", () => {
+    const val = presetSelect.value;
+    if (val) {
+      playgroundSql.value = val;
+      document.getElementById("btnPlaygroundRun").click();
+    }
+  });
+
+  document.getElementById("btnResetCryptoData").addEventListener("click", () => {
+    resetCryptoState();
+    playgroundStatus.className = "status-msg ok";
+    playgroundStatus.textContent = "Dữ liệu mật mã mẫu đã được đặt lại ban đầu.";
+  });
+
+  studentIdInput.addEventListener("input", saveProgress);
+  studentNameInput.addEventListener("input", saveProgress);
+
+  document.getElementById("btnResetAll").addEventListener("click", () => {
+    if (confirm("Bạn có chắc chắn muốn xóa toàn bộ tiến trình làm bài để làm lại từ đầu không?")) {
+      solvedExercises.clear();
+      resetCryptoState();
+      saveProgress();
+      updateScoreUI();
+      selectExercise(0);
+      alert("Đã đặt lại tiến trình bài tập!");
+    }
+  });
+
+  document.getElementById("btnExportCsv").addEventListener("click", () => {
+    const mssv = studentIdInput.value.trim() || "N/A";
+    const name = studentNameInput.value.trim() || "N/A";
+    let csv = "\uFEFFMSSV,Họ và tên,Mã bài,Tên bài tập,Trạng thái,Thời gian xuất\n";
+    const timeStr = new Date().toLocaleString("vi-VN");
+
+    EXERCISES.forEach(ex => {
+      const st = solvedExercises.has(ex.id) ? "HOAN_THANH" : "CHUA_LAM";
+      csv += `"${mssv}","${name}","${ex.id}","${ex.title}","${st}","${timeStr}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `BangDiem_SQL_Security_Encryption_${mssv}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btnExportPng").addEventListener("click", () => {
+    const mssv = studentIdInput.value.trim() || "Chưa nhập MSSV";
+    const name = studentNameInput.value.trim() || "Học viên DBMS";
+    const count = solvedExercises.size;
+    const total = EXERCISES.length;
+    const pct = Math.round((count / total) * 100);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 700;
+    const ctx = canvas.getContext("2d");
+
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 700);
+    bgGrad.addColorStop(0, "#064e3b");
+    bgGrad.addColorStop(0.5, "#047857");
+    bgGrad.addColorStop(1, "#064e3b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 700);
+
+    ctx.strokeStyle = "#34d399";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(30, 30, 1140, 640);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, 40, 1120, 620);
+
+    ctx.fillStyle = "#a7f3d0";
+    ctx.font = "bold 16px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("BÁO CÁO THỰC HÀNH CÂU LỆNH SQL TỰ CHẤM · HỆ QUẢN TRỊ CSDL MYSQL", 600, 95);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 34px system-ui, sans-serif";
+    ctx.fillText("AN TOÀN DỮ LIỆU & CÁC HÀM MÃ HÓA TRONG MYSQL", 600, 150);
+
+    ctx.fillStyle = "#d1fae5";
+    ctx.font = "18px system-ui, sans-serif";
+    ctx.fillText("Chứng nhận kết quả thực hành MD5, SHA-256, SHA-512, SALTING, TO_BASE64, FROM_BASE64 & AES-256", 600, 190);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.fillRect(150, 230, 900, 130);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.strokeRect(150, 230, 900, 130);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`Học viên:`, 190, 275);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px system-ui, sans-serif";
+    ctx.fillText(name, 280, 275);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(`Mã số sinh viên:`, 190, 325);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 22px system-ui, sans-serif";
+    ctx.fillText(mssv, 340, 325);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(`Thời gian cấp:`, 650, 325);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(new Date().toLocaleString("vi-VN"), 780, 325);
+
+    ctx.fillStyle = "rgba(4, 120, 87, 0.6)";
+    ctx.fillRect(150, 390, 430, 160);
+    ctx.strokeStyle = "#34d399";
+    ctx.strokeRect(150, 390, 430, 160);
+
+    ctx.fillStyle = "rgba(21, 128, 61, 0.4)";
+    ctx.fillRect(620, 390, 430, 160);
+    ctx.strokeStyle = "#22c55e";
+    ctx.strokeRect(620, 390, 430, 160);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#a7f3d0";
+    ctx.font = "bold 18px system-ui, sans-serif";
+    ctx.fillText("BÀI TẬP ĐÃ GIẢI ĐÚNG", 365, 435);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 56px system-ui, sans-serif";
+    ctx.fillText(`${count} / ${total}`, 365, 505);
+
+    ctx.fillStyle = "#86efac";
+    ctx.font = "bold 18px system-ui, sans-serif";
+    ctx.fillText("TỶ LỆ HOÀN THÀNH", 835, 435);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 56px system-ui, sans-serif";
+    ctx.fillText(`${pct}%`, 835, 505);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "italic 14px system-ui, sans-serif";
+    ctx.fillText("Kết quả được kiểm tra và đánh giá tự động bởi Hệ thống thực hành DBMS Course", 600, 610);
+
+    const link = document.createElement("a");
+    link.download = `ChungNhan_SQL_Security_Encryption_${mssv}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+
+  practiceSql.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("btnPracticeRun").click();
+    }
+  });
+
+  buildExerciseUI();
+  resetCryptoState();
+  loadProgress();
+  selectExercise(0);
+  initSqliteEngine();
+
+})();
+</script>
+</body>
+</html>

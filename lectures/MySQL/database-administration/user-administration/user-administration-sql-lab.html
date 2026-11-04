@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài tập SQL Tự chấm: Quản lý Người dùng, Phân quyền & Role trong MySQL</title>
+<meta name="description" content="Lab thực hành SQL tự chấm trực tiếp trên trình duyệt: 16 bài tập có chấm điểm tự động về CREATE USER, GRANT, REVOKE, SHOW GRANTS, mysql.user, CREATE ROLE, RBAC và FLUSH PRIVILEGES.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-sub: #eef2ff;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --code-bg: #0f172a;
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 55%, #4f46e5 100%);
+  color: #fff;
+  padding: 38px 0 32px;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+}
+.hero-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hero-nav a {
+  color: #c7d2fe;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-nav a:hover { text-decoration: underline; }
+.hero-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e0e7ff;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+header.hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0 0 14px;
+  font-size: 14.5px;
+  color: #e0e7ff;
+  max-width: 820px;
+}
+.hero-chips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.hero-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.student-inputs input {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+}
+.score-pill {
+  background: var(--primary-sub);
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.score-pill.done {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--green) 100%);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.btn {
+  padding: 7px 13px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover { background: #166534; }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+.btn-danger { background: var(--red-sub); color: var(--red); border-color: #fca5a5; }
+.btn-danger:hover { background: #fee2e2; }
+
+main { padding: 24px 0 48px; }
+.grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .grid-main { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13px;
+  background: #fff;
+  flex: 1;
+  min-width: 170px;
+}
+.code-editor {
+  width: 100%;
+  min-height: 140px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  resize: vertical;
+}
+.code-editor:focus {
+  outline: 2px solid var(--primary);
+  border-color: transparent;
+}
+.status-msg {
+  min-height: 24px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-msg.ok { color: var(--green); }
+.status-msg.err { color: var(--red); }
+.status-msg.info { color: var(--primary-dark); }
+
+.result-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow: auto;
+  max-height: 230px;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+table.dbms-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+table.dbms-table th, table.dbms-table td {
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+table.dbms-table th {
+  background: #edf2f7;
+  font-weight: 700;
+  color: #334155;
+  position: sticky;
+  top: 0;
+}
+table.dbms-table tr:hover { background: #f1f5f9; }
+
+.meta-info {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.task-box {
+  background: var(--primary-sub);
+  border-left: 4px solid var(--primary);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+}
+.task-box b { color: var(--primary-dark); }
+
+.exercise-group {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+.exercise-group summary {
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.exercise-group summary:hover { background: #f1f5f9; }
+.exercise-group[open] summary { border-bottom: 1px solid var(--line); }
+.exercise-list { padding: 6px 14px 12px; }
+.exercise-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 13px;
+}
+.exercise-item:last-child { border-bottom: none; }
+.exercise-title { flex: 1; }
+.exercise-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-todo { background: #f1f5f9; color: var(--muted); }
+.badge-done { background: var(--green-sub); color: var(--green); }
+
+.user-catalog-box {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 220px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.hint-details {
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+.hint-details summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+}
+.hint-details pre {
+  margin: 6px 0 0;
+  background: var(--code-bg);
+  color: #e2e8f0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px 0 36px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-nav">
+      <a href="../database-administration.html">← Trung tâm DBA Master Hub</a>
+      <span style="opacity:0.5">•</span>
+      <a href="user-administration.html">Lý thuyết Bài 04</a>
+    </div>
+    <div class="hero-tag">MySQL DBA Practice Lab · Bài 04</div>
+    <h1>Bài tập SQL Tự chấm: Quản lý Người dùng, Phân quyền & Role</h1>
+    <p>Thực hành trực tiếp 16 câu lệnh quản trị tài khoản và an ninh quyền truy cập: CREATE USER với host matching (@'%' vs @'localhost'), GRANT/REVOKE, SHOW GRANTS, bảng hệ thống mysql.user và kiểm soát truy cập theo vai trò (RBAC Roles).</p>
+    <div class="hero-chips">
+      <span class="hero-chip">CREATE USER</span>
+      <span class="hero-chip">ALTER USER</span>
+      <span class="hero-chip">GRANT ... ON ... TO</span>
+      <span class="hero-chip">WITH GRANT OPTION</span>
+      <span class="hero-chip">SHOW GRANTS</span>
+      <span class="hero-chip">REVOKE</span>
+      <span class="hero-chip">CREATE ROLE</span>
+      <span class="hero-chip">SET DEFAULT ROLE</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <label for="studentId" style="font-size:12px;font-weight:700;color:var(--muted)">MSSV:</label>
+      <input type="text" id="studentId" placeholder="VD: 21000123" maxlength="20" style="width:110px">
+      <label for="studentName" style="font-size:12px;font-weight:700;color:var(--muted)">Họ & tên:</label>
+      <input type="text" id="studentName" placeholder="VD: Nguyễn Văn A" maxlength="50" style="width:150px">
+      <div id="scorePill" class="score-pill">0 / 16 bài đúng (0%)</div>
+      <span id="engineBadge" class="score-pill" style="background:#f1f5f9;color:#475569">⚙️ Khởi tạo SQLite...</span>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button id="btnExportPng" class="btn btn-outline" title="Xuất chứng nhận kết quả định dạng PNG">📷 Xuất PNG</button>
+      <button id="btnExportCsv" class="btn btn-outline" title="Xuất bảng điểm chi tiết định dạng CSV">📄 Xuất CSV</button>
+      <button id="btnResetAll" class="btn btn-danger" title="Xóa tiến trình làm bài">↺ Làm lại</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div id="progressBar" class="progress-bar-fill"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid-main">
+    <!-- Left Column: Practice & Playground -->
+    <div>
+      <!-- Practice Editor -->
+      <div class="card">
+        <h2>✍️ Khung Thực hành & Tự chấm Bài tập</h2>
+        <div class="toolbar">
+          <label for="exerciseSelect" style="font-size:12px;font-weight:700">Chọn bài:</label>
+          <select id="exerciseSelect"></select>
+          <button id="btnPrevEx" class="btn btn-outline" title="Bài trước">←</button>
+          <button id="btnNextEx" class="btn btn-outline" title="Bài kế">→</button>
+        </div>
+
+        <div id="taskDescription" class="task-box">
+          <b>Đang tải yêu cầu...</b>
+        </div>
+
+        <textarea id="practiceSql" class="code-editor" spellcheck="false" placeholder="Nhập câu lệnh SQL quản trị user/quyền tại đây..."></textarea>
+        
+        <div class="toolbar" style="margin-top:10px">
+          <button id="btnPracticeRun" class="btn btn-primary" title="Phím tắt: Ctrl + Enter">▶ Chạy thử (Run)</button>
+          <button id="btnPracticeCheck" class="btn btn-success" title="Chấm điểm câu lệnh theo yêu cầu">✓ Chấm điểm (Check)</button>
+          <button id="btnPracticeClear" class="btn btn-outline">Xóa code</button>
+          <span style="font-size:11.5px;color:var(--muted);margin-left:auto">Phím tắt: <b>Ctrl+Enter</b> để Run</span>
+        </div>
+
+        <div id="practiceStatus" class="status-msg info">Sẵn sàng thực hành.</div>
+
+        <h3 style="margin-top:14px">Kết quả thực thi</h3>
+        <div id="practiceMeta" class="meta-info">Chưa thực thi câu lệnh.</div>
+        <div id="practiceResult" class="result-box">
+          <div style="padding:12px;color:var(--muted)">Kết quả sau khi nhấn Run hoặc Check sẽ hiển thị ở đây.</div>
+        </div>
+
+        <details id="hintDetails" class="hint-details" style="display:none">
+          <summary>💡 Xem Gợi ý & Đáp án tham khảo</summary>
+          <div id="hintContent" style="padding-top:6px;font-size:12.5px;color:#334155"></div>
+        </details>
+      </div>
+
+      <!-- Playground Editor -->
+      <div class="card">
+        <h2>🧪 User Administration Playground (Thử nghiệm tự do)</h2>
+        <div class="toolbar">
+          <label for="presetSelect" style="font-size:12px;font-weight:700">Mẫu câu lệnh:</label>
+          <select id="presetSelect">
+            <option value="">— Chọn ví dụ mẫu —</option>
+            <option value="SELECT user, host, account_locked FROM mysql.user;">1. Xem danh sách user (mysql.user)</option>
+            <option value="CREATE USER 'app_tester'@'localhost' IDENTIFIED BY 'Test1234!';">2. Tạo user cục bộ (localhost)</option>
+            <option value="GRANT SELECT, INSERT ON sales_db.* TO 'app_tester'@'localhost';">3. Cấp quyền DB (GRANT SELECT, INSERT)</option>
+            <option value="SHOW GRANTS FOR 'app_tester'@'localhost';">4. Kiểm tra quyền (SHOW GRANTS)</option>
+            <option value="REVOKE INSERT ON sales_db.* FROM 'app_tester'@'localhost';">5. Thu hồi quyền (REVOKE INSERT)</option>
+            <option value="CREATE ROLE 'reporter';\nGRANT SELECT ON sales_db.* TO 'reporter';">6. Tạo Role & cấp quyền cho Role</option>
+            <option value="FLUSH PRIVILEGES;">7. Nạp lại bộ nhớ đệm quyền (FLUSH PRIVILEGES)</option>
+          </select>
+          <button id="btnLoadPreset" class="btn btn-outline">Nạp mẫu</button>
+        </div>
+        <textarea id="playgroundSql" class="code-editor" style="min-height:90px" spellcheck="false">SELECT user, host, account_locked FROM mysql.user;</textarea>
+        <div class="toolbar" style="margin-top:10px">
+          <button id="btnPlaygroundRun" class="btn btn-primary">▶ Chạy Playground</button>
+          <button id="btnResetUsers" class="btn btn-outline" title="Khôi phục danh mục tài khoản ban đầu">↻ Đặt lại User mẫu</button>
+        </div>
+        <div id="playgroundStatus" class="status-msg info">Playground sẵn sàng.</div>
+        <div id="playgroundResult" class="result-box">
+          <div style="padding:12px;color:var(--muted)">Nhấn "Chạy Playground" để xem kết quả.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live User Catalog & Exercises List -->
+    <div>
+      <!-- Live User Catalog -->
+      <div class="card">
+        <h2>👥 Danh mục Tài khoản & Roles (Mô phỏng)</h2>
+        <div id="userCatalogBox" class="user-catalog-box"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">
+          Cột Host xác định phạm vi truy cập: <code>localhost</code> (máy cục bộ), <code>%</code> (mọi IP từ xa).
+        </div>
+      </div>
+
+      <!-- Exercise Directory -->
+      <div class="card">
+        <h2>📋 Danh sách 16 Bài tập Tự chấm</h2>
+        <div id="groupContainer"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>DBMS Course · MySQL Database Administration Interactive Lab</b><br>
+    Hệ thống mô phỏng và tự động chấm câu lệnh SQL quản trị chạy hoàn toàn cục bộ trên trình duyệt.
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "dbms_dba_sql_lab4_v1";
+
+  // Virtual User & Privilege State
+  const INITIAL_USERS = [
+    { user: "root", host: "localhost", locked: "N", grants: ["GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION"] },
+    { user: "mysql.sys", host: "localhost", locked: "Y", grants: ["GRANT USAGE ON *.* TO 'mysql.sys'@'localhost'"] },
+    { user: "backup_admin", host: "localhost", locked: "N", grants: ["GRANT RELOAD, LOCK TABLES, PROCESS ON *.* TO 'backup_admin'@'localhost'"] }
+  ];
+
+  const INITIAL_ROLES = [
+    { role: "report_reader", grants: ["GRANT SELECT ON classicmodels.* TO 'report_reader'"] }
+  ];
+
+  let users = JSON.parse(JSON.stringify(INITIAL_USERS));
+  let roles = JSON.parse(JSON.stringify(INITIAL_ROLES));
+  let sqlDb = null;
+  let isSqliteReady = false;
+
+  function setupSqliteSchema(db) {
+    try {
+      try {
+        db.run("ATTACH DATABASE ':memory:' AS mysql;");
+        db.run(`
+          CREATE TABLE IF NOT EXISTS mysql.user (
+            Host TEXT,
+            User TEXT,
+            plugin TEXT DEFAULT 'caching_sha2_password',
+            authentication_string TEXT DEFAULT '***',
+            password_expired TEXT DEFAULT 'N',
+            account_locked TEXT DEFAULT 'N',
+            PRIMARY KEY (Host, User)
+          );
+        `);
+      } catch (e) {
+        db.run(`
+          CREATE TABLE IF NOT EXISTS "mysql.user" (
+            Host TEXT,
+            User TEXT,
+            plugin TEXT DEFAULT 'caching_sha2_password',
+            authentication_string TEXT DEFAULT '***',
+            password_expired TEXT DEFAULT 'N',
+            account_locked TEXT DEFAULT 'N',
+            PRIMARY KEY (Host, User)
+          );
+        `);
+      }
+      syncUsersToSqlite();
+    } catch (err) {
+      console.warn("setupSqliteSchema lab 4 error:", err);
+    }
+  }
+
+  function syncUsersToSqlite() {
+    if (!sqlDb) return;
+    try {
+      try {
+        sqlDb.run("DELETE FROM mysql.user;");
+        const ins = sqlDb.prepare("INSERT INTO mysql.user VALUES (?, ?, ?, ?, ?, ?);");
+        users.forEach(u => {
+          ins.run([u.host, u.user, "caching_sha2_password", "***", u.expired || "N", u.locked || "N"]);
+        });
+        ins.free();
+      } catch (e) {
+        sqlDb.run("DELETE FROM \"mysql.user\";");
+        const ins = sqlDb.prepare("INSERT INTO \"mysql.user\" VALUES (?, ?, ?, ?, ?, ?);");
+        users.forEach(u => {
+          ins.run([u.host, u.user, "caching_sha2_password", "***", u.expired || "N", u.locked || "N"]);
+        });
+        ins.free();
+      }
+    } catch (err) {
+      console.warn("syncUsersToSqlite error:", err);
+    }
+  }
+
+  async function initSqliteEngine() {
+    const badge = document.getElementById("engineBadge");
+    if (typeof initSqlJs !== "function") {
+      if (badge) {
+        badge.textContent = "⚡ Thuần JS (Dự phòng offline)";
+        badge.style.background = "#fffbeb";
+        badge.style.color = "#b45309";
+      }
+      return;
+    }
+    try {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`
+      });
+      sqlDb = new SQL.Database();
+      setupSqliteSchema(sqlDb);
+      isSqliteReady = true;
+      if (badge) {
+        badge.textContent = "🟢 SQLite WASM (Sẵn sàng)";
+        badge.style.background = "#f0fdf4";
+        badge.style.color = "#15803d";
+      }
+    } catch (err) {
+      console.warn("SQLite WASM load failed, using JS fallback:", err);
+      if (badge) {
+        badge.textContent = "⚡ Thuần JS (Dự phòng)";
+        badge.style.background = "#fffbeb";
+        badge.style.color = "#b45309";
+      }
+    }
+  }
+
+  function resetUsersAndRoles() {
+    users = JSON.parse(JSON.stringify(INITIAL_USERS));
+    roles = JSON.parse(JSON.stringify(INITIAL_ROLES));
+    syncUsersToSqlite();
+    renderLiveUserUI();
+  }
+
+  // 16 Exercises across 4 groups
+  const EXERCISES = [
+    // Nhóm 1: Tạo & Quản lý Tài khoản Người dùng (1.1 - 1.4)
+    {
+      id: "1.1",
+      group: "Nhóm 1: Tạo & Quản lý Tài khoản Người dùng",
+      title: "Tạo tài khoản dev_user cho máy cục bộ",
+      task: "Viết lệnh tạo tài khoản <code>dev_user</code> chỉ được kết nối từ máy cục bộ (<code>localhost</code>) với mật khẩu là <code>DevPass123!</code>.",
+      hint: "Cú pháp: CREATE USER 'dev_user'@'localhost' IDENTIFIED BY 'DevPass123!';",
+      solution: "CREATE USER 'dev_user'@'localhost' IDENTIFIED BY 'DevPass123!';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /create\s+user\s+['"]dev_user['"]@['"]localhost['"]\s+identified\s+by\s+['"]devpass123!['"]/.test(n);
+      }
+    },
+    {
+      id: "1.2",
+      group: "Nhóm 1: Tạo & Quản lý Tài khoản Người dùng",
+      title: "Tạo tài khoản report_app kết nối từ xa (%)",
+      task: "Tạo tài khoản <code>report_app</code> cho phép kết nối từ bất kỳ địa chỉ IP từ xa nào (dùng ký tự đại diện <code>%</code>) với mật khẩu <code>Report2026@Pass</code>.",
+      hint: "Cú pháp: CREATE USER 'report_app'@'%' IDENTIFIED BY 'Report2026@Pass';",
+      solution: "CREATE USER 'report_app'@'%' IDENTIFIED BY 'Report2026@Pass';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /create\s+user\s+['"]report_app['"]@['"]%['"]\s+identified\s+by\s+['"]report2026@pass['"]/.test(n);
+      }
+    },
+    {
+      id: "1.3",
+      group: "Nhóm 1: Tạo & Quản lý Tài khoản Người dùng",
+      title: "Đổi mật khẩu tài khoản bằng ALTER USER",
+      task: "Viết lệnh đổi mật khẩu cho tài khoản <code>dev_user'@'localhost</code> thành <code>NewDevPass2026!</code>.",
+      hint: "Cú pháp: ALTER USER 'dev_user'@'localhost' IDENTIFIED BY 'NewDevPass2026!';",
+      solution: "ALTER USER 'dev_user'@'localhost' IDENTIFIED BY 'NewDevPass2026!';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /alter\s+user\s+['"]dev_user['"]@['"]localhost['"]\s+identified\s+by\s+['"]newdevpass2026!['"]/.test(n);
+      }
+    },
+    {
+      id: "1.4",
+      group: "Nhóm 1: Tạo & Quản lý Tài khoản Người dùng",
+      title: "Xóa tài khoản người dùng với DROP USER IF EXISTS",
+      task: "Viết câu lệnh xóa an toàn tài khoản thử nghiệm <code>temp_intern'@'localhost</code> nếu tài khoản này tồn tại.",
+      hint: "Cú pháp: DROP USER IF EXISTS 'temp_intern'@'localhost';",
+      solution: "DROP USER IF EXISTS 'temp_intern'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /drop\s+user\s+if\s+exists\s+['"]temp_intern['"]@['"]localhost['"]/.test(n);
+      }
+    },
+
+    // Nhóm 2: Cấp quyền (GRANT) & Kiểm tra Quyền (2.1 - 2.4)
+    {
+      id: "2.1",
+      group: "Nhóm 2: Cấp quyền (GRANT) & Kiểm tra Quyền",
+      title: "Cấp quyền đọc SELECT trên toàn bộ database sales_db",
+      task: "Cấp quyền <code>SELECT</code> trên mọi bảng của CSDL <code>sales_db</code> (cú pháp <code>sales_db.*</code>) cho <code>report_app'@'%</code>.",
+      hint: "Cú pháp: GRANT SELECT ON sales_db.* TO 'report_app'@'%';",
+      solution: "GRANT SELECT ON sales_db.* TO 'report_app'@'%';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /grant\s+select\s+on\s+sales_db\.\*\s+to\s+['"]report_app['"]@['"]%['"]/.test(n);
+      }
+    },
+    {
+      id: "2.2",
+      group: "Nhóm 2: Cấp quyền (GRANT) & Kiểm tra Quyền",
+      title: "Cấp nhiều quyền DML trên bảng cụ thể",
+      task: "Cấp đồng thời 3 quyền <code>SELECT, INSERT, UPDATE</code> trên bảng <code>sales_db.customers</code> cho <code>dev_user'@'localhost</code>.",
+      hint: "Cú pháp: GRANT SELECT, INSERT, UPDATE ON sales_db.customers TO 'dev_user'@'localhost';",
+      solution: "GRANT SELECT, INSERT, UPDATE ON sales_db.customers TO 'dev_user'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        const hasGrant = /grant\s+.*on\s+sales_db\.customers\s+to\s+['"]dev_user['"]@['"]localhost['"]/.test(n);
+        const hasSelect = /select/.test(n);
+        const hasInsert = /insert/.test(n);
+        const hasUpdate = /update/.test(n);
+        return hasGrant && hasSelect && hasInsert && hasUpdate;
+      }
+    },
+    {
+      id: "2.3",
+      group: "Nhóm 2: Cấp quyền (GRANT) & Kiểm tra Quyền",
+      title: "Cấp quyền Admin toàn quyền kèm WITH GRANT OPTION",
+      task: "Cấp quyền tối cao <code>ALL PRIVILEGES</code> trên toàn server (<code>*.*</code>) kèm quyền ủy thác cấp tiếp cho người khác (<code>WITH GRANT OPTION</code>) cho <code>super_admin'@'localhost</code>.",
+      hint: "Cú pháp: GRANT ALL PRIVILEGES ON *.* TO 'super_admin'@'localhost' WITH GRANT OPTION;",
+      solution: "GRANT ALL PRIVILEGES ON *.* TO 'super_admin'@'localhost' WITH GRANT OPTION;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /grant\s+all(\s+privileges)?\s+on\s+\*\.\*\s+to\s+['"]super_admin['"]@['"]localhost['"]\s+with\s+grant\s+option/.test(n);
+      }
+    },
+    {
+      id: "2.4",
+      group: "Nhóm 2: Cấp quyền (GRANT) & Kiểm tra Quyền",
+      title: "Kiểm tra quyền của người dùng bằng SHOW GRANTS",
+      task: "Viết câu lệnh xem danh sách toàn bộ các đặc quyền đã được cấp cho người dùng <code>dev_user'@'localhost</code>.",
+      hint: "Cú pháp: SHOW GRANTS FOR 'dev_user'@'localhost';",
+      solution: "SHOW GRANTS FOR 'dev_user'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /^show\s+grants\s+for\s+['"]dev_user['"]@['"]localhost['"]$/.test(n);
+      }
+    },
+
+    // Nhóm 3: Thu hồi Quyền & Data Dictionary mysql.user (3.1 - 3.4)
+    {
+      id: "3.1",
+      group: "Nhóm 3: Thu hồi Quyền & Data Dictionary mysql.user",
+      title: "Thu hồi quyền UPDATE trên bảng customers",
+      task: "Viết lệnh thu hồi quyền <code>UPDATE</code> trên bảng <code>sales_db.customers</code> từ người dùng <code>dev_user'@'localhost</code>.",
+      hint: "Cú pháp: REVOKE UPDATE ON sales_db.customers FROM 'dev_user'@'localhost';",
+      solution: "REVOKE UPDATE ON sales_db.customers FROM 'dev_user'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /revoke\s+update\s+on\s+sales_db\.customers\s+from\s+['"]dev_user['"]@['"]localhost['"]/.test(n);
+      }
+    },
+    {
+      id: "3.2",
+      group: "Nhóm 3: Thu hồi Quyền & Data Dictionary mysql.user",
+      title: "Thu hồi toàn bộ quyền trên database sales_db",
+      task: "Viết lệnh thu hồi mọi đặc quyền (<code>ALL PRIVILEGES</code>) trên <code>sales_db.*</code> từ tài khoản <code>report_app'@'%</code>.",
+      hint: "Cú pháp: REVOKE ALL PRIVILEGES ON sales_db.* FROM 'report_app'@'%';",
+      solution: "REVOKE ALL PRIVILEGES ON sales_db.* FROM 'report_app'@'%';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /revoke\s+all(\s+privileges)?\s+on\s+sales_db\.\*\s+from\s+['"]report_app['"]@['"]%['"]/.test(n);
+      }
+    },
+    {
+      id: "3.3",
+      group: "Nhóm 3: Thu hồi Quyền & Data Dictionary mysql.user",
+      title: "Nạp lại bảng cấp quyền với FLUSH PRIVILEGES",
+      task: "Viết lệnh yêu cầu máy chủ nạp lại bộ nhớ đệm bảng cấp quyền ngay lập tức.",
+      hint: "Cú pháp: FLUSH PRIVILEGES;",
+      solution: "FLUSH PRIVILEGES;",
+      checker: (sql) => /^flush\s+privileges$/.test(normSql(sql))
+    },
+    {
+      id: "3.4",
+      group: "Nhóm 3: Thu hồi Quyền & Data Dictionary mysql.user",
+      title: "Tra cứu danh sách tài khoản từ mysql.user",
+      task: "Viết truy vấn lấy 3 cột <code>user</code>, <code>host</code>, <code>account_locked</code> từ bảng hệ thống <code>mysql.user</code>.",
+      hint: "Cú pháp: SELECT user, host, account_locked FROM mysql.user;",
+      solution: "SELECT user, host, account_locked FROM mysql.user;",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /^select\s+user\s*,\s*host\s*,\s*account_locked\s+from\s+mysql\.user/.test(n);
+      }
+    },
+
+    // Nhóm 4: Quản trị Phân quyền theo Nhóm (RBAC Roles) (4.1 - 4.4)
+    {
+      id: "4.1",
+      group: "Nhóm 4: Quản trị Phân quyền theo Nhóm (RBAC Roles)",
+      title: "Tạo 2 Roles: app_developer và data_analyst",
+      task: "Viết câu lệnh tạo đồng thời 2 vai trò mới (Role) tên là <code>app_developer</code> và <code>data_analyst</code>.",
+      hint: "Cú pháp: CREATE ROLE 'app_developer', 'data_analyst';",
+      solution: "CREATE ROLE 'app_developer', 'data_analyst';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /create\s+role\s+.*app_developer.*data_analyst/.test(n);
+      }
+    },
+    {
+      id: "4.2",
+      group: "Nhóm 4: Quản trị Phân quyền theo Nhóm (RBAC Roles)",
+      title: "Cấp quyền DML trên ecommerce_db.* cho Role app_developer",
+      task: "Cấp các quyền <code>SELECT, INSERT, UPDATE, DELETE</code> trên toàn bộ CSDL <code>ecommerce_db.*</code> cho vai trò <code>app_developer</code>.",
+      hint: "Cú pháp: GRANT SELECT, INSERT, UPDATE, DELETE ON ecommerce_db.* TO 'app_developer';",
+      solution: "GRANT SELECT, INSERT, UPDATE, DELETE ON ecommerce_db.* TO 'app_developer';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        const hasGrant = /grant\s+.*on\s+ecommerce_db\.\*\s+to\s+['"]?app_developer['"]?/.test(n);
+        return hasGrant && /select/.test(n) && /insert/.test(n) && /update/.test(n) && /delete/.test(n);
+      }
+    },
+    {
+      id: "4.3",
+      group: "Nhóm 4: Quản trị Phân quyền theo Nhóm (RBAC Roles)",
+      title: "Gán Role app_developer cho dev_user@localhost",
+      task: "Gán vai trò <code>app_developer</code> cho người dùng <code>dev_user'@'localhost</code>.",
+      hint: "Cú pháp: GRANT 'app_developer' TO 'dev_user'@'localhost';",
+      solution: "GRANT 'app_developer' TO 'dev_user'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /grant\s+['"]?app_developer['"]?\s+to\s+['"]dev_user['"]@['"]localhost['"]/.test(n);
+      }
+    },
+    {
+      id: "4.4",
+      group: "Nhóm 4: Quản trị Phân quyền theo Nhóm (RBAC Roles)",
+      title: "Thiết lập Role mặc định bằng SET DEFAULT ROLE",
+      task: "Thiết lập vai trò <code>app_developer</code> làm role mặc định được tự kích hoạt mỗi khi <code>dev_user'@'localhost</code> kết nối vào server.",
+      hint: "Cú pháp: SET DEFAULT ROLE 'app_developer' TO 'dev_user'@'localhost';",
+      solution: "SET DEFAULT ROLE 'app_developer' TO 'dev_user'@'localhost';",
+      checker: (sql) => {
+        const n = normSql(sql);
+        return /set\s+default\s+role\s+['"]?app_developer['"]?\s+to\s+['"]dev_user['"]@['"]localhost['"]/.test(n);
+      }
+    }
+  ];
+
+  function stripComments(s) {
+    return String(s || "")
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/--[^\r\n]*/g, " ")
+      .replace(/#[^\r\n]*/g, " ");
+  }
+
+  function normSql(s) {
+    return stripComments(s)
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/;+\s*$/, "")
+      .toLowerCase();
+  }
+
+  // Simulator for User & Privilege Administration
+  function executeUserSql(rawSql) {
+    const rawClean = stripComments(rawSql).trim();
+    if (!rawClean) {
+      throw new Error("EMPTY_SQL");
+    }
+
+    const norm = normSql(rawSql);
+
+    // If it's a SELECT query and SQLite is ready, execute directly via SQLite WASM!
+    if (/^select\b/i.test(norm) && sqlDb) {
+      try {
+        const querySql = stripComments(rawSql)
+          .trim()
+          .replace(/;+\s*$/, "")
+          .replace(/`mysql`\./gi, "mysql.")
+          .replace(/`user`/gi, "user");
+        const res = sqlDb.exec(querySql);
+        if (res.length > 0) {
+          return {
+            columns: res[0].columns,
+            rows: res[0].values
+          };
+        } else {
+          return {
+            columns: [],
+            rows: []
+          };
+        }
+      } catch (sqliteErr) {
+        // Fall back to custom emulator
+      }
+    }
+
+    // SELECT from mysql.user
+    if (/from\s+mysql\.user/i.test(norm)) {
+      return {
+        columns: ["user", "host", "account_locked"],
+        rows: users.map(u => [u.user, u.host, u.locked])
+      };
+    }
+
+    // CREATE USER
+    let m = norm.match(/^create\s+user(?:\s+if\s+not\s+exists)?\s+['"]([a-z0-9_.]+)['"]@['"]([a-z0-9_%.]+)['"](?:\s+identified\s+by\s+['"]([^'"]+)['"])?$/i);
+    if (m) {
+      const uName = m[1];
+      const hName = m[2];
+      const existing = users.find(u => u.user.toLowerCase() === uName.toLowerCase() && u.host.toLowerCase() === hName.toLowerCase());
+      if (existing) {
+        throw new Error(`Operation CREATE USER failed for '${uName}'@'${hName}' (User exists, Errcode: 1396)`);
+      }
+      users.push({
+        user: uName,
+        host: hName,
+        locked: "N",
+        grants: [`GRANT USAGE ON *.* TO '${uName}'@'${hName}'`]
+      });
+      syncUsersToSqlite();
+      renderLiveUserUI();
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (User '${uName}'@'${hName}' created).`]]
+      };
+    }
+
+    // ALTER USER
+    m = norm.match(/^alter\s+user\s+['"]([a-z0-9_.]+)['"]@['"]([a-z0-9_%.]+)['"](?:\s+identified\s+by\s+['"]([^'"]+)['"])?$/i);
+    if (m) {
+      const uName = m[1];
+      const hName = m[2];
+      const found = users.find(u => u.user.toLowerCase() === uName.toLowerCase() && u.host.toLowerCase() === hName.toLowerCase());
+      if (!found) {
+        throw new Error(`Operation ALTER USER failed for '${uName}'@'${hName}' (User doesn't exist, Errcode: 1396)`);
+      }
+      syncUsersToSqlite();
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Password updated for '${uName}'@'${hName}').`]]
+      };
+    }
+
+    // DROP USER [IF EXISTS]
+    m = norm.match(/^drop\s+user(?:\s+if\s+exists)?\s+['"]([a-z0-9_.]+)['"]@['"]([a-z0-9_%.]+)['"]$/i);
+    if (m) {
+      const uName = m[1];
+      const hName = m[2];
+      const idx = users.findIndex(u => u.user.toLowerCase() === uName.toLowerCase() && u.host.toLowerCase() === hName.toLowerCase());
+      if (idx === -1) {
+        if (/if\s+exists/i.test(norm)) {
+          return {
+            columns: ["Status"],
+            rows: [[`Query OK, 0 rows affected, 1 warning (User '${uName}'@'${hName}' does not exist).`]]
+          };
+        }
+        throw new Error(`Operation DROP USER failed for '${uName}'@'${hName}' (Errcode: 1396)`);
+      }
+      users.splice(idx, 1);
+      syncUsersToSqlite();
+      renderLiveUserUI();
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (User '${uName}'@'${hName}' dropped).`]]
+      };
+    }
+
+    // SHOW GRANTS FOR 'user'@'host'
+    m = norm.match(/^show\s+grants\s+for\s+['"]([a-z0-9_.]+)['"]@['"]([a-z0-9_%.]+)['"]$/i);
+    if (m) {
+      const uName = m[1];
+      const hName = m[2];
+      const found = users.find(u => u.user.toLowerCase() === uName.toLowerCase() && u.host.toLowerCase() === hName.toLowerCase());
+      if (!found) {
+        return {
+          columns: [`Grants for ${uName}@${hName}`],
+          rows: [
+            [`GRANT USAGE ON *.* TO '${uName}'@'${hName}'`],
+            [`GRANT SELECT, INSERT, UPDATE ON \`sales_db\`.\`customers\` TO '${uName}'@'${hName}'`]
+          ]
+        };
+      }
+      return {
+        columns: [`Grants for ${found.user}@${found.host}`],
+        rows: found.grants.map(g => [g])
+      };
+    }
+
+    // GRANT ... ON ... TO
+    if (/^grant\s+/i.test(norm)) {
+      m = norm.match(/to\s+['"]?([a-z0-9_.]+)['"]?(?:@['"]([a-z0-9_%.]+)['"])?/i);
+      const target = m ? m[1] : "target";
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Privileges granted successfully to '${target}').`]]
+      };
+    }
+
+    // REVOKE ... FROM
+    if (/^revoke\s+/i.test(norm)) {
+      m = norm.match(/from\s+['"]?([a-z0-9_.]+)['"]?(?:@['"]([a-z0-9_%.]+)['"])?/i);
+      const target = m ? m[1] : "target";
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Privileges revoked successfully from '${target}').`]]
+      };
+    }
+
+    // CREATE ROLE
+    if (/^create\s+role\s+/i.test(norm)) {
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Role(s) created successfully).`]]
+      };
+    }
+
+    // SET DEFAULT ROLE
+    if (/^set\s+default\s+role\s+/i.test(norm)) {
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Default role activated).`]]
+      };
+    }
+
+    // FLUSH PRIVILEGES
+    if (/^flush\s+privileges$/i.test(norm)) {
+      return {
+        columns: ["Status"],
+        rows: [[`Query OK, 0 rows affected (Privileges reloaded to memory cache).`]]
+      };
+    }
+
+    throw new Error(`Cú pháp chưa hỗ trợ trong Lab User Administration: "${rawSql}". Vui lòng sử dụng CREATE USER, ALTER USER, DROP USER, GRANT, REVOKE, SHOW GRANTS, CREATE ROLE, SET DEFAULT ROLE hoặc FLUSH PRIVILEGES.`);
+  }
+
+  function renderTableHtml(cols, rows) {
+    if (!rows || rows.length === 0) {
+      return '<div style="padding:12px;color:var(--muted)">Tập kết quả rỗng (0 dòng).</div>';
+    }
+    let html = '<table class="dbms-table"><thead><tr>';
+    cols.forEach(c => { html += `<th>${escapeHtml(c)}</th>`; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(r => {
+      html += '<tr>';
+      r.forEach(val => {
+        html += `<td>${val === null ? '<i style="color:var(--muted)">NULL</i>' : escapeHtml(String(val))}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderLiveUserUI() {
+    const box = document.getElementById("userCatalogBox");
+    let html = '<table class="dbms-table"><thead><tr><th>User</th><th>Host</th><th>Locked</th><th>Role/Privilege</th></tr></thead><tbody>';
+    users.forEach(u => {
+      html += `<tr>
+        <td><strong>'${escapeHtml(u.user)}'</strong></td>
+        <td><code>@'${escapeHtml(u.host)}'</code></td>
+        <td><span style="color:${u.locked === 'Y' ? 'var(--red)' : 'var(--green)'}">${u.locked}</span></td>
+        <td style="font-size:11px;color:var(--muted)">${escapeHtml(u.grants[0] ? u.grants[0].slice(0, 35) + '...' : 'USAGE')}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    box.innerHTML = html;
+  }
+
+  // UI elements
+  const exerciseSelect = document.getElementById("exerciseSelect");
+  const taskDescription = document.getElementById("taskDescription");
+  const practiceSql = document.getElementById("practiceSql");
+  const practiceStatus = document.getElementById("practiceStatus");
+  const practiceMeta = document.getElementById("practiceMeta");
+  const practiceResult = document.getElementById("practiceResult");
+  const hintDetails = document.getElementById("hintDetails");
+  const hintContent = document.getElementById("hintContent");
+
+  const playgroundSql = document.getElementById("playgroundSql");
+  const playgroundStatus = document.getElementById("playgroundStatus");
+  const playgroundResult = document.getElementById("playgroundResult");
+  const presetSelect = document.getElementById("presetSelect");
+
+  const studentIdInput = document.getElementById("studentId");
+  const studentNameInput = document.getElementById("studentName");
+  const scorePill = document.getElementById("scorePill");
+  const progressBar = document.getElementById("progressBar");
+
+  let solvedExercises = new Set();
+  let currentExIndex = 0;
+
+  function loadProgress() {
+    try {
+      studentIdInput.value = localStorage.getItem("dbms_student_id") || "";
+      studentNameInput.value = localStorage.getItem("dbms_student_name") || "";
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        solvedExercises = new Set(parsed.solved || []);
+      }
+    } catch (e) {
+      console.warn("Storage unavailable:", e);
+    }
+    updateScoreUI();
+  }
+
+  function saveProgress() {
+    try {
+      localStorage.setItem("dbms_student_id", studentIdInput.value.trim());
+      localStorage.setItem("dbms_student_name", studentNameInput.value.trim());
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        solved: Array.from(solvedExercises),
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.warn("Save failed:", e);
+    }
+  }
+
+  function updateScoreUI() {
+    const total = EXERCISES.length;
+    const count = solvedExercises.size;
+    const pct = Math.round((count / total) * 100);
+
+    scorePill.textContent = `${count} / ${total} bài đúng (${pct}%)`;
+    if (count === total) scorePill.classList.add("done");
+    else scorePill.classList.remove("done");
+    progressBar.style.width = pct + "%";
+
+    EXERCISES.forEach((ex, idx) => {
+      const b = document.getElementById(`badge-ex-${idx}`);
+      if (b) {
+        if (solvedExercises.has(ex.id)) {
+          b.className = "exercise-badge badge-done";
+          b.textContent = "✓ Đã đúng";
+        } else {
+          b.className = "exercise-badge badge-todo";
+          b.textContent = "Chưa làm";
+        }
+      }
+    });
+  }
+
+  function buildExerciseUI() {
+    exerciseSelect.innerHTML = "";
+    EXERCISES.forEach((ex, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = `Bài ${ex.id}: ${ex.title}`;
+      exerciseSelect.appendChild(opt);
+    });
+
+    const groups = {};
+    EXERCISES.forEach((ex, idx) => {
+      if (!groups[ex.group]) groups[ex.group] = [];
+      groups[ex.group].push({ ex, idx });
+    });
+
+    const container = document.getElementById("groupContainer");
+    container.innerHTML = "";
+    Object.keys(groups).forEach(gName => {
+      const gDetails = document.createElement("details");
+      gDetails.className = "exercise-group";
+      gDetails.open = true;
+
+      const summary = document.createElement("summary");
+      summary.textContent = gName;
+      gDetails.appendChild(summary);
+
+      const listDiv = document.createElement("div");
+      listDiv.className = "exercise-list";
+
+      groups[gName].forEach(item => {
+        const row = document.createElement("div");
+        row.className = "exercise-item";
+        row.innerHTML = `
+          <div class="exercise-title">
+            <a href="#" style="color:var(--text);font-weight:600;text-decoration:none" data-idx="${item.idx}">
+              Bài ${item.ex.id}: ${escapeHtml(item.ex.title)}
+            </a>
+          </div>
+          <span id="badge-ex-${item.idx}" class="exercise-badge badge-todo">Chưa làm</span>
+        `;
+        row.querySelector("a").addEventListener("click", e => {
+          e.preventDefault();
+          selectExercise(item.idx);
+        });
+        listDiv.appendChild(row);
+      });
+
+      gDetails.appendChild(listDiv);
+      container.appendChild(gDetails);
+    });
+  }
+
+  function selectExercise(idx) {
+    currentExIndex = idx;
+    exerciseSelect.value = idx;
+    const ex = EXERCISES[idx];
+
+    taskDescription.innerHTML = `<b>Bài ${ex.id} · ${escapeHtml(ex.title)}:</b><div style="margin-top:5px">${ex.task}</div>`;
+    practiceSql.value = `-- Bài ${ex.id}: ${ex.title}\n`;
+    practiceStatus.className = "status-msg info";
+    practiceStatus.textContent = solvedExercises.has(ex.id) ? "✓ Bài này bạn đã giải đúng trước đó." : "Viết câu lệnh và nhấn 'Chấm điểm (Check)'.";
+    practiceResult.innerHTML = '<div style="padding:12px;color:var(--muted)">Kết quả sẽ xuất hiện ở đây.</div>';
+    practiceMeta.textContent = "Chưa chạy.";
+
+    hintDetails.style.display = "block";
+    hintDetails.open = false;
+    hintContent.innerHTML = `<b>Gợi ý:</b> ${escapeHtml(ex.hint)}<pre><code>${escapeHtml(ex.solution)}</code></pre>`;
+
+    practiceSql.focus();
+  }
+
+  // Practice actions
+  document.getElementById("btnPracticeRun").addEventListener("click", () => {
+    const sql = practiceSql.value;
+    if (!stripComments(sql).trim()) {
+      practiceStatus.className = "status-msg info";
+      practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+      practiceMeta.textContent = "Chưa có câu lệnh nào.";
+      return;
+    }
+    try {
+      const start = performance.now();
+      const res = executeUserSql(sql);
+      const timeMs = (performance.now() - start).toFixed(1);
+      practiceStatus.className = "status-msg ok";
+      practiceStatus.textContent = `✓ Chạy thành công (${timeMs} ms).`;
+      practiceMeta.textContent = `${res.rows.length} dòng trả về • ${timeMs} ms`;
+      practiceResult.innerHTML = renderTableHtml(res.columns, res.rows);
+    } catch (e) {
+      if (e.message === "EMPTY_SQL") {
+        practiceStatus.className = "status-msg info";
+        practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+        practiceMeta.textContent = "Chưa có câu lệnh nào.";
+        return;
+      }
+      practiceStatus.className = "status-msg err";
+      practiceStatus.textContent = `✗ Lỗi: ${e.message}`;
+      practiceResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+      practiceMeta.textContent = "Thực thi thất bại.";
+    }
+  });
+
+  document.getElementById("btnPracticeCheck").addEventListener("click", () => {
+    const ex = EXERCISES[currentExIndex];
+    const sql = practiceSql.value;
+    if (!stripComments(sql).trim()) {
+      practiceStatus.className = "status-msg info";
+      practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+      practiceMeta.textContent = "Chưa có câu lệnh nào.";
+      return;
+    }
+
+    try {
+      const res = executeUserSql(sql);
+      practiceResult.innerHTML = renderTableHtml(res.columns, res.rows);
+
+      const isCorrect = ex.checker(sql, res);
+      if (isCorrect) {
+        solvedExercises.add(ex.id);
+        saveProgress();
+        updateScoreUI();
+        practiceStatus.className = "status-msg ok";
+        practiceStatus.textContent = `🎉 CHÍNH XÁC! Bạn đã vượt qua Bài ${ex.id}!`;
+        practiceMeta.textContent = `Bài tập ${ex.id} đã hoàn thành xuất sắc.`;
+      } else {
+        practiceStatus.className = "status-msg err";
+        practiceStatus.textContent = `✗ Câu lệnh chạy được nhưng chưa đúng hoàn toàn yêu cầu bài toán. Vui lòng xem gợi ý!`;
+        practiceMeta.textContent = "Kiểm tra lại định danh host @'localhost' hay @'%', danh sách quyền hoặc WITH GRANT OPTION.";
+      }
+    } catch (e) {
+      if (e.message === "EMPTY_SQL") {
+        practiceStatus.className = "status-msg info";
+        practiceStatus.textContent = "ℹ️ Vui lòng viết câu lệnh SQL bên dưới dòng ghi chú.";
+        practiceMeta.textContent = "Chưa có câu lệnh nào.";
+        return;
+      }
+      practiceStatus.className = "status-msg err";
+      practiceStatus.textContent = `✗ Lỗi cú pháp/thực thi: ${e.message}`;
+      practiceResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+      practiceMeta.textContent = "Không thể chấm điểm do câu lệnh gặp lỗi.";
+    }
+  });
+
+  document.getElementById("btnPracticeClear").addEventListener("click", () => {
+    practiceSql.value = "";
+    practiceSql.focus();
+  });
+
+  exerciseSelect.addEventListener("change", e => selectExercise(parseInt(e.target.value, 10)));
+  document.getElementById("btnPrevEx").addEventListener("click", () => {
+    if (currentExIndex > 0) selectExercise(currentExIndex - 1);
+  });
+  document.getElementById("btnNextEx").addEventListener("click", () => {
+    if (currentExIndex < EXERCISES.length - 1) selectExercise(currentExIndex + 1);
+  });
+
+  // Playground actions
+  document.getElementById("btnPlaygroundRun").addEventListener("click", () => {
+    const sql = playgroundSql.value;
+    if (!stripComments(sql).trim()) {
+      playgroundStatus.className = "status-msg info";
+      playgroundStatus.textContent = "ℹ️ Vui lòng nhập câu lệnh SQL trước khi chạy.";
+      return;
+    }
+    try {
+      const start = performance.now();
+      const res = executeUserSql(sql);
+      const timeMs = (performance.now() - start).toFixed(1);
+      playgroundStatus.className = "status-msg ok";
+      playgroundStatus.textContent = `✓ Chạy thành công (${timeMs} ms).`;
+      playgroundResult.innerHTML = renderTableHtml(res.columns, res.rows);
+    } catch (e) {
+      playgroundStatus.className = "status-msg err";
+      playgroundStatus.textContent = `✗ ${e.message}`;
+      playgroundResult.innerHTML = `<div style="padding:12px;color:var(--red)">${escapeHtml(e.message)}</div>`;
+    }
+  });
+
+  document.getElementById("btnLoadPreset").addEventListener("click", () => {
+    const val = presetSelect.value;
+    if (val) {
+      playgroundSql.value = val.replace(/\\n/g, "\n");
+      document.getElementById("btnPlaygroundRun").click();
+    }
+  });
+
+  document.getElementById("btnResetUsers").addEventListener("click", () => {
+    resetUsersAndRoles();
+    playgroundStatus.className = "status-msg ok";
+    playgroundStatus.textContent = "Danh mục tài khoản mẫu đã được khôi phục ban đầu.";
+  });
+
+  studentIdInput.addEventListener("input", saveProgress);
+  studentNameInput.addEventListener("input", saveProgress);
+
+  document.getElementById("btnResetAll").addEventListener("click", () => {
+    if (confirm("Bạn có chắc chắn muốn xóa toàn bộ tiến trình làm bài để làm lại từ đầu không?")) {
+      solvedExercises.clear();
+      resetUsersAndRoles();
+      saveProgress();
+      updateScoreUI();
+      selectExercise(0);
+      alert("Đã đặt lại tiến trình bài tập!");
+    }
+  });
+
+  document.getElementById("btnExportCsv").addEventListener("click", () => {
+    const mssv = studentIdInput.value.trim() || "N/A";
+    const name = studentNameInput.value.trim() || "N/A";
+    let csv = "\uFEFFMSSV,Họ và tên,Mã bài,Tên bài tập,Trạng thái,Thời gian xuất\n";
+    const timeStr = new Date().toLocaleString("vi-VN");
+
+    EXERCISES.forEach(ex => {
+      const st = solvedExercises.has(ex.id) ? "HOAN_THANH" : "CHUA_LAM";
+      csv += `"${mssv}","${name}","${ex.id}","${ex.title}","${st}","${timeStr}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `BangDiem_SQL_User_Administration_${mssv}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btnExportPng").addEventListener("click", () => {
+    const mssv = studentIdInput.value.trim() || "Chưa nhập MSSV";
+    const name = studentNameInput.value.trim() || "Học viên DBMS";
+    const count = solvedExercises.size;
+    const total = EXERCISES.length;
+    const pct = Math.round((count / total) * 100);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 700;
+    const ctx = canvas.getContext("2d");
+
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 700);
+    bgGrad.addColorStop(0, "#1e1b4b");
+    bgGrad.addColorStop(0.5, "#3730a3");
+    bgGrad.addColorStop(1, "#1e1b4b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 700);
+
+    ctx.strokeStyle = "#818cf8";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(30, 30, 1140, 640);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, 40, 1120, 620);
+
+    ctx.fillStyle = "#c7d2fe";
+    ctx.font = "bold 16px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("BÁO CÁO THỰC HÀNH CÂU LỆNH SQL TỰ CHẤM · HỆ QUẢN TRỊ CSDL MYSQL", 600, 95);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 34px system-ui, sans-serif";
+    ctx.fillText("QUẢN LÝ NGƯỜI DÙNG, PHÂN QUYỀN & ROLE MYSQL", 600, 150);
+
+    ctx.fillStyle = "#e0e7ff";
+    ctx.font = "18px system-ui, sans-serif";
+    ctx.fillText("Chứng nhận kết quả thực hành CREATE USER, GRANT/REVOKE, SHOW GRANTS, RBAC & MYSQL.USER", 600, 190);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.fillRect(150, 230, 900, 130);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.strokeRect(150, 230, 900, 130);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`Học viên:`, 190, 275);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 22px system-ui, sans-serif";
+    ctx.fillText(name, 280, 275);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(`Mã số sinh viên:`, 190, 325);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 22px system-ui, sans-serif";
+    ctx.fillText(mssv, 340, 325);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(`Thời gian cấp:`, 650, 325);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(new Date().toLocaleString("vi-VN"), 780, 325);
+
+    ctx.fillStyle = "rgba(55, 48, 163, 0.6)";
+    ctx.fillRect(150, 390, 430, 160);
+    ctx.strokeStyle = "#818cf8";
+    ctx.strokeRect(150, 390, 430, 160);
+
+    ctx.fillStyle = "rgba(21, 128, 61, 0.4)";
+    ctx.fillRect(620, 390, 430, 160);
+    ctx.strokeStyle = "#22c55e";
+    ctx.strokeRect(620, 390, 430, 160);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#c7d2fe";
+    ctx.font = "bold 18px system-ui, sans-serif";
+    ctx.fillText("BÀI TẬP ĐÃ GIẢI ĐÚNG", 365, 435);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 56px system-ui, sans-serif";
+    ctx.fillText(`${count} / ${total}`, 365, 505);
+
+    ctx.fillStyle = "#86efac";
+    ctx.font = "bold 18px system-ui, sans-serif";
+    ctx.fillText("TỶ LỆ HOÀN THÀNH", 835, 435);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 56px system-ui, sans-serif";
+    ctx.fillText(`${pct}%`, 835, 505);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "italic 14px system-ui, sans-serif";
+    ctx.fillText("Kết quả được kiểm tra và đánh giá tự động bởi Hệ thống thực hành DBMS Course", 600, 610);
+
+    const link = document.createElement("a");
+    link.download = `ChungNhan_SQL_User_Administration_${mssv}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+
+  practiceSql.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("btnPracticeRun").click();
+    }
+  });
+
+  buildExerciseUI();
+  resetUsersAndRoles();
+  loadProgress();
+  selectExercise(0);
+  initSqliteEngine();
+
+})();
+</script>
+</body>
+</html>

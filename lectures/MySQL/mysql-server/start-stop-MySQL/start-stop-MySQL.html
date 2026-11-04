@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 03: Vòng đời Server & Quản lý Dịch vụ MySQL · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về Quản lý dịch vụ MySQL Server trên Windows và Linux, Graceful Shutdown và phân tích Error Log.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --teal: #00758f;
+  --teal-dark: #00546b;
+  --teal-sub: #e6f4f8;
+  --orange: #f29111;
+  --orange-sub: #fef5e7;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #00546b 0%, #00758f 50%, #0f4c75 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(0, 84, 107, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+.student-inputs input:focus { border-color: var(--teal); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--teal-sub);
+  color: var(--teal-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--teal);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--teal-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <a href="../mysql-server.html" class="nav-back">← Quay lại Trung tâm MySQL Server Hub</a>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#fed7aa;margin-bottom:8px;background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:999px;">Lesson 03 · Quản trị Vận hành</div>
+    <h1>Vòng đời Server & Quản lý Dịch vụ MySQL</h1>
+    <p>Nắm vững phương thức Start, Stop, Restart dịch vụ MySQL trên Windows và Linux; nguyên lý Graceful Shutdown bảo vệ dữ liệu và cách đọc Error Log chẩn đoán sự cố.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Trạng thái Hoạt động của MySQL & Tác động của Restart</h2>
+        <div class="stage-desc">Khi nào cần Restart, khi nào KHÔNG nên Restart và rủi ro gián đoạn dịch vụ</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Tác động của hành động Restart trên môi trường thực tế:</h4>
+      <ul>
+        <li><b>Ngắt kết nối ứng dụng (Connection Drops):</b> Tất cả client đang kết nối sẽ bị ngắt đột ngột.</li>
+        <li><b>Hủy bỏ các Transaction chưa commit:</b> Các giao dịch đang dở dang sẽ bị Rollback khi server khởi động lại.</li>
+        <li><b>Mất bộ đệm RAM (Buffer Pool Cold-start):</b> Vùng nhớ đệm InnoDB Buffer Pool bị giải phóng, khiến các truy vấn ngay sau restart chạy chậm hơn đáng kể do phải đọc trực tiếp từ đĩa cứng.</li>
+      </ul>
+      
+      <h4>2. Khi nào cần và không cần Restart?</h4>
+      <table class="table-custom">
+        <thead><tr><th>Tình huống</th><th>Có cần Restart dịch vụ không?</th><th>Lý do</th></tr></thead>
+        <tbody>
+          <tr><td>Đổi tham số động (Dynamic Variable) như <code>max_connections</code></td><td><b>KHÔNG</b></td><td>Dùng lệnh <code>SET GLOBAL max_connections = 200;</code> có hiệu lực ngay</td></tr>
+          <tr><td>Tạo thêm Database, Table mới hoặc User mới</td><td><b>KHÔNG</b></td><td>Các lệnh DDL / DCL thực thi tức thì lúc runtime</td></tr>
+          <tr><td>Đổi port 3306 sang 3307 hoặc đổi đường dẫn <code>datadir</code></td><td><b>CÓ</b></td><td>Đây là Static Variables chỉ được nạp lúc boot tiến trình</td></tr>
+          <tr><td>Nâng cấp phiên bản MySQL hoặc cập nhật chứng chỉ SSL server</td><td><b>CÓ</b></td><td>Cần nạp binary mới hoặc nạp lại subsystem mạng</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Tình huống nào sau đây BẮT BUỘC phải thực hiện Restart lại dịch vụ MySQL Server?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Tạo thêm một Table mới trong database hiện tại</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> Thay đổi tham số tĩnh (Static Variable) như đường dẫn thư mục `datadir` trong file cấu hình</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> Thực hiện câu lệnh SELECT truy vấn dữ liệu</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Cấp quyền GRANT SELECT cho một người dùng mới</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Hiện tượng các câu truy vấn chạy chậm hơn ngay sau khi restart server được giải thích chủ yếu bởi nguyên nhân nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> Buffer Pool bị trống rỗng (Cold-start), server phải nạp lại dữ liệu từ đĩa cứng</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> CPU máy tính bị giảm tốc độ xung nhịp</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> Cáp mạng bị đứt</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> Cổng 3306 tự động đổi thành 80</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Quản lý MySQL Service trên Windows</h2>
+        <div class="stage-desc">Sử dụng `services.msc`, `net start/stop`, `sc.exe` và PowerShell `Start-Service`</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Các phương thức điều khiển MySQL Service trên Windows:</h4>
+      <ul>
+        <li><b>Giao diện đồ họa Services (GUI):</b>
+          <p>Nhấn <code>Win + R</code>, gõ <code>services.msc</code>. Tìm service có tên <b>MySQL80</b> (hoặc tên đặt lúc cài đặt), chuột phải chọn <b>Start</b>, <b>Stop</b> hoặc <b>Restart</b>.</p>
+        </li>
+        <li><b>Command Prompt (CMD - Yêu cầu Run as Administrator):</b>
+          <pre><code>REM Khởi động dịch vụ
+net start MySQL80
+
+REM Dừng dịch vụ an toàn
+net stop MySQL80</code></pre>
+        </li>
+        <li><b>PowerShell (Administrator):</b>
+          <pre><code># Kiểm tra trạng thái
+Get-Service MySQL80
+
+# Khởi động / Dừng / Khởi động lại
+Start-Service MySQL80
+Stop-Service MySQL80
+Restart-Service MySQL80</code></pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh PowerShell chuẩn để kiểm tra trạng thái hoạt động của dịch vụ MySQL trên Windows là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> `Get-Service MySQL80`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> `Find-Process mysqld`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> `Check-Database Status`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> `ping localhost:3306`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Khi chạy lệnh `net start MySQL80` trong Command Prompt nhận thông báo "System error 5 has occurred. Access is denied", nguyên nhân chính là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> Cửa sổ Command Prompt chưa được mở bằng quyền Quản trị viên (Run as Administrator)</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> Máy tính bị mất mạng Internet</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> Gõ sai tên database</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> MySQL Server đã bị gỡ cài đặt</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Quản lý MySQL Service trên Linux</h2>
+        <div class="stage-desc">Sử dụng `systemctl`, `service` và công cụ theo dõi nhật ký `journalctl`</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>Các lệnh quản trị dịch vụ với systemd trên Ubuntu/Debian/CentOS:</h4>
+      <pre><code># 1. Kiểm tra trạng thái dịch vụ (Active: active (running))
+sudo systemctl status mysql
+
+# 2. Khởi động dịch vụ
+sudo systemctl start mysql
+
+# 3. Dừng dịch vụ an toàn
+sudo systemctl stop mysql
+
+# 4. Khởi động lại dịch vụ
+sudo systemctl restart mysql
+
+# 5. Bật tự động khởi chạy khi boot máy chủ
+sudo systemctl enable mysql
+
+# 6. Xem log hệ thống của MySQL qua journalctl
+sudo journalctl -u mysql -n 50 --no-pager</code></pre>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Trên máy chủ Ubuntu Linux sử dụng systemd, câu lệnh nào được dùng để kiểm tra chi tiết trạng thái hoạt động hiện thời của MySQL?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> `sudo systemctl status mysql`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> `mysql --status`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> `top mysqld`</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> `ls /var/lib/mysql`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Để MySQL Server tự động khởi chạy mỗi khi máy chủ Linux reboot, câu lệnh nào cần được thiết lập?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> `sudo systemctl enable mysql`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> `sudo systemctl reload mysql`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> `echo mysql >> /etc/hosts`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> `chmod 777 mysql`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Graceful Shutdown vs Forced Kill & Cơ chế `mysqladmin`</h2>
+        <div class="stage-desc">Nguyên lý dừng có kiểm soát để bảo vệ cấu trúc Tablespace và Redo Log</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Quá trình Graceful Shutdown diễn ra như thế nào?</h4>
+      <p>Khi dừng an toàn (bằng <code>systemctl stop</code>, <code>net stop</code> hoặc <code>mysqladmin shutdown</code>):</p>
+      <ol>
+        <li>Server ngừng chấp nhận các kết nối mới từ client.</li>
+        <li>Chờ các câu truy vấn và transaction đang chạy dở dang hoàn tất (hoặc gửi tín hiệu rollback an toàn).</li>
+        <li><b>Flush Dirty Pages:</b> Toàn bộ các trang dữ liệu đã chỉnh sửa trong RAM (Dirty Pages) được ghi trọn vẹn xuống đĩa cứng (Tablespace <code>.ibd</code>).</li>
+        <li>Ghi nhận checkpoint cuối cùng vào <b>Redo Log</b>.</li>
+        <li>Đóng an toàn tất cả các file handle và giải phóng bộ nhớ.</li>
+      </ol>
+      
+      <h4>2. Tác hại của Forced Kill (`kill -9` hoặc End Process trong Task Manager):</h4>
+      <p>Việc ép tắt ngang process khiến các trang dữ liệu trên đĩa và trong log không đồng bộ, buộc MySQL phải kích hoạt quy trình <b>InnoDB Crash Recovery</b> khi khởi động lại, tiêu tốn nhiều thời gian và có nguy cơ hỏng cấu trúc dữ liệu nếu phần cứng gặp sự cố.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh tiện ích nào cho phép gửi tín hiệu shutdown có kiểm soát (Graceful Shutdown) tới MySQL Server từ xa qua dòng lệnh?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `mysqladmin -u root -p shutdown`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> `killall -9 mysqld`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> `mysql --drop-all`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> `taskkill /F /IM mysqld.exe`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Trong tiến trình dừng an toàn (Graceful Shutdown), thao tác "Flush Dirty Pages" có ý nghĩa cốt lõi là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> Xóa sạch toàn bộ bảng dữ liệu trong CSDL</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> Ghi trọn vẹn tất cả các khối dữ liệu đã bị sửa đổi trong RAM xuống file lưu trữ trên đĩa</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> Xóa sạch lịch sử truy vấn của người dùng</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> Đổi mật khẩu tài khoản root</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">Đọc Error Log (`.err`) & Xử lý Trục trặc Khởi động</h2>
+        <div class="stage-desc">Chẩn đoán lỗi xung đột cổng, lỗi phân quyền file và Crash Recovery</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. File Error Log của MySQL nằm ở đâu?</h4>
+      <p>Mặc định file error log có đuôi <code>.err</code> nằm trong thư mục <code>datadir</code> (ví dụ: <code>HOSTNAME.err</code> trên Windows hoặc <code>/var/log/mysql/error.log</code> trên Linux). Có thể tra cứu qua câu lệnh:</p>
+      <pre><code>SHOW VARIABLES LIKE 'log_error';</code></pre>
+      
+      <h4>2. Ba nguyên nhân khởi động thất bại thường gặp nhất:</h4>
+      <ul>
+        <li><b>Xung đột cổng mạng (Port Conflict):</b> Cổng 3306 đã bị tiến trình khác chiếm dụng. Error log sẽ ghi: <i>"Do you already have another mysqld server running on port: 3306?"</i>.</li>
+        <li><b>Lỗi quyền truy cập file (Permissions):</b> User hệ điều hành chạy `mysqld` không có quyền đọc/ghi vào thư mục dữ liệu <code>datadir</code>.</li>
+        <li><b>Lỗi cú pháp file cấu hình:</b> Gõ sai tên option hoặc sai định dạng trong file <code>my.ini</code> / <code>my.cnf</code>.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi MySQL Server không thể khởi động được (Start service thất bại ngay lập tức), nơi đầu tiên người quản trị cần kiểm tra là gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> Đọc các dòng log cuối cùng trong file Error Log (`.err`)</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> Format lại ổ đĩa cứng của máy tính</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> Gỡ bỏ card màn hình</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> Đổi mật khẩu tài khoản Windows</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Để tìm Process ID (PID) của tiến trình đang chiếm dụng cổng 3306 trên Windows nhằm giải phóng cổng cho MySQL, lệnh nào trong CMD được dùng?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> `netstat -ano | findstr 3306`</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> `dir C:\mysql\3306`</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> `ipconfig /all`</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> `ping 3306`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: MySQL Server Lifecycle · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_mysql_srv_l3_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "1", explain: "Chính xác! Các tham số tĩnh (Static Variables) như datadir, port bắt buộc phải khởi động lại server mới nạp giá trị mới." },
+    q1_2: { correct: "0", explain: "Chính xác! Sau khi restart, Buffer Pool trong RAM bị làm rỗng (cold-start) nên server phải đọc dữ liệu từ ổ cứng." }
+  },
+  2: {
+    q2_1: { correct: "0", explain: "Chính xác! Lệnh `Get-Service MySQL80` trong PowerShell hiển thị trạng thái Running hoặc Stopped." },
+    q2_2: { correct: "0", explain: "Chính xác! Lệnh điều khiển Windows Service yêu cầu quyền quản trị viên cao nhất (Administrator)." }
+  },
+  3: {
+    q3_1: { correct: "0", explain: "Chính xác! `sudo systemctl status mysql` là lệnh chuẩn của systemd trên Linux để xem trạng thái dịch vụ." },
+    q3_2: { correct: "0", explain: "Chính xác! `systemctl enable mysql` tạo symlink để dịch vụ tự khởi động cùng hệ thống." }
+  },
+  4: {
+    q4_1: { correct: "0", explain: "Chính xác! `mysqladmin -u root -p shutdown` gửi tín hiệu shutdown có kiểm soát qua kết nối mạng an toàn." },
+    q4_2: { correct: "1", explain: "Chính xác! Flush dirty pages bảo đảm mọi thay đổi trong RAM được lưu trọn vẹn xuống file đĩa trước khi dừng process." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! File Error Log (`.err`) ghi lại chính xác nguyên nhân lỗi khiến server không thể khởi động." },
+    q5_2: { correct: "0", explain: "Chính xác! Lệnh `netstat -ano | findstr 3306` liệt kê kết nối cổng 3306 kèm mã Process ID (PID) ở cột cuối." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#00546b');
+  grad.addColorStop(1, '#082032');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#00758f');
+  topGrad.addColorStop(1, '#0f4c75');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#fef5e7';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 03 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('VÒNG ĐỜI SERVER & QUẢN LÝ DỊCH VỤ MYSQL', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Trạng thái Hoạt động của MySQL & Tác động Restart',
+    'Chặng 2: Quản lý MySQL Service trên Windows',
+    'Chặng 3: Quản lý MySQL Service trên Linux',
+    'Chặng 4: Graceful Shutdown vs Forced Kill & mysqladmin',
+    'Chặng 5: Đọc Error Log (.err) & Xử lý Trục trặc Khởi động'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_MySQL_Server_L3_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 03: Vong doi Server & Quan ly Dich vu MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_MySQL_Server_L3_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>

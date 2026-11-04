@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 02: Khám phá Siêu dữ liệu với SHOW Commands · Khóa học DBMS</title>
+<meta name="description" content="Bài học tương tác có khóa chặng và trắc nghiệm checkpoint về SHOW DATABASES, SHOW TABLES, SHOW FULL TABLES, SHOW COLUMNS, DESCRIBE và INFORMATION_SCHEMA trong MySQL.">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --blue: #1d4ed8;
+  --blue-dark: #1e3a8a;
+  --blue-sub: #eff6ff;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --primary-grad: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+header.hero {
+  background: var(--primary-grad);
+  color: #fff;
+  padding: 40px 0 32px;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
+}
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: #ffffff; }
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+header.hero p {
+  margin: 0;
+  font-size: 14.5px;
+  color: #e2e8f0;
+  max-width: 820px;
+  line-height: 1.6;
+}
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  box-shadow: var(--shadow);
+}
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.student-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.student-inputs input {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 13.5px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.student-inputs input:focus { border-color: var(--blue); }
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.stat-pill {
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-pill.success {
+  background: var(--green-sub);
+  color: var(--green);
+}
+.btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-outline { border-color: var(--line); background: #fff; color: var(--text); }
+.btn-outline:hover { background: #f1f5f9; }
+main { padding: 36px 0 60px; }
+.stage-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.stage-card.locked {
+  opacity: 0.58;
+  filter: grayscale(0.5);
+  pointer-events: none;
+  border-style: dashed;
+}
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.stage-badge {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--blue-sub);
+  color: var(--blue-dark);
+}
+.stage-title { font-size: 20px; font-weight: 700; margin: 6px 0 0; }
+.stage-desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.theory-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+.theory-box h4 { margin: 0 0 8px; font-size: 15px; color: var(--blue-dark); }
+.theory-box p { margin: 0 0 10px; }
+pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  margin: 12px 0;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+pre code { background: transparent; color: inherit; padding: 0; }
+.quiz-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+.quiz-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-dark);
+  margin-bottom: 16px;
+}
+.question-block {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.question-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.q-stem { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.opt-label.correct { background: var(--green-sub); border-color: #86efac; color: var(--green); font-weight: 600; }
+.opt-label.incorrect { background: var(--red-sub); border-color: #fca5a5; color: var(--red); }
+.feedback-box { margin-top: 10px; padding: 10px 14px; border-radius: 7px; font-size: 13px; display: none; }
+.feedback-box.show { display: block; }
+.feedback-box.correct { background: var(--green-sub); color: var(--green); border: 1px solid #86efac; }
+.feedback-box.incorrect { background: var(--red-sub); color: var(--red); border: 1px solid #fca5a5; }
+.table-custom { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.table-custom th, .table-custom td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; }
+.table-custom th { background: #f1f5f9; font-weight: 700; }
+footer.lesson-foot {
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+      <a href="../database-administration.html" class="nav-back" style="margin-bottom:0">← Quay lại Trung tâm Database Administration Hub</a>
+      <a href="show-command-sql-lab.html" class="btn btn-outline" style="background:rgba(255,255,255,0.18);color:#fff;border-color:rgba(255,255,255,0.35);font-weight:700">💻 Làm Bài tập SQL Tự chấm (16 bài) →</a>
+    </div>
+    <div style="display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#93c5fd;margin-bottom:8px;background:rgba(255,255,255,0.12);padding:4px 10px;border-radius:999px;">Lesson 02 · Khám phá Siêu dữ liệu</div>
+    <h1>Lệnh SHOW & Khám phá Siêu dữ liệu trong MySQL</h1>
+    <p>Làm chủ các câu lệnh SHOW chuyên dụng để khám phá cấu trúc database, bảng, view, cột, trích xuất DDL nguyên bản và so sánh với kho siêu dữ liệu INFORMATION_SCHEMA.</p>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap scorecard">
+    <div class="student-inputs">
+      <input type="text" id="studentId" placeholder="MSSV (tùy chọn)" maxlength="30" style="width:130px">
+      <input type="text" id="studentName" placeholder="Họ và tên (tùy chọn)" maxlength="80" style="width:170px">
+    </div>
+    <div class="stats-group">
+      <span class="stat-pill" id="stagePill">Chặng: 1/5</span>
+      <span class="stat-pill" id="scorePill">Điểm: 0/100</span>
+      <button class="btn btn-primary" onclick="exportReportPNG()">📷 Xuất Báo cáo PNG</button>
+      <button class="btn btn-outline" onclick="exportReportCSV()">📊 Xuất CSV</button>
+      <button class="btn btn-outline" onclick="resetProgress()" title="Làm lại từ đầu" style="color:#ef4444;">🔄 Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- STAGE 1 -->
+  <section class="stage-card" id="stage-1">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 1</span>
+        <h2 class="stage-title">Liệt kê Cơ sở Dữ liệu với `SHOW DATABASES`</h2>
+        <div class="stage-desc">Phạm vi nhìn thấy, lọc bằng mệnh đề LIKE và đặc quyền SHOW DATABASES</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cú pháp và Hành vi:</h4>
+      <pre><code>SHOW DATABASES;
+SHOW DATABASES LIKE 'classic%'; -- Lọc theo mẫu ký tự</code></pre>
+      
+      <h4>2. Cơ chế phân quyền hiển thị (Visibility Rules):</h4>
+      <ul>
+        <li>Một tài khoản người dùng chỉ nhìn thấy các database mà tài khoản đó có <b>ít nhất một đặc quyền (privilege)</b> trên đó.</li>
+        <li>Để người dùng có thể nhìn thấy danh sách tất cả các database trên toàn bộ máy chủ (giống như tài khoản `root`), người dùng đó phải được cấp quyền toàn cục:
+          <pre><code>GRANT SHOW DATABASES ON *.* TO 'dba_user'@'localhost';</code></pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 1</div>
+      
+      <div class="question-block" data-qid="q1_1">
+        <div class="q-stem"><b>Câu 1:</b> Nếu một user thông thường không có quyền quản trị tối cao thực hiện lệnh `SHOW DATABASES;`, user đó sẽ nhìn thấy những database nào?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_1" value="0"> Mọi database có trên ổ cứng của server</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="1"> Chỉ những database mà user đó được cấp ít nhất một quyền truy cập (hoặc có quyền SHOW DATABASES)</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="2"> Không nhìn thấy bất kỳ database nào</label>
+          <label class="opt-label"><input type="radio" name="q1_1" value="3"> Server tự động ngắt kết nối của user</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q1_2">
+        <div class="q-stem"><b>Câu 2:</b> Để tìm tất cả các database có tên bắt đầu bằng chữ "test" trong MySQL, câu lệnh nào sau đây là ĐÚNG?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q1_2" value="0"> `SHOW DATABASES LIKE 'test%';`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="1"> `FIND DATABASES WHERE name = 'test*';`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="2"> `GET SCHEMAS WITH 'test';`</label>
+          <label class="opt-label"><input type="radio" name="q1_2" value="3"> `SEARCH DB 'test%';`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(1)">Kiểm tra & Hoàn thành Chặng 1</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="stage-card locked" id="stage-2">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 2</span>
+        <h2 class="stage-title">Khám phá Tables & Phân biệt View với `SHOW FULL TABLES`</h2>
+        <div class="stage-desc">Điểm mù của lệnh SHOW TABLES và giải pháp phân loại Table_type</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Hạn chế của lệnh `SHOW TABLES`:</h4>
+      <pre><code>SHOW TABLES;
+SHOW TABLES FROM classicmodels; -- Xem bảng ở DB khác mà không cần USE</code></pre>
+      <p>Lệnh <code>SHOW TABLES</code> trả về danh sách tên bảng, nhưng <b>không phân biệt</b> được đâu là bảng vật lý thực sự (Base Table) và đâu là khung nhìn ảo (View).</p>
+
+      <h4>2. Giải pháp: Lệnh `SHOW FULL TABLES`:</h4>
+      <pre><code>SHOW FULL TABLES IN classicmodels;</code></pre>
+      <p>Lệnh này trả về thêm cột <code>Table_type</code> với 2 giá trị rõ ràng:</p>
+      <ul>
+        <li><code>BASE TABLE</code>: Bảng lưu trữ dữ liệu thực sự trên đĩa.</li>
+        <li><code>VIEW</code>: Bảng ảo được định nghĩa từ một câu truy vấn SELECT.</li>
+      </ul>
+      <p>Bạn cũng có thể lọc chỉ lấy View: <code>SHOW FULL TABLES WHERE Table_type = 'VIEW';</code>.</p>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 2</div>
+      
+      <div class="question-block" data-qid="q2_1">
+        <div class="q-stem"><b>Câu 1:</b> Câu lệnh nào cho phép người quản trị xem danh sách bảng kèm theo phân loại rõ ràng đâu là bảng vật lý (`BASE TABLE`) và đâu là khung nhìn ảo (`VIEW`)?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_1" value="0"> `SHOW TABLES;`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="1"> `SHOW FULL TABLES;`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="2"> `SHOW ALL OBJECTS;`</label>
+          <label class="opt-label"><input type="radio" name="q2_1" value="3"> `LIST TABLES AND VIEWS;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q2_2">
+        <div class="q-stem"><b>Câu 2:</b> Để lọc danh sách chỉ hiển thị các VIEW trong database `classicmodels` bằng lệnh SHOW, cú pháp nào sau đây là CHÍNH XÁC?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q2_2" value="0"> `SHOW FULL TABLES IN classicmodels WHERE Table_type = 'VIEW';`</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="1"> `SHOW VIEWS IN classicmodels;`</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="2"> `SHOW TABLES ONLY VIEW;`</label>
+          <label class="opt-label"><input type="radio" name="q2_2" value="3"> `GET ALL VIEWS classicmodels;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(2)">Kiểm tra & Hoàn thành Chặng 2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section class="stage-card locked" id="stage-3">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 3</span>
+        <h2 class="stage-title">Cấu trúc Cột với `SHOW COLUMNS` & `DESCRIBE`</h2>
+        <div class="stage-desc">Giải mã 6 trường Field, Type, Null, Key (PRI, UNI, MUL), Default và Extra</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Cú pháp tương đương:</h4>
+      <pre><code>DESCRIBE classicmodels.customers;
+-- Hoặc viết tắt:
+DESC classicmodels.customers;
+-- Tương đương hoàn toàn với:
+SHOW COLUMNS FROM classicmodels.customers;</code></pre>
+
+      <h4>2. Ý nghĩa 6 cột thông tin cấu trúc:</h4>
+      <table class="table-custom">
+        <thead><tr><th>Cột</th><th>Ý nghĩa</th><th>Ví dụ</th></tr></thead>
+        <tbody>
+          <tr><td><b>Field</b></td><td>Tên cột thuộc tính</td><td><code>customerNumber</code></td></tr>
+          <tr><td><b>Type</b></td><td>Kiểu dữ liệu và độ rộng</td><td><code>int</code>, <code>varchar(50)</code></td></tr>
+          <tr><td><b>Null</b></td><td>Cho phép giá trị NULL hay không</td><td><code>NO</code> (bắt buộc nhập), <code>YES</code></td></tr>
+          <tr><td><b>Key</b></td><td>Chỉ số và ràng buộc khóa</td><td><code>PRI</code> (Primary Key), <code>UNI</code> (Unique Key), <code>MUL</code> (Multiple: Cột đầu của chỉ mục không duy nhất hoặc Foreign Key)</td></tr>
+          <tr><td><b>Default</b></td><td>Giá trị mặc định khi INSERT</td><td><code>NULL</code>, <code>CURRENT_TIMESTAMP</code></td></tr>
+          <tr><td><b>Extra</b></td><td>Thuộc tính đặc biệt</td><td><code>auto_increment</code>, <code>DEFAULT_GENERATED</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 3</div>
+      
+      <div class="question-block" data-qid="q3_1">
+        <div class="q-stem"><b>Câu 1:</b> Trong kết quả của lệnh `DESCRIBE table_name;`, giá trị `MUL` ở cột `Key` thể hiện điều gì?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_1" value="0"> Cột đó là Khóa chính duy nhất</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="1"> Cột đó là cột đầu tiên của một chỉ mục không duy nhất (Non-unique Index), thường gặp ở các cột Khóa ngoại (Foreign Key)</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="2"> Cột đó lưu trữ số thực nhiều chữ số thập phân</label>
+          <label class="opt-label"><input type="radio" name="q3_1" value="3"> Cột đó bị lỗi dữ liệu</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q3_2">
+        <div class="q-stem"><b>Câu 2:</b> Cú pháp nào sau đây là dạng viết tắt hợp lệ và phổ biến nhất của câu lệnh `SHOW COLUMNS FROM customers;`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q3_2" value="0"> `DESC customers;`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="1"> `COLS customers;`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="2"> `VIEW customers;`</label>
+          <label class="opt-label"><input type="radio" name="q3_2" value="3"> `INFO customers;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(3)">Kiểm tra & Hoàn thành Chặng 3</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 4 -->
+  <section class="stage-card locked" id="stage-4">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 4</span>
+        <h2 class="stage-title">Trích xuất DDL Nguyên bản với `SHOW CREATE TABLE`</h2>
+        <div class="stage-desc">Khám phá ràng buộc Khóa ngoại (Foreign Keys), tên Index, Engine và Charset</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <h4>1. Sức mạnh của `SHOW CREATE TABLE`:</h4>
+      <pre><code>SHOW CREATE TABLE classicmodels.orders\G</code></pre>
+      <p><i>(Trong console CLI, dùng hậu tố <code>\G</code> thay cho dấu chấm phẩy <code>;</code> để hiển thị kết quả theo chiều dọc dễ đọc).</i></p>
+
+      <h4>2. Lệnh này hiển thị những gì?</h4>
+      <ul>
+        <li>Toàn bộ định nghĩa cột và kiểu dữ liệu chuẩn xác.</li>
+        <li>Tên và danh sách các chỉ mục (Indexes/Keys).</li>
+        <li><b>Các ràng buộc Khóa ngoại (FOREIGN KEY CONSTRAINTS):</b> Kèm theo tên constraint (ví dụ <code>orders_ibfk_1</code>) và các hành vi <code>ON DELETE CASCADE</code> / <code>ON UPDATE CASCADE</code>.</li>
+        <li>Tên <code>ENGINE=InnoDB</code>, bảng mã <code>DEFAULT CHARSET=utf8mb4</code> và collation của bảng.</li>
+      </ul>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 4</div>
+      
+      <div class="question-block" data-qid="q4_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi muốn kiểm tra chi tiết các quy tắc ràng buộc Khóa ngoại (như `ON DELETE CASCADE`) và tên Storage Engine của một bảng, câu lệnh nào mang lại đầy đủ thông tin nhất?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_1" value="0"> `DESCRIBE table_name;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="1"> `SHOW CREATE TABLE table_name;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="2"> `SHOW TABLES;`</label>
+          <label class="opt-label"><input type="radio" name="q4_1" value="3"> `SELECT * FROM table_name;`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q4_2">
+        <div class="q-stem"><b>Câu 2:</b> Trong giao diện dòng lệnh MySQL Client, ký tự điều khiển nào ở cuối câu truy vấn có tác dụng xoay kết quả hiển thị từ dạng bảng ngang sang dạng danh sách dọc (Vertical Display) để dễ đọc DDL dài?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q4_2" value="0"> `\G`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="1"> `\c`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="2"> `\q`</label>
+          <label class="opt-label"><input type="radio" name="q4_2" value="3"> `\h`</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(4)">Kiểm tra & Hoàn thành Chặng 4</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAGE 5 -->
+  <section class="stage-card locked" id="stage-5">
+    <div class="stage-header">
+      <div>
+        <span class="stage-badge">Chặng 5</span>
+        <h2 class="stage-title">So sánh SHOW Commands với `INFORMATION_SCHEMA`</h2>
+        <div class="stage-desc">Khi nào dùng lệnh SHOW, khi nào dùng truy vấn SQL trên Metadata Catalog</div>
+      </div>
+    </div>
+
+    <div class="theory-box">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>Các lệnh `SHOW`</th>
+            <th>Kho từ điển `INFORMATION_SCHEMA`</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Bản chất</b></td>
+            <td>Lệnh tiện ích nội bộ riêng của MySQL</td>
+            <td>Tập hợp các View chuẩn ANSI SQL lưu trữ siêu dữ liệu</td>
+          </tr>
+          <tr>
+            <td><b>Cú pháp</b></td>
+            <td>Ngắn gọn, dễ nhớ (<code>SHOW TABLES;</code>)</td>
+            <td>Truy vấn bằng <code>SELECT ... FROM ... WHERE ...</code></td>
+          </tr>
+          <tr>
+            <td><b>Khả năng tính toán</b></td>
+            <td>Rất hạn chế, chỉ lọc đơn giản qua LIKE</td>
+            <td>Rất mạnh: cho phép <code>JOIN</code>, <code>ORDER BY</code>, <code>SUM()</code>, <code>COUNT()</code></td>
+          </tr>
+          <tr>
+            <td><b>Kịch bản tối ưu</b></td>
+            <td>Kiểm tra nhanh khi làm việc tương tác trên console</td>
+            <td>Viết script báo cáo DBA, kiểm tra kích thước đĩa (<code>DATA_LENGTH</code>), tự động hóa CI/CD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">🎯 Checkpoint Chặng 5</div>
+      
+      <div class="question-block" data-qid="q5_1">
+        <div class="q-stem"><b>Câu 1:</b> Khi một chuyên viên quản trị DBA cần tìm 5 bảng có dung lượng dữ liệu lớn nhất trên toàn bộ server, phương pháp nào khả thi và hiệu quả nhất?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_1" value="0"> Truy vấn `SELECT TABLE_NAME, DATA_LENGTH FROM INFORMATION_SCHEMA.TABLES ORDER BY DATA_LENGTH DESC LIMIT 5;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="1"> Dùng lệnh `SHOW TABLES BIGGEST;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="2"> Dùng lệnh `DESCRIBE ALL;`</label>
+          <label class="opt-label"><input type="radio" name="q5_1" value="3"> Mở từng file trên đĩa cứng bằng Notepad</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div class="question-block" data-qid="q5_2">
+        <div class="q-stem"><b>Câu 2:</b> Nhận định nào sau đây là ĐÚNG về các bảng trong CSDL `INFORMATION_SCHEMA`?</div>
+        <div class="q-options">
+          <label class="opt-label"><input type="radio" name="q5_2" value="0"> Đây là các bảng chỉ đọc (Read-only virtual tables), không thể thực hiện INSERT hoặc DELETE trực tiếp</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="1"> Có thể dùng lệnh `DROP TABLE INFORMATION_SCHEMA.TABLES;` để giải phóng dung lượng đĩa</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="2"> Dữ liệu trong đó bị xóa mỗi khi máy tính tắt</label>
+          <label class="opt-label"><input type="radio" name="q5_2" value="3"> Bắt buộc phải trả phí bản quyền cho Oracle mới truy vấn được</label>
+        </div>
+        <div class="feedback-box"></div>
+      </div>
+
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-primary" onclick="submitStage(5)">Kiểm tra & Hoàn thành Chặng 5</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lesson-foot">
+  <div class="wrap">
+    DBMS Interactive Learning Course · Module: SHOW Commands & Metadata Discovery · Phiên bản 2.0
+  </div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'dbms_dba_l2_v1';
+const TOTAL_STAGES = 5;
+
+const STAGE_QUESTIONS = {
+  1: {
+    q1_1: { correct: "1", explain: "Chính xác! Người dùng thông thường chỉ nhìn thấy những database mà mình có quyền thao tác." },
+    q1_2: { correct: "0", explain: "Chính xác! Lệnh `SHOW DATABASES LIKE 'test%';` lọc các database bắt đầu bằng test." }
+  },
+  2: {
+    q2_1: { correct: "1", explain: "Chính xác! SHOW FULL TABLES bổ sung cột Table_type phân loại rõ BASE TABLE và VIEW." },
+    q2_2: { correct: "0", explain: "Chính xác! Dùng mệnh đề `WHERE Table_type = 'VIEW'` cho phép lọc chỉ lấy các khung nhìn ảo." }
+  },
+  3: {
+    q3_1: { correct: "1", explain: "Chính xác! MUL biểu thị cột đầu tiên của non-unique index hoặc foreign key cho phép nhiều dòng trùng giá trị." },
+    q3_2: { correct: "0", explain: "Chính xác! `DESC table_name;` là dạng viết tắt tiện lợi và chuẩn mực của SHOW COLUMNS." }
+  },
+  4: {
+    q4_1: { correct: "1", explain: "Chính xác! `SHOW CREATE TABLE` trả về trọn vẹn câu DDL với đầy đủ khóa ngoại, ràng buộc và engine." },
+    q4_2: { correct: "0", explain: "Chính xác! Hậu tố `\\G` trong mysql client hiển thị các trường theo danh sách dọc dễ đọc." }
+  },
+  5: {
+    q5_1: { correct: "0", explain: "Chính xác! Truy vấn bảng `INFORMATION_SCHEMA.TABLES` kèm ORDER BY DATA_LENGTH là phương pháp chuẩn để tìm các bảng lớn nhất." },
+    q5_2: { correct: "0", explain: "Chính xác! Các bảng trong INFORMATION_SCHEMA là các view chỉ đọc (read-only) do server tự động tạo." }
+  }
+};
+
+let state = {
+  unlockedStage: 1,
+  completedStages: [],
+  answers: {},
+  scores: {},
+  studentId: '',
+  studentName: ''
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = Object.assign(state, JSON.parse(saved));
+    }
+    const sId = localStorage.getItem('dbms_student_id');
+    const sName = localStorage.getItem('dbms_student_name');
+    if (sId && !state.studentId) state.studentId = sId;
+    if (sName && !state.studentName) state.studentName = sName;
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    state.studentId = (document.getElementById('studentId')?.value || '').trim();
+    state.studentName = (document.getElementById('studentName')?.value || '').trim();
+    if (state.studentId) localStorage.setItem('dbms_student_id', state.studentId);
+    if (state.studentName) localStorage.setItem('dbms_student_name', state.studentName);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+  updateUI();
+}
+
+function updateUI() {
+  const sIdEl = document.getElementById('studentId');
+  const sNameEl = document.getElementById('studentName');
+  if (sIdEl && !sIdEl.value) sIdEl.value = state.studentId || '';
+  if (sNameEl && !sNameEl.value) sNameEl.value = state.studentName || '';
+
+  for (let s = 1; s <= TOTAL_STAGES; s++) {
+    const card = document.getElementById(`stage-${s}`);
+    if (!card) continue;
+    if (s <= state.unlockedStage) {
+      card.classList.remove('locked');
+    } else {
+      card.classList.add('locked');
+    }
+  }
+
+  for (const [qid, val] of Object.entries(state.answers)) {
+    const radio = document.querySelector(`input[name="${qid}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  let totalScore = 0;
+  for (const s of state.completedStages) {
+    totalScore += 20;
+  }
+
+  const stagePill = document.getElementById('stagePill');
+  const scorePill = document.getElementById('scorePill');
+  if (stagePill) stagePill.textContent = `Chặng: ${state.completedStages.length}/${TOTAL_STAGES}`;
+  if (scorePill) {
+    scorePill.textContent = `Điểm: ${totalScore}/100`;
+    if (totalScore === 100) scorePill.classList.add('success');
+    else scorePill.classList.remove('success');
+  }
+}
+
+function submitStage(s) {
+  const stageCfg = STAGE_QUESTIONS[s];
+  if (!stageCfg) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+
+  for (const [qid, info] of Object.entries(stageCfg)) {
+    const selected = document.querySelector(`input[name="${qid}"]:checked`);
+    const qBlock = document.querySelector(`[data-qid="${qid}"]`);
+    const fbBox = qBlock?.querySelector('.feedback-box');
+    const optLabels = qBlock?.querySelectorAll('.opt-label');
+
+    if (!selected) {
+      allAnswered = false;
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.textContent = 'Vui lòng chọn câu trả lời trước khi kiểm tra!';
+      }
+      continue;
+    }
+
+    state.answers[qid] = selected.value;
+    optLabels?.forEach(l => l.classList.remove('correct', 'incorrect'));
+
+    if (selected.value === info.correct) {
+      selected.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show correct';
+        fbBox.innerHTML = `✓ ${info.explain}`;
+      }
+    } else {
+      allCorrect = false;
+      selected.closest('.opt-label')?.classList.add('incorrect');
+      const correctRadio = document.querySelector(`input[name="${qid}"][value="${info.correct}"]`);
+      correctRadio?.closest('.opt-label')?.classList.add('correct');
+      if (fbBox) {
+        fbBox.className = 'feedback-box show incorrect';
+        fbBox.innerHTML = `✗ Chưa chính xác. ${info.explain}`;
+      }
+    }
+  }
+
+  if (!allAnswered) return;
+
+  if (allCorrect) {
+    if (!state.completedStages.includes(s)) {
+      state.completedStages.push(s);
+    }
+    if (s < TOTAL_STAGES && state.unlockedStage <= s) {
+      state.unlockedStage = s + 1;
+    }
+    state.scores[s] = 20;
+    saveState();
+    alert(`🎉 Xuất sắc! Bạn đã vượt qua Chặng ${s}. ${s < TOTAL_STAGES ? `Chặng ${s+1} đã được mở khóa!` : 'Bạn đã hoàn thành toàn bộ bài học!'}`);
+  } else {
+    alert(`⚠️ Bạn cần trả lời chính xác cả 2 câu hỏi để vượt qua Chặng ${s}. Vui lòng xem lại giải thích và thử lại!`);
+  }
+}
+
+function resetProgress() {
+  if (confirm("Bạn có chắc chắn muốn làm lại bài học từ Chặng 1? Toàn bộ câu trả lời sẽ được đặt lại.")) {
+    state.unlockedStage = 1;
+    state.completedStages = [];
+    state.answers = {};
+    state.scores = {};
+    saveState();
+    location.reload();
+  }
+}
+
+function exportReportPNG() {
+  const canvas = document.createElement('canvas');
+  const dpr = 2;
+  const W = 900;
+  const H = 640;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#0f172a');
+  grad.addColorStop(1, '#1e3a8a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, H - 80, 16);
+  ctx.fill();
+
+  const topGrad = ctx.createLinearGradient(40, 40, W - 40, 40);
+  topGrad.addColorStop(0, '#1e3a8a');
+  topGrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = topGrad;
+  ctx.beginPath();
+  ctx.roundRect(40, 40, W - 80, 95, [16, 16, 0, 0]);
+  ctx.fill();
+
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 12px system-ui, sans-serif';
+  ctx.fillText('DBMS COURSE · LESSON 02 CHECKPOINT REPORT', 65, 72);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillText('LỆNH SHOW & KHÁM PHÁ SIÊU DỮ LIỆU MYSQL', 65, 105);
+
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || 'N/A').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || 'Học viên').trim();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.fillText(`Học viên: ${name}`, 65, 175);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText(`MSSV: ${mssv}  |  Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`, 65, 200);
+
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(65, 225);
+  ctx.lineTo(W - 65, 225);
+  ctx.stroke();
+
+  const stages = [
+    'Chặng 1: Liệt kê Database với SHOW DATABASES',
+    'Chặng 2: Khám phá Tables & Phân biệt View (SHOW FULL TABLES)',
+    'Chặng 3: Cấu trúc Cột với SHOW COLUMNS & DESCRIBE',
+    'Chặng 4: Trích xuất DDL Nguyên bản (SHOW CREATE TABLE)',
+    'Chặng 5: So sánh SHOW Commands với INFORMATION_SCHEMA'
+  ];
+
+  let y = 265;
+  stages.forEach((st, idx) => {
+    const sNum = idx + 1;
+    const isDone = state.completedStages.includes(sNum);
+
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(75, y - 5, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = isDone ? '#0f172a' : '#64748b';
+    ctx.font = isDone ? 'bold 14px system-ui, sans-serif' : '14px system-ui, sans-serif';
+    ctx.fillText(st, 95, y);
+
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillStyle = isDone ? '#15803d' : '#94a3b8';
+    ctx.fillText(isDone ? 'ĐẠT (20/20)' : 'CHƯA ĐẠT (0/20)', W - 180, y);
+
+    y += 42;
+  });
+
+  const totalScore = state.completedStages.length * 20;
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.roundRect(65, 480, W - 130, 75, 10);
+  ctx.fill();
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 15px system-ui, sans-serif';
+  ctx.fillText('Tổng kết kết quả học tập:', 85, 512);
+
+  ctx.fillStyle = totalScore >= 80 ? '#15803d' : '#b45309';
+  ctx.font = 'bold 20px system-ui, sans-serif';
+  ctx.fillText(`${totalScore}/100 ĐIỂM  (${state.completedStages.length}/5 Chặng)`, 85, 540);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText('Hệ thống tự động chấm điểm & xác thực chặng theo thời gian thực · DBMS Course', 65, 585);
+
+  const link = document.createElement('a');
+  link.download = `Ket_qua_DBA_L2_${mssv || 'report'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function exportReportCSV() {
+  const mssv = (document.getElementById('studentId')?.value || state.studentId || '').trim();
+  const name = (document.getElementById('studentName')?.value || state.studentName || '').trim();
+  const totalScore = state.completedStages.length * 20;
+
+  let csv = "\uFEFFMSSV,HoVaTen,BaiHoc,TongDiem,SoChangHoanThanh,NgayXuat\n";
+  csv += `"${mssv}","${name}","Lesson 02: Lenh SHOW & Kham pha Sieu du lieu trong MySQL",${totalScore},${state.completedStages.length}/5,"${new Date().toLocaleString('vi-VN')}"\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Ket_qua_DBA_L2_${mssv || 'report'}.csv`;
+  a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateUI();
+  document.getElementById('studentId')?.addEventListener('input', saveState);
+  document.getElementById('studentName')?.addEventListener('input', saveState);
+});
+</script>
+
+</body>
+</html>
