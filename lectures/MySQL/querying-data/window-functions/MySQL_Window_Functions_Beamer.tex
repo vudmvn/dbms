@@ -32,6 +32,7 @@
 \setbeamersize{text margin left=8mm,text margin right=8mm}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{headline}{}
+\setbeamertemplate{blocks}[rounded][shadow=false]
 \setbeamerfont{frametitle}{size=\large,series=\bfseries}
 \setbeamerfont{normal text}{size=\small}
 \setbeamertemplate{footline}{%
@@ -123,7 +124,7 @@
 % ---- Slide 4 ----
 \begin{frame}[fragile]{Dataset: bảng sales}
 \begin{columns}[T,onlytextwidth]
-\column{0.64\textwidth}
+\column{0.60\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.6}{8.799999999999999}\selectfont]
 CREATE TABLE sales (
   sale_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -155,7 +156,7 @@ CREATE TABLE sales (
 \begin{frame}[fragile]{Dataset: các thống kê kiểm tra}
 
 \begin{columns}[T,onlytextwidth]
-\column{.52\textwidth}
+\column{.49\textwidth}
 \textbf{Tổng doanh thu từng vùng}
 \begin{center}
 \renewcommand{\arraystretch}{1.18}
@@ -169,7 +170,7 @@ South & 10 & 6,850.00 \\
 \bottomrule
 \end{tabular}
 \end{center}
-\column{.48\textwidth}
+\column{.47\textwidth}
 \textbf{Tổng theo nhân viên}
 \begin{center}
 \renewcommand{\arraystretch}{1.18}
@@ -185,6 +186,7 @@ Dung & 3,450.00 \\
 \end{tabular}
 \end{center}
 \end{columns}
+\par\vspace{0.3em}
 \begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 \textbf{Chú ý:} Những con số minh họa trong slide được tính từ chính 21 giao dịch mẫu. Script tạo dữ liệu đi kèm tài liệu.
 \end{beamercolorbox}
@@ -222,14 +224,14 @@ Phù hợp & Báo cáo tóm tắt & Bảng giao dịch + KPI \\
 % ---- Slide 7 ----
 \begin{frame}[fragile]{Ví dụ GROUP BY: chỉ lấy kết quả tổng hợp}
 \begin{columns}[T,onlytextwidth]
-\column{0.55\textwidth}
+\column{0.52\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{9}{10.2}\selectfont]
 SELECT region,
        SUM(amount) AS revenue
 FROM sales
 GROUP BY region;
 \end{lstlisting}
-\column{0.45\textwidth}
+\column{0.44\textwidth}
 
 \textbf{Output}
 \begin{center}
@@ -249,7 +251,7 @@ South & 6,850.00 \\
 % ---- Slide 8 ----
 \begin{frame}[fragile]{Ví dụ Window SUM: giữ dữ liệu giao dịch}
 \begin{columns}[T,onlytextwidth]
-\column{0.59\textwidth}
+\column{0.55\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.3}{9.5}\selectfont]
 SELECT sale_id,
        region,
@@ -301,7 +303,9 @@ Thành phần & Câu hỏi \\
 \code{Frame} & Tại dòng hiện tại sẽ xét những rows nào? \\
 \bottomrule
 \end{tabular}
-\end{center}\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
+\end{center}
+\par\vspace{0.4em}
+\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 Không viết \code{PARTITION BY} $\Rightarrow$ toàn bộ input của query block thuộc một partition.
 \end{beamercolorbox}
 \end{frame}
@@ -309,7 +313,7 @@ Không viết \code{PARTITION BY} $\Rightarrow$ toàn bộ input của query blo
 % ---- Slide 10 ----
 \begin{frame}[fragile]{OVER() rỗng và PARTITION BY}
 \begin{columns}[T,onlytextwidth]
-\column{0.57\textwidth}
+\column{0.54\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.3}{9.5}\selectfont]
 SELECT sale_id, region, amount,
        SUM(amount) OVER ()
@@ -319,7 +323,7 @@ SELECT sale_id, region, amount,
        ) AS region_total
 FROM sales;
 \end{lstlisting}
-\column{0.43\textwidth}
+\column{0.42\textwidth}
 
 \textbf{Cách đọc}\par
 \vspace{.6em}
@@ -335,7 +339,7 @@ FROM sales;
 % ---- Slide 11 ----
 \begin{frame}[fragile]{Hai loại ORDER BY rất khác nhau}
 \begin{columns}[T,onlytextwidth]
-\column{0.62\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.8}{9.0}\selectfont]
 SELECT sale_id, sales_rep,
        sale_date, amount,
@@ -364,7 +368,6 @@ Xác định \textbf{thứ tự trình bày} của result set.
 \begin{frame}[fragile]{Peer rows và giá trị đồng hạng (ties)}
 
 \begin{center}
-\begin{center}
 \renewcommand{\arraystretch}{1.18}
 \begin{tabular}{rrr}
 \toprule
@@ -377,7 +380,6 @@ sale\_id & amount & RANK theo amount \\
 \bottomrule
 \end{tabular}
 \end{center}
-\end{center}
 \begin{itemize}
 \item Khi \code{ORDER BY amount DESC}, ba giao dịch amount = 1,200 là \textbf{peers}.
 \item Nếu thêm \code{sale_id} vào window ordering, không còn peers ở cùng amount.
@@ -389,7 +391,7 @@ sale\_id & amount & RANK theo amount \\
 % ---- Slide 13 ----
 \begin{frame}[fragile]{Aggregate windows: thống kê theo vùng}
 \begin{columns}[T,onlytextwidth]
-\column{0.62\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.6}{8.799999999999999}\selectfont]
 SELECT sale_id, region, amount,
   COUNT(*) OVER (
@@ -424,7 +426,7 @@ MAX & 1,200 & 1,500 \\
 % ---- Slide 14 ----
 \begin{frame}[fragile]{Tính tỷ trọng mỗi giao dịch}
 \begin{columns}[T,onlytextwidth]
-\column{0.60\textwidth}
+\column{0.55\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.4}{9.6}\selectfont]
 SELECT sale_id, region, amount,
   ROUND(100.0 * amount /
@@ -451,7 +453,7 @@ Mỗi giao dịch đóng góp bao nhiêu phần trăm vào doanh thu của regio
 % ---- Slide 15 ----
 \begin{frame}[fragile]{Lọc theo kết quả window: cần CTE}
 \begin{columns}[T,onlytextwidth]
-\column{0.57\textwidth}
+\column{0.54\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.1}{9.299999999999999}\selectfont]
 WITH with_avg AS (
  SELECT sale_id, region, amount,
@@ -464,7 +466,7 @@ SELECT *
 FROM with_avg
 WHERE amount > region_avg;
 \end{lstlisting}
-\column{0.43\textwidth}
+\column{0.42\textwidth}
 
 \textbf{Tại sao?}
 \begin{itemize}
@@ -479,7 +481,7 @@ WHERE amount > region_avg;
 % ---- Slide 16 ----
 \begin{frame}[fragile]{Running total: doanh thu tích lũy}
 \begin{columns}[T,onlytextwidth]
-\column{0.61\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8}{9.2}\selectfont]
 SELECT sale_id, sales_rep,
        sale_date, amount,
@@ -521,7 +523,9 @@ sale\_id & amount & running\_revenue \\
 6 & 300 & 4,200 \\
 \bottomrule
 \end{tabular}
-\end{center}\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
+\end{center}
+\par\vspace{0.4em}
+\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 Giá trị tại sale 5 = 1,200 + 200 + 800 + 500 + 1,200 = \textbf{3,900}. Sale 6 đưa tổng lên \textbf{4,200}.
 \end{beamercolorbox}
 \end{frame}
@@ -529,7 +533,7 @@ Giá trị tại sale 5 = 1,200 + 200 + 800 + 500 + 1,200 = \textbf{3,900}. Sale
 % ---- Slide 18 ----
 \begin{frame}[fragile]{Moving average: trung bình 3 giao dịch}
 \begin{columns}[T,onlytextwidth]
-\column{0.60\textwidth}
+\column{0.56\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.1}{9.299999999999999}\selectfont]
 SELECT sale_id, sales_rep, amount,
  ROUND(AVG(amount) OVER (
@@ -565,7 +569,7 @@ sale & amount & avg 3 \\
 \begin{frame}[fragile]{Moving frame: quá khứ và tương lai}
 
 \begin{columns}[T,onlytextwidth]
-\column{.57\textwidth}
+\column{0.54\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.2}{9.399999999999999}\selectfont]
 -- Current row + 2 previous sales
 ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
@@ -577,7 +581,7 @@ ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
 ROWS BETWEEN UNBOUNDED PRECEDING
          AND CURRENT ROW
 \end{lstlisting}
-\column{.43\textwidth}
+\column{0.42\textwidth}
 \begin{block}{Lưu ý về biên}
 Dòng đầu hoặc cuối partition có thể không đủ số lượng giao dịch trong frame.
 \end{block}
@@ -615,7 +619,7 @@ amount $\downarrow$ & ROW\_NUMBER() & RANK() & DENSE\_RANK() \\
 
 % ---- Slide 21 ----
 \begin{frame}[fragile]{So sánh 3 hàm ranking qua SQL}
-\begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.4}{9.6}\selectfont]
+\begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.9}{9.1}\selectfont]
 SELECT sale_id, region, amount,
   ROW_NUMBER() OVER (
     PARTITION BY region
@@ -631,7 +635,9 @@ SELECT sale_id, region, amount,
   ) AS dense_rank
 FROM sales
 ORDER BY region, amount DESC, sale_id;
-\end{lstlisting}\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
+\end{lstlisting}
+\par\vspace{0.3em}
+\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 \code{sale_id} chỉ thêm vào \code{ROW_NUMBER} để phá ties; không thêm vào \code{RANK} và \code{DENSE_RANK} khi cần giữ đồng hạng.
 \end{beamercolorbox}
 \end{frame}
@@ -639,7 +645,7 @@ ORDER BY region, amount DESC, sale_id;
 % ---- Slide 22 ----
 \begin{frame}[fragile]{Top-N theo region: đúng N dòng}
 \begin{columns}[T,onlytextwidth]
-\column{0.60\textwidth}
+\column{0.55\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.2}{9.399999999999999}\selectfont]
 WITH numbered AS (
  SELECT sale_id, region, amount,
@@ -685,7 +691,7 @@ Yêu cầu & Hàm + bộ lọc & Số dòng có thể trả \\
 \end{center}
 \vspace{0.5em}
 \textbf{North:} ba sales amount 1,200 đồng hạng 1. \code{RANK} tiếp theo là 4; \code{DENSE_RANK} tiếp theo là 2.
-\vspace{0.7em}
+\par\vspace{0.4em}
 \begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 \textbf{Quy tắc chọn:} N rows $\to$ ROW\_NUMBER; ranking kiểu thi đấu $\to$ RANK; N giá trị phân biệt $\to$ DENSE\_RANK.
 \end{beamercolorbox}
@@ -694,7 +700,7 @@ Yêu cầu & Hàm + bộ lọc & Số dòng có thể trả \\
 % ---- Slide 24 ----
 \begin{frame}[fragile]{Deduplication: giữ giao dịch mới nhất}
 \begin{columns}[T,onlytextwidth]
-\column{0.60\textwidth}
+\column{0.56\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.9}{9.1}\selectfont]
 WITH numbered AS (
  SELECT sale_id, sales_rep,
@@ -723,7 +729,7 @@ SELECT * FROM numbered WHERE rn = 1;
 % ---- Slide 25 ----
 \begin{frame}[fragile]{LAG và LEAD: so sánh lân cận}
 \begin{columns}[T,onlytextwidth]
-\column{0.62\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.1}{9.299999999999999}\selectfont]
 SELECT sale_id, sales_rep,
        sale_date, amount,
@@ -785,7 +791,7 @@ An: sale & amount & previous & change \\
 % ---- Slide 27 ----
 \begin{frame}[fragile]{LAG và chuỗi thời gian: số ngày giữa sales}
 \begin{columns}[T,onlytextwidth]
-\column{0.61\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.9}{9.1}\selectfont]
 SELECT sale_id, sales_rep, sale_date,
  DATEDIFF(
@@ -840,9 +846,9 @@ WINDOW w_full AS (
 \begin{frame}[fragile]{Bẫy thường gặp: LAST\_VALUE và default frame}
 
 \begin{columns}[T,onlytextwidth]
-\column{.5\textwidth}
+\column{0.48\textwidth}
 \begin{alertblock}{Dễ sai ý định}
-\begin{lstlisting}[basicstyle=\ttfamily\fontsize{8}{9.2}\selectfont]
+\begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.8}{9.0}\selectfont]
 LAST_VALUE(amount) OVER (
   PARTITION BY sales_rep
   ORDER BY sale_date, sale_id
@@ -850,9 +856,9 @@ LAST_VALUE(amount) OVER (
 \end{lstlisting}
 Với \code{ORDER BY}, mặc định frame thường kết thúc ở current row.
 \end{alertblock}
-\column{.5\textwidth}
+\column{0.48\textwidth}
 \begin{exampleblock}{Lấy giá trị cuối toàn partition}
-\begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.4}{8.6}\selectfont]
+\begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.2}{8.4}\selectfont]
 LAST_VALUE(amount) OVER (
   PARTITION BY sales_rep
   ORDER BY sale_date, sale_id
@@ -869,7 +875,7 @@ An có giá trị cuối = \textbf{300}.
 % ---- Slide 30 ----
 \begin{frame}[fragile]{NTH\_VALUE: lấy vị trí thứ k}
 \begin{columns}[T,onlytextwidth]
-\column{0.63\textwidth}
+\column{0.58\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.9}{9.1}\selectfont]
 SELECT sale_id, sales_rep, amount,
  NTH_VALUE(amount, 2) OVER (
@@ -880,7 +886,7 @@ SELECT sale_id, sales_rep, amount,
  ) AS second_sale_amount
 FROM sales;
 \end{lstlisting}
-\column{0.37\textwidth}
+\column{0.38\textwidth}
 
 \textbf{Giá trị giao dịch thứ hai:}
 \begin{center}
@@ -902,7 +908,7 @@ Dung & 900 \\
 % ---- Slide 31 ----
 \begin{frame}[fragile]{NTILE: chia dữ liệu thành buckets}
 \begin{columns}[T,onlytextwidth]
-\column{0.58\textwidth}
+\column{0.54\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.7}{9.899999999999999}\selectfont]
 SELECT sale_id, region, amount,
  NTILE(4) OVER (
@@ -949,7 +955,9 @@ SELECT region, amount,
          PARTITION BY region ORDER BY amount
        ) AS cd
 FROM sales;
-\end{lstlisting}\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
+\end{lstlisting}
+\par\vspace{0.35em}
+\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 North: amount = 1,200 (lớn nhất, 3 rows đồng hạng) có \code{PERCENT_RANK = 0.80} và \code{CUME_DIST = 1.00}.
 \end{beamercolorbox}
 \end{frame}
@@ -996,11 +1004,11 @@ sale & date & amount & Default RANGE & Explicit ROWS \\
 \end{center}
 \vspace{0.55em}
 \begin{columns}[T,onlytextwidth]
-\column{.51\textwidth}
+\column{0.48\textwidth}
 \begin{block}{RANGE ... CURRENT ROW}
 Khi order theo \code{sale_date}, các giao dịch cùng ngày là peers; frame có thể bao gồm \textbf{cả nhóm peers}.
 \end{block}
-\column{.49\textwidth}
+\column{0.48\textwidth}
 \begin{block}{ROWS ... CURRENT ROW}
 Khi order theo \code{sale_date, sale_id}, running total đi \textbf{từng dòng} một.
 \end{block}
@@ -1025,7 +1033,7 @@ Boundary & Ý nghĩa \\
 \bottomrule
 \end{tabular}
 \end{center}
-\vspace{0.25em}
+\par\vspace{0.35em}
 \begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 Với ordered aggregate nhưng \textbf{không khai báo frame}, mặc định MySQL sử dụng \code{RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW}.
 \end{beamercolorbox}
@@ -1051,12 +1059,12 @@ ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
 % ---- Slide 37 ----
 \begin{frame}[fragile]{Named windows: dùng lại cùng một định nghĩa}
 \begin{columns}[T,onlytextwidth]
-\column{0.63\textwidth}
+\column{0.58\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.9}{9.1}\selectfont]
 SELECT sale_id, sales_rep,
        sale_date, amount,
-  ROW_NUMBER() OVER w AS sale_no,
-  LAG(amount) OVER w AS prev_amount
+   ROW_NUMBER() OVER w AS sale_no,
+   LAG(amount) OVER w AS prev_amount
 FROM sales
 WINDOW w AS (
   PARTITION BY sales_rep
@@ -1064,7 +1072,7 @@ WINDOW w AS (
 )
 ORDER BY sales_rep, sale_date, sale_id;
 \end{lstlisting}
-\column{0.37\textwidth}
+\column{0.38\textwidth}
 
 \textbf{Ưu điểm}\par
 \begin{itemize}
@@ -1094,7 +1102,9 @@ WINDOW
    PARTITION BY sales_rep ORDER BY sale_date, sale_id
    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
  );
-\end{lstlisting}\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
+\end{lstlisting}
+\par\vspace{0.35em}
+\begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 Ở sale 5 của An: \code{cumulative = 3900}; \code{moving_avg = 833.33}.
 \end{beamercolorbox}
 \end{frame}
@@ -1153,7 +1163,7 @@ Month & Monthly revenue & Previous month & Change \\
 \begin{frame}[fragile]{Giới hạn của MySQL Window Functions}
 
 \begin{columns}[T,onlytextwidth]
-\column{.49\textwidth}
+\column{0.46\textwidth}
 \begin{block}{Dùng trực tiếp}
 \begin{itemize}
 \item \code{SELECT} list
@@ -1167,7 +1177,7 @@ Month & Monthly revenue & Previous month & Change \\
 \item \code{UPDATE ... SET} cùng query block
 \end{itemize}
 \end{alertblock}
-\column{.51\textwidth}
+\column{0.50\textwidth}
 \textbf{Một số constructs không hỗ trợ:}
 \begin{itemize}
 \item Nested window functions.
@@ -1184,10 +1194,10 @@ Month & Monthly revenue & Previous month & Change \\
 % ---- Slide 42 ----
 \begin{frame}[fragile]{Những lỗi cần nhớ khi thực hành}
 
-\small
+\footnotesize
 \begin{center}
 \renewcommand{\arraystretch}{1.18}
-\begin{tabular}{ll}
+\begin{tabularx}{\textwidth}{lX}
 \toprule
 Lỗi & Cách khắc phục \\
 \midrule
@@ -1199,14 +1209,14 @@ Running SUM mặc định dùng RANGE & Viết \code{ROWS} explicit \\
 Filter rank ngay trong WHERE & Tách CTE và outer WHERE \\
 Nhầm order trong OVER với output & Viết final ORDER BY \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 \end{frame}
 
 % ---- Slide 43 ----
 \begin{frame}[fragile]{WHERE lọc trước window: khác biệt nghiệp vụ}
 \begin{columns}[T,onlytextwidth]
-\column{0.60\textwidth}
+\column{0.56\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.1}{9.299999999999999}\selectfont]
 -- Revenue within Feb-Mar only
 SELECT region, sale_id, amount,
@@ -1232,7 +1242,7 @@ Nếu muốn \textbf{tổng cả lịch sử} nhưng chỉ hiển thị sale t�
 % ---- Slide 44 ----
 \begin{frame}[fragile]{Performance: kiểm tra thay vì suy đoán}
 \begin{columns}[T,onlytextwidth]
-\column{0.61\textwidth}
+\column{0.57\textwidth}
 \begin{lstlisting}[basicstyle=\ttfamily\fontsize{8.1}{9.299999999999999}\selectfont]
 EXPLAIN
 SELECT sale_id, sales_rep,
@@ -1309,7 +1319,7 @@ ORDER BY customerNumber, paymentDate, checkNumber;
 
 \textbf{Viết một query trên bảng \code{sales} để trả về:}
 \begin{enumerate}
-\setlength{\itemsep}{.6em}
+\setlength{\itemsep}{.35em}
 \item \code{sale_id, region, sales_rep, sale_date, amount}.
 \item Tổng doanh thu \textbf{toàn công ty} và \textbf{theo region}.
 \item Mức doanh thu \textbf{trung bình của region}.
@@ -1317,7 +1327,7 @@ ORDER BY customerNumber, paymentDate, checkNumber;
 \item \code{RANK()} giữ ties theo amount và \code{ROW_NUMBER()} deterministic.
 \item Sắp đầu ra theo region, rank và sale ID.
 \end{enumerate}
-\vspace{0.3em}
+\par\vspace{0.3em}
 \begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 \textbf{Kiểm thử:} company total = 14,200; North = 7,350; South = 6,850.
 \end{beamercolorbox}
@@ -1345,14 +1355,14 @@ ORDER BY customerNumber, paymentDate, checkNumber;
 \begin{frame}[fragile]{Mini-project 3: Monthly sales analytics}
 
 \begin{enumerate}
-\setlength{\itemsep}{.7em}
+\setlength{\itemsep}{.4em}
 \item Tạo CTE doanh thu theo \code{region} và \code{month}.
 \item Tính doanh thu tháng trước bằng \code{LAG}.
 \item Tính \textbf{month-over-month change} và running monthly revenue.
 \item Chỉ lấy các tháng có doanh thu tăng so với tháng trước (outer query).
 \item Thảo luận tháng không có doanh thu: \code{LAG} đang so sánh với tháng lịch liền trước hay row trước đó?
 \end{enumerate}
-\vspace{0.45em}
+\par\vspace{0.35em}
 \begin{beamercolorbox}[wd=\linewidth,sep=1.1ex,rounded=true]{insight}
 \textbf{Mục tiêu cốt lõi:} Chọn đúng \emph{grain} (đơn vị phân tích), sau đó mới chọn window function.
 \end{beamercolorbox}
