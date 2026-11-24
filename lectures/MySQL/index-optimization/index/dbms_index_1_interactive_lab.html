@@ -17,7 +17,7 @@ main{padding-top:21px!important;padding-bottom:30px!important}section{margin:0 0
 <p>Tutorial 1: Tạo và quản lý Index. Luyện tập CREATE INDEX, composite index, SHOW INDEX, INFORMATION_SCHEMA.STATISTICS, EXPLAIN, ANALYZE TABLE, DROP INDEX và chọn index theo workload.</p>
 <div class="tags"><span>MySQL 8.0+</span><span>Index Lab</span><span>CREATE / DROP INDEX</span><span>SHOW INDEX</span><span>EXPLAIN</span><span>59 bài tự chấm</span></div>
 </div></header>
-<nav><div class="wrap"><a href="#concepts">Lý thuyết</a><a href="#schemas">Cấu trúc bảng</a><a href="#samples">Ví dụ SQL</a><a href="#explorer">Playground ví dụ</a><a href="#practice">Thực hành &amp; chấm điểm</a><a href="#questions">Toàn bộ bài tập</a></div></nav>
+<nav><div class="wrap"><a href="#concepts">Lý thuyết</a><a href="#schemas">Cấu trúc bảng</a><a href="#samples">Ví dụ SQL</a><a href="#explorer">Playground ví dụ</a><a href="#practice">Thực hành &amp; chấm điểm</a><a href="#questions">Toàn bộ bài tập</a><a href="classicmodels-index-performance-lab.html" style="background:#e0f2fe;color:#0369a1;font-weight:700;">⚡ Benchmark Full Classicmodels</a></div></nav>
 <main class="wrap">
 <section id="concepts"><h2>Kiến thức trọng tâm về Index</h2>
 <div class="card"><p><b>Index</b> là cấu trúc giúp MySQL truy cập một số tập dữ liệu nhanh hơn. B-tree index thường hữu ích cho phép so sánh, phạm vi, prefix <code>LIKE</code>, JOIN và một số cách sắp xếp. Index đổi lại chi phí lưu trữ và bảo trì khi INSERT/UPDATE/DELETE.</p>
@@ -39,7 +39,7 @@ main{padding-top:21px!important;padding-bottom:30px!important}section{margin:0 0
 </div><p class="tiny muted">Dữ liệu gốc của bài học được nạp từ <code>classicmodels</code> vào các bảng trong <code>index_lab</code>. Trình mô phỏng bên dưới chỉ có cấu trúc và danh mục index, không có các hàng dữ liệu thật.</p>
 </div></section>
 <section id="samples"><h2>Ví dụ minh họa cú pháp Index</h2><div id="examples" class="stack"></div></section>
-<section id="explorer"><h2>SQL Playground — Ví dụ (mô phỏng)</h2>
+<section id="explorer"><h2>SQL Playground</h2><div class="notice" style="background:#f0f9ff;border-left-color:#0284c7;margin-bottom:12px;"><strong>Mới:</strong> Thử nghiệm đo lường hiệu năng Index trực tiếp trên toàn bộ 3.864 bản ghi CSDL Classicmodels tại <a href="classicmodels-index-performance-lab.html" style="font-weight:700;">Classicmodels Index Performance &amp; Benchmark Lab →</a></div> — Ví dụ (mô phỏng)</h2>
 <div class="grid">
 <div class="card"><div class="toolbar"><button class="primary" id="exRun">▶ Run</button><button class="secondary" id="exClear">Xóa</button><button class="secondary" id="exPrev" aria-label="Ví dụ trước">←</button><select id="exPreset" aria-label="Chọn ví dụ"></select><button class="secondary" id="exNext" aria-label="Ví dụ tiếp">→</button><button class="secondary" id="resetDB">Reset DB</button></div>
 <label class="fieldlabel" for="exSQL">Câu SQL</label><textarea class="codeedit" id="exSQL" spellcheck="false">CREATE INDEX idx_order_customer_date ON order_search(customer_id, order_date);
@@ -282,7 +282,7 @@ function renderGroups(){const opened=new Set([...el('groups').querySelectorAll('
 }
 function renderSchema(){let table=el('schemaSelect').value;let rows=SCHEMAS[table].map(x=>{let k=x.split(' ');let name=k.shift(),details=k.join(' ');return [name,details,name===PK[table]?'PRIMARY KEY':'—'];});el('schemaTable').innerHTML=gridTable(['Cột','Kiểu và ràng buộc','Index mặc định'],rows);}
 function renderExamples(){el('examples').innerHTML=EXAMPLES.map((x,i)=>'<div class="lesson-row"><div><b>'+escapeHtml(x.title)+'</b><div class="tiny muted">'+escapeHtml(x.desc)+'</div></div><pre class="codebox"><code>'+escapeHtml(x.sql)+'</code></pre><button class="secondary" data-example="'+i+'">Thử trong Playground</button></div>').join('');el('exPreset').innerHTML=EXAMPLES.map((x,i)=>'<option value="'+i+'">'+escapeHtml(x.title)+'</option>').join('');}
-function setExample(index){exampleIndex=(index+EXAMPLES.length)%EXAMPLES.length;el('exPreset').value=String(exampleIndex);el('exSQL').value=EXAMPLES[exampleIndex].sql;el('exPrev').disabled=exampleIndex===0;el('exNext').disabled=exampleIndex===EXAMPLES.length-1;el('exStatus').textContent='Sẵn sàng chạy mô phỏng. (Dữ liệu không đến từ MySQL Server.)';}
+function setExample(index){exampleIndex=(index+EXAMPLES.length)%EXAMPLES.length;el('exPreset').value=String(exampleIndex);el('exSQL').value=EXAMPLES[exampleIndex].sql;el('exPrev').disabled=exampleIndex===0;el('exNext').disabled=exampleIndex===EXAMPLES.length-1;el('exStatus').textContent='Sẵn sàng chạy mô phỏng.';}
 function runExample(){const sql=el('exSQL').value;el('exMeta').textContent='Kết quả từ catalog giả lập · Không phải execution plan của MySQL';el('exResult').innerHTML=runSandbox(sql);el('exStatus').textContent='Đã mô phỏng '+sqlStatements(sql).length+' câu lệnh.';}
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
 function downloadText(text,filename,mime){let blob=new Blob([text],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}

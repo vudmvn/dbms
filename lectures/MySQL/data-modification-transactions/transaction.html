@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thực hành MySQL Transaction: Giao dịch, ACID & Khóa | DBMS</title>
+<meta name="description" content="Tài liệu và Lab tương tác thực hành Transaction trong MySQL: START TRANSACTION, COMMIT, ROLLBACK, SAVEPOINT, autocommit, ACID, bẫy Implicit Commit, tự chấm điểm SQL và xuất chứng chỉ PNG.">
+<link rel="icon" href="../../favicon.ico" type="image/x-icon">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #f1f5f9;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --primary: #1d4ed8;
+  --primary-dark: #0f172a;
+  --primary-sub: #eff6ff;
+  --green: #15803d;
+  --green-sub: #f0fdf4;
+  --amber: #b45309;
+  --amber-sub: #fffbeb;
+  --red: #b91c1c;
+  --red-sub: #fef2f2;
+  --purple: #6d28d9;
+  --purple-sub: #f5f3ff;
+  --cyan: #0e7490;
+  --code-bg: #0f172a;
+  --code-text: #e2e8f0;
+  --shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.1);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* Header & Hero */
+header.hero {
+  background: linear-gradient(135deg, #091322 0%, #1e3a8a 60%, #1d4ed8 100%);
+  color: #fff;
+  padding: 42px 0 36px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+}
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.hero-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.hero-nav a {
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-nav a:hover { text-decoration: underline; color: #fff; }
+.hero-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #bfdbfe;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+header.hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 4.2vw, 36px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+header.hero p {
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: #e2e8f0;
+  max-width: 860px;
+  line-height: 1.65;
+}
+.hero-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hero-chip {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* Sticky Nav Bar */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  box-shadow: var(--shadow);
+}
+.sticky-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.nav-links {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+.nav-btn {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.nav-btn:hover, .nav-btn.active {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-sub);
+}
+.score-badge-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #eef2ff;
+  color: var(--primary);
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #c7d2fe;
+}
+
+/* Layout */
+main {
+  padding: 28px 0 60px;
+}
+section {
+  margin-bottom: 40px;
+  scroll-margin-top: 80px;
+}
+h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--primary-dark);
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-desc {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 0 0 20px;
+}
+
+/* Cards & Grid */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Badges & Alerts */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+.callout {
+  padding: 16px 18px;
+  border-radius: 10px;
+  margin: 16px 0;
+  font-size: 14px;
+  border-left: 4px solid;
+}
+.callout-info { background: var(--primary-sub); border-color: var(--primary); color: #1e3a8a; }
+.callout-success { background: var(--green-sub); border-color: var(--green); color: #14532d; }
+.callout-warn { background: var(--amber-sub); border-color: var(--amber); color: #78350f; }
+.callout-danger { background: var(--red-sub); border-color: var(--red); color: #7f1d1d; }
+
+/* Buttons & Inputs */
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: #1e40af; }
+.btn-secondary { background: #fff; border-color: #cbd5e1; color: var(--text); }
+.btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover { background: #166534; }
+.btn-amber { background: var(--amber); color: #fff; }
+.btn-amber:hover { background: #92400e; }
+.btn-danger { background: #fff; border-color: #fca5a5; color: var(--red); }
+.btn-danger:hover { background: var(--red-sub); }
+.btn-sm { padding: 5px 10px; font-size: 12.5px; border-radius: 6px; }
+
+/* Code Editor & Box */
+.code-editor {
+  width: 100%;
+  min-height: 180px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px 14px;
+  resize: vertical;
+  tab-size: 2;
+}
+.code-editor:focus {
+  outline: 2px solid #3b82f6;
+  border-color: #3b82f6;
+}
+pre.codebox {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 14px 16px;
+  border-radius: 9px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 8px 0;
+}
+
+/* Tables */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 12px 0;
+  background: #fff;
+}
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+table.data-table th {
+  background: #f1f5f9;
+  color: #334155;
+  padding: 9px 12px;
+  font-weight: 700;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+table.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+table.data-table tr:last-child td {
+  border-bottom: none;
+}
+table.data-table tr.uncommitted-row {
+  background: #fef3c7 !important;
+  color: #78350f;
+  font-weight: 600;
+}
+
+/* Visual Transaction Inspector Box */
+.inspector-panel {
+  background: #ffffff;
+  border: 2px solid #3b82f6;
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.12);
+}
+.inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.state-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+.state-idle {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+.state-active {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  animation: pulse-ring 2s infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.savepoints-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.sp-chip {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #c4b5fd;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Practice Task Card */
+.task-container {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.task-select {
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  max-width: 100%;
+}
+.task-status {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.task-status.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.task-status.fail { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.task-status.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+/* Quizzes */
+.quiz-item {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.quiz-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+}
+.quiz-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--surface-alt);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: all 0.15s ease;
+}
+.quiz-label:hover { background: #e2e8f0; }
+.quiz-label.correct { background: #dcfce7 !important; border-color: #86efac; color: #166534; font-weight: 600; }
+.quiz-label.wrong { background: #fee2e2 !important; border-color: #fca5a5; color: #991b1b; }
+.quiz-feedback {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: none;
+}
+
+/* Certificate Modal & Canvas */
+.cert-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+}
+.cert-section h3 { margin-top: 0; font-size: 20px; }
+.student-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 16px 0;
+}
+.student-input {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #fff;
+  font-size: 13.5px;
+}
+.student-input::placeholder { color: #94a3b8; }
+#certCanvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  margin-top: 16px;
+  background: #fff;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 12.5px;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.timeline-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+}
+.timeline-time { color: var(--muted); font-size: 11px; }
+
+/* SVG Diagrams */
+.diagram-card {
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 14px 0;
+}
+svg.schema-svg {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-nav">
+      <a href="../../../index.html">← Trang chủ Khóa học DBMS</a>
+      <span>/</span>
+      <span class="hero-tag">MySQL Transactions & Concurrency</span>
+    </div>
+    <h1>Thực hành MySQL Transaction: Giao dịch, ACID & Khóa</h1>
+    <p>
+      Nền tảng kiểm soát giao dịch dữ liệu trong MySQL: Bộ ba <code>START TRANSACTION</code>, <code>COMMIT</code>, <code>ROLLBACK</code>, kỹ thuật phân đoạn <code>SAVEPOINT</code>, bẫy <strong>Implicit Commit</strong> khi gặp DDL, 4 mức độ cô lập <strong>Isolation Levels</strong>, và hệ thống tự chấm bài thực hành mô phỏng 100% trên trình duyệt.
+    </p>
+    <div class="hero-chips">
+      <span class="hero-chip">🎯 15 Bài tập SQL tự chấm</span>
+      <span class="hero-chip">💡 10 Câu hỏi trắc nghiệm ACID</span>
+      <span class="hero-chip">⚡ Dual-Engine: SQLite Wasm + JS Fallback</span>
+      <span class="hero-chip">🏆 Xuất chứng nhận hoàn thành PNG (2x High-DPI)</span>
+    </div>
+  </div>
+</header>
+
+<div class="sticky-bar">
+  <div class="wrap sticky-in">
+    <nav class="nav-links" aria-label="Mục lục nhanh">
+      <a class="nav-btn" href="#theory">1. Lý thuyết & ACID</a>
+      <a class="nav-btn" href="#lifecycle">2. Vòng đời Transaction</a>
+      <a class="nav-btn" href="#implicit-commit">3. Bẫy DDL Implicit Commit</a>
+      <a class="nav-btn" href="#isolation">4. Mức độ Cô lập (Isolation)</a>
+      <a class="nav-btn" href="#playground">5. Transaction Playground</a>
+      <a class="nav-btn" href="#practice">6. Bài tập Tự chấm (15 Bài)</a>
+      <a class="nav-btn" href="#quizzes">7. Trắc nghiệm (10 Câu)</a>
+      <a class="nav-btn" href="#certificate">8. Điểm & Chứng nhận</a>
+    </nav>
+    <div class="score-badge-nav">
+      <span>Điểm tổng:</span>
+      <strong id="navScoreDisplay">0 / 100</strong>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- PHẦN 1: LÝ THUYẾT VÀ ACID -->
+  <section id="theory">
+    <h2>1. Bản chất Transaction & Mô hình ACID trong RDBMS</h2>
+    <p class="section-desc">Một Transaction (Giao dịch CSDL) là một đơn vị công việc logic bao gồm một hoặc nhiều thao tác SQL, đảm bảo tính toàn vẹn ngay cả khi mất điện hoặc lỗi phần mềm.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="badge badge-blue">Khái niệm</span> Đơn vị công việc logic (Unit of Work)</h3>
+        <p>Xét nghiệp vụ chuyển <strong>500.000 VNĐ</strong> từ tài khoản A sang tài khoản B:</p>
+        <ol style="padding-left: 20px; font-size: 13.5px; line-height: 1.8;">
+          <li>Kiểm tra số dư tài khoản A có đủ không.</li>
+          <li>Trừ 500.000 VNĐ ở tài khoản A (<code>UPDATE bank_accounts SET balance = balance - 500000 WHERE id = A</code>).</li>
+          <li>Cộng 500.000 VNĐ ở tài khoản B (<code>UPDATE bank_accounts SET balance = balance + 500000 WHERE id = B</code>).</li>
+          <li>Ghi sổ nhật ký giao dịch vào bảng <code>audit_log</code>.</li>
+        </ol>
+        <div class="callout callout-warn">
+          <strong>Quy tắc sinh tử:</strong> Cả 4 bước trên phải thành công toàn bộ, hoặc nếu máy chủ sập nguồn ở bước 2 thì bước 2 phải được <strong>hoàn tác hoàn toàn (Rollback)</strong>. Không thể có trạng thái tiền đã mất ở A mà B chưa nhận được!
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge badge-purple">Storage Engine</span> InnoDB vs MyISAM trong MySQL</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Đặc tính</th>
+              <th>InnoDB (Khuyên dùng)</th>
+              <th>MyISAM (Cũ)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hỗ trợ Transaction</strong></td>
+              <td><span class="badge badge-green">Có (ACID đầy đủ)</span></td>
+              <td><span class="badge badge-red">Không hỗ trợ</span></td>
+            </tr>
+            <tr>
+              <td><strong>Khả năng ROLLBACK</strong></td>
+              <td>Hoàn tác an toàn qua Undo Log</td>
+              <td>Không thể hoàn tác</td>
+            </tr>
+            <tr>
+              <td><strong>Cấp độ Khóa (Locking)</strong></td>
+              <td>Khóa mức dòng (Row-level Locking)</td>
+              <td>Khóa toàn bảng (Table-level)</td>
+            </tr>
+            <tr>
+              <td><strong>Bảo vệ mất điện (Crash Recovery)</strong></td>
+              <td>Redo Log & WAL (Tự phục hồi)</td>
+              <td>Dễ hỏng bảng (Corrupted)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4 TÍNH CHẤT ACID -->
+    <div class="card">
+      <h3>Bốn Trụ cột ACID của Giao dịch CSDL</h3>
+      <div class="grid-4">
+        <div style="background: var(--surface-alt); padding: 14px; border-radius: 8px; border-top: 4px solid #1d4ed8;">
+          <h4 style="margin: 0 0 6px; color: #1d4ed8;">A - Atomicity</h4>
+          <strong style="font-size: 13px;">Tính Nguyên tử</strong>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+            "Tất cả hoặc không gì cả" (All-or-Nothing). Hoặc toàn bộ câu lệnh đều thành công và ghi nhận vĩnh viễn, hoặc khi xảy ra sự cố, tất cả thay đổi sẽ bị xóa sạch như chưa từng xảy ra nhờ <strong>Undo Log</strong>.
+          </p>
+        </div>
+        <div style="background: var(--surface-alt); padding: 14px; border-radius: 8px; border-top: 4px solid #15803d;">
+          <h4 style="margin: 0 0 6px; color: #15803d;">C - Consistency</h4>
+          <strong style="font-size: 13px;">Tính Nhất quán</strong>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+            Chuyển CSDL từ trạng thái hợp lệ này sang trạng thái hợp lệ khác. Không bao giờ vi phạm ràng buộc toàn vẹn (PRIMARY KEY, FOREIGN KEY, CHECK số dư không âm, UNIQUE).
+          </p>
+        </div>
+        <div style="background: var(--surface-alt); padding: 14px; border-radius: 8px; border-top: 4px solid #b45309;">
+          <h4 style="margin: 0 0 6px; color: #b45309;">I - Isolation</h4>
+          <strong style="font-size: 13px;">Tính Cô lập</strong>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+            Các giao dịch chạy đồng thời độc lập với nhau, không nhìn thấy dữ liệu chưa commit của nhau. Được quản lý qua <strong>Khóa (Locking)</strong> và <strong>MVCC</strong> (Multi-Version Concurrency Control).
+          </p>
+        </div>
+        <div style="background: var(--surface-alt); padding: 14px; border-radius: 8px; border-top: 4px solid #dc2626;">
+          <h4 style="margin: 0 0 6px; color: #dc2626;">D - Durability</h4>
+          <strong style="font-size: 13px;">Tính Bền vững</strong>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 6px;">
+            Khi lệnh <code>COMMIT</code> đã phản hồi thành công, dữ liệu được ghi nhận vĩnh viễn vào đĩa (thông qua <strong>Redo Log</strong> & WAL). Ngay cả khi mất điện đột ngột 1 mili-giây sau đó, dữ liệu vẫn không bị mất.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 2: VÒNG ĐỜI VÀ CÂU LỆNH CỐT LÕI -->
+  <section id="lifecycle">
+    <h2>2. Vòng đời Trạng thái & Bộ câu lệnh Kiểm soát Transaction</h2>
+    <p class="section-desc">Nắm vững quy trình chuyển đổi trạng thái và cách sử dụng SAVEPOINT để hoàn tác từng phần.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Sơ đồ Chuyển dịch Trạng thái Transaction</h3>
+        <div class="diagram-card">
+          <svg class="schema-svg" viewBox="0 0 540 220" width="100%" height="200">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <rect x="20" y="80" width="110" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+            <text x="75" y="106" text-anchor="middle" font-weight="bold" font-size="13" fill="#1e40af">Active</text>
+
+            <rect x="200" y="20" width="140" height="44" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+            <text x="270" y="46" text-anchor="middle" font-weight="bold" font-size="12" fill="#92400e">Partially Committed</text>
+
+            <rect x="410" y="20" width="110" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+            <text x="465" y="46" text-anchor="middle" font-weight="bold" font-size="13" fill="#166534">Committed</text>
+
+            <rect x="200" y="140" width="110" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+            <text x="255" y="166" text-anchor="middle" font-weight="bold" font-size="13" fill="#991b1b">Failed</text>
+
+            <rect x="410" y="140" width="110" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+            <text x="465" y="166" text-anchor="middle" font-weight="bold" font-size="13" fill="#334155">Aborted</text>
+
+            <path d="M 130 90 L 195 50" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#arrow)"/>
+            <path d="M 340 42 L 400 42" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#arrow)"/>
+            <path d="M 130 110 L 195 150" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#arrow)"/>
+            <path d="M 310 162 L 400 162" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#arrow)"/>
+            <path d="M 270 65 L 270 130" stroke="#475569" stroke-width="1.8" stroke-dasharray="4" fill="none" marker-end="url(#arrow)"/>
+          </svg>
+        </div>
+        <p style="font-size: 13px; color: var(--muted); margin: 0;">
+          <strong>Active:</strong> Đang thực thi các câu lệnh DML. <strong>Partially Committed:</strong> Câu lệnh cuối cùng đã chạy, chuẩn bị ghi đĩa. <strong>Committed:</strong> Ghi nhận vĩnh viễn. <strong>Failed / Aborted:</strong> Gặp lỗi cú pháp, vi phạm khóa hoặc có lệnh <code>ROLLBACK</code>.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Bộ 6 Lệnh Kiểm soát Transaction</h3>
+        <pre class="codebox"><code>-- 1. Bắt đầu transaction tường minh
+START TRANSACTION;  -- hoặc BEGIN;
+
+-- 2. Đặt điểm lưu an toàn
+SAVEPOINT sp_step1;
+
+-- 3. Hoàn tác một phần về điểm lưu (transaction VẪN ĐANG ACTIVE!)
+ROLLBACK TO SAVEPOINT sp_step1;
+
+-- 4. Hủy điểm lưu (không hoàn tác, chỉ giải phóng bộ nhớ)
+RELEASE SAVEPOINT sp_step1;
+
+-- 5. Xác nhận toàn bộ thay đổi vĩnh viễn
+COMMIT;
+
+-- 6. Hoàn tác toàn bộ thay đổi từ đầu transaction
+ROLLBACK;</code></pre>
+        <div class="callout callout-info" style="margin: 10px 0 0;">
+          <strong>Lưu ý về Autocommit:</strong> Theo mặc định trong MySQL, biến <code>@@autocommit = 1</code>. Mỗi câu lệnh đơn lẻ được tự động commit ngay lập tức! Muốn gộp nhiều lệnh, ta bắt buộc phải dùng <code>START TRANSACTION</code> hoặc đặt <code>SET autocommit = 0;</code>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 3: BẪY DDL IMPLICIT COMMIT -->
+  <section id="implicit-commit">
+    <h2>3. Bẫy Tử Thần: Implicit Commit (Tự động Commit ngầm)</h2>
+    <p class="section-desc">Một trong những lỗi phổ biến nhất của lập trình viên và quản trị viên CSDL MySQL là gọi lệnh DDL bên trong Transaction.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Hiện tượng xảy ra khi chạy DDL</h3>
+        <p style="font-size: 13.5px;">
+          Trong MySQL, hầu hết các câu lệnh <strong>DDL (Data Definition Language)</strong> và quản trị không thể rollback được. Khi bạn đang mở một transaction và gọi một câu lệnh DDL, MySQL sẽ <strong>ngay lập tức thực hiện một lệnh COMMIT ngầm định (Implicit Commit)</strong> cho tất cả các thao tác trước đó trước khi chạy câu DDL!
+        </p>
+        <div class="callout callout-danger">
+          <strong>Ví dụ nguy hiểm:</strong>
+          <pre class="codebox" style="margin-top: 6px;"><code>START TRANSACTION;
+UPDATE bank_accounts SET balance = 0; -- Trừ sạch tiền!
+
+-- Vô tình chạy 1 lệnh DDL:
+CREATE TABLE temp_test (id INT); -- 💥 KÍCH HOẠT IMPLICIT COMMIT!
+
+ROLLBACK; -- ❌ VÔ HIỆU! Lệnh UPDATE bên trên ĐÃ BỊ LƯU VĨNH VIỄN!</code></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Bảng phân loại Lệnh An toàn vs Lệnh gây Implicit Commit</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Loại lệnh</th>
+              <th>Ví dụ câu lệnh</th>
+              <th>Khả năng Rollback</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">DML (An toàn)</span></td>
+              <td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>SELECT</code></td>
+              <td><strong>Hoàn tác an toàn 100%</strong></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">DDL Table</span></td>
+              <td><code>CREATE TABLE</code>, <code>ALTER TABLE</code>, <code>DROP TABLE</code>, <code>RENAME TABLE</code></td>
+              <td><strong>Gây Implicit Commit</strong></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">Dọn dẹp nhanh</span></td>
+              <td><code>TRUNCATE TABLE</code> (DDL, không kích hoạt trigger)</td>
+              <td><strong>Gây Implicit Commit</strong></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">Quản trị Schema</span></td>
+              <td><code>CREATE DATABASE</code>, <code>DROP DATABASE</code></td>
+              <td><strong>Gây Implicit Commit</strong></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red">Khóa & Transaction</span></td>
+              <td><code>LOCK TABLES</code>, <code>UNLOCK TABLES</code>, <code>START TRANSACTION</code> (khi đang có tx mở)</td>
+              <td><strong>Gây Implicit Commit</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 4: ISOLATION LEVELS -->
+  <section id="isolation">
+    <h2>4. Mức độ Cô lập (Transaction Isolation Levels) & Các hiện tượng Concurrency</h2>
+    <p class="section-desc">Khi nhiều session đồng thời thao tác trên cùng bảng dữ liệu, chuẩn SQL định nghĩa 4 mức cô lập để cân bằng giữa Tốc độ và Tính an toàn.</p>
+
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Mức cô lập (Isolation Level)</th>
+            <th>Dirty Read (Đọc rác)</th>
+            <th>Non-Repeatable Read (Đọc không lặp lại)</th>
+            <th>Phantom Read (Bóng ma)</th>
+            <th>Ghi chú & Ứng dụng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>READ UNCOMMITTED</strong></td>
+            <td><span class="badge badge-red">Có thể bị</span></td>
+            <td><span class="badge badge-red">Có thể bị</span></td>
+            <td><span class="badge badge-red">Có thể bị</span></td>
+            <td>Thấy cả dữ liệu chưa commit của transaction khác. Tốc độ cao nhất nhưng nguy hiểm nhất.</td>
+          </tr>
+          <tr>
+            <td><strong>READ COMMITTED</strong></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td><span class="badge badge-red">Có thể bị</span></td>
+            <td><span class="badge badge-red">Có thể bị</span></td>
+            <td>Chỉ đọc dữ liệu đã commit. Mức mặc định của Oracle, PostgreSQL, SQL Server.</td>
+          </tr>
+          <tr>
+            <td><strong>REPEATABLE READ</strong></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td><span class="badge badge-green">Ngăn chặn (InnoDB Next-Key Locks)</span></td>
+            <td><span class="badge badge-blue">MẶC ĐỊNH CỦA MYSQL INNODB</span>. Đảm bảo mọi lần SELECT trong cùng tx đều thấy dữ liệu như nhau.</td>
+          </tr>
+          <tr>
+            <td><strong>SERIALIZABLE</strong></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td><span class="badge badge-green">Ngăn chặn</span></td>
+            <td>Cô lập tuần tự tuyệt đối (chuyển các câu SELECT thuần thành khóa chia sẻ S-Lock). Hiệu năng thấp nhất.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout callout-info" style="margin-top: 14px;">
+        <strong>Cú pháp thiết lập mức cô lập trong MySQL:</strong>
+        <code>SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;</code> hoặc kiểm tra bằng: <code>SELECT @@transaction_isolation;</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 5: TRANSACTION PLAYGROUND -->
+  <section id="playground">
+    <h2>5. Visual Transaction Simulator & Live State Inspector</h2>
+    <p class="section-desc">Môi trường mô phỏng trực quan trạng thái giao dịch: Xem số dư thay đổi trực tiếp, kiểm soát Savepoints và quan sát trạng thái Uncommitted.</p>
+
+    <!-- Visual Inspector Box -->
+    <div class="inspector-panel">
+      <div class="inspector-header">
+        <div>
+          <span style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Bộ giám sát Giao dịch Trực tiếp:</span>
+          <div style="margin-top: 4px;">
+            <span id="txStatusBadge" class="state-pulse state-idle">🟢 TRẠNG THÁI: IDLE (Autocommit ON)</span>
+            <span id="uncommittedCounter" class="badge badge-blue" style="margin-left: 8px;">0 thay đổi chưa commit</span>
+          </div>
+        </div>
+        <div>
+          <span style="font-size: 12px; color: var(--muted); font-weight: 700;">Savepoints đang giữ:</span>
+          <div id="savepointsContainer" class="savepoints-bar">
+            <span style="color: var(--muted); font-style: italic; font-size: 12px;">(Chưa có savepoint nào)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Tables Grid -->
+      <div class="grid-2">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <strong style="font-size: 13px; color: var(--primary);">📋 Bảng: bank_accounts (Tài khoản ngân hàng)</strong>
+            <span class="badge badge-purple">InnoDB Simulation</span>
+          </div>
+          <div class="table-scroll" style="margin: 0;">
+            <table class="data-table" id="tableBankAccounts">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Chủ tài khoản</th>
+                  <th>Số dư (VNĐ)</th>
+                  <th>Trạng thái</th>
+                  <th>Lưu ý</th>
+                </tr>
+              </thead>
+              <tbody id="bankAccountsTbody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <strong style="font-size: 13px; color: var(--cyan);">📦 Bảng: inventory (Kho linh kiện máy tính)</strong>
+            <span class="badge badge-blue">Kho hàng</span>
+          </div>
+          <div class="table-scroll" style="margin: 0;">
+            <table class="data-table" id="tableInventory">
+              <thead>
+                <tr>
+                  <th>Mã SP</th>
+                  <th>Tên sản phẩm</th>
+                  <th>Tồn kho</th>
+                  <th>Đơn giá ($)</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTbody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline log -->
+      <div style="margin-top: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--muted);">Nhật ký Lịch sử Lệnh (Session Timeline):</span>
+          <button class="btn btn-sm btn-secondary" id="clearTimelineBtn">Xóa nhật ký</button>
+        </div>
+        <div class="timeline" id="sessionTimeline">
+          <div class="timeline-entry">
+            <span class="timeline-time">[Khởi tạo]</span>
+            <span style="color: #15803d;">Khởi động môi trường Transaction Lab sẵn sàng. CSDL mẫu được tải thành công.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playground SQL Editor -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+        <div>
+          <strong style="font-size: 15px;">SQL Playground & Thử nghiệm Nhanh</strong>
+          <span style="font-size: 12px; color: var(--muted); margin-left: 8px;">Gõ nhiều lệnh phân tách bởi dấu chấm phẩy (;)</span>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-secondary preset-btn" data-preset="transfer_ok">Kịch bản 1: Chuyển tiền thành công (Commit)</button>
+          <button class="btn btn-sm btn-secondary preset-btn" data-preset="transfer_fail">Kịch bản 2: Lỗi & Rollback</button>
+          <button class="btn btn-sm btn-secondary preset-btn" data-preset="savepoint_demo">Kịch bản 3: Savepoint</button>
+          <button class="btn btn-sm btn-secondary preset-btn" data-preset="implicit_commit_demo">Kịch bản 4: Bẫy DDL Implicit Commit</button>
+          <button class="btn btn-sm btn-danger" id="resetDbBtn">↺ Reset CSDL mẫu</button>
+        </div>
+      </div>
+
+      <textarea id="playgroundSql" class="code-editor" spellcheck="false" placeholder="-- Nhập câu lệnh SQL tại đây...">START TRANSACTION;
+
+-- Chuyển 200 từ Alice sang Bob
+UPDATE bank_accounts SET balance = balance - 200 WHERE account_id = 1;
+UPDATE bank_accounts SET balance = balance + 200 WHERE account_id = 2;
+
+-- Xác nhận giao dịch
+COMMIT;</textarea>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="runPlaygroundBtn">▶ Chạy SQL (Run)</button>
+          <button class="btn btn-success" id="commitPlaygroundBtn">✓ Gửi COMMIT</button>
+          <button class="btn btn-amber" id="rollbackPlaygroundBtn">↺ Gửi ROLLBACK</button>
+        </div>
+        <div id="engineBadge" class="badge badge-green">Engine: SQLite WebAssembly (Đang kết nối)</div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <strong style="font-size: 13px; color: var(--muted);">Kết quả thực thi:</strong>
+        <div id="playgroundOutput" class="table-scroll" style="max-height: 180px; padding: 10px; background: var(--surface-alt); font-size: 13px;">
+          Chưa thực thi câu lệnh nào.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 6: BÀI TẬP THỰC HÀNH TỰ CHẤM (15 BÀI) -->
+  <section id="practice">
+    <h2>6. Bài tập Thực hành SQL Transaction (Tự chấm điểm)</h2>
+    <p class="section-desc">15 bài tập tình huống thực tế có hệ thống chấm điểm tự động, hỗ trợ gợi ý và xác minh trạng thái cơ sở dữ liệu.</p>
+
+    <div class="task-container">
+      <div class="task-header">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <label for="taskSelector" style="font-size: 13.5px; font-weight: 700;">Chọn bài tập:</label>
+          <select id="taskSelector" class="task-select">
+            <!-- Rendered by JS -->
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-sm btn-secondary" id="prevTaskBtn">← Bài trước</button>
+          <button class="btn btn-sm btn-secondary" id="nextTaskBtn">Bài sau →</button>
+          <span id="taskScoreBadge" class="badge badge-blue">4 Điểm</span>
+        </div>
+      </div>
+
+      <!-- Task Details -->
+      <div id="taskDetails" style="margin-bottom: 14px;">
+        <h3 id="taskTitle" style="margin: 0 0 6px; font-size: 17px; color: var(--primary);"></h3>
+        <p id="taskDesc" style="margin: 0 0 8px; font-size: 14px; color: var(--text);"></p>
+        <div class="callout callout-info" id="taskRequirement" style="margin: 8px 0; font-size: 13.5px;"></div>
+      </div>
+
+      <!-- Task Editor -->
+      <label for="taskSqlInput" style="font-size: 13px; font-weight: 700; color: var(--muted);">Editor Thực hành:</label>
+      <textarea id="taskSqlInput" class="code-editor" style="min-height: 160px;" spellcheck="false"></textarea>
+
+      <!-- Task Controls -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="runTaskBtn">▶ Chạy thử (Run)</button>
+          <button class="btn btn-success" id="checkTaskBtn">✓ Chấm bài (Check)</button>
+          <button class="btn btn-secondary" id="hintTaskBtn">💡 Xem gợi ý</button>
+          <button class="btn btn-secondary" id="resetTaskBtn">Xóa code làm lại</button>
+        </div>
+        <span style="font-size: 12px; color: var(--muted);">Phím tắt: <strong>Ctrl + Enter</strong> để Chạy</span>
+      </div>
+
+      <!-- Task Hint Box -->
+      <div id="taskHintBox" class="callout callout-warn" style="display: none; margin-top: 12px;"></div>
+
+      <!-- Task Status & Feedback -->
+      <div id="taskFeedback" class="task-status info" style="display: none;"></div>
+
+      <!-- Output view -->
+      <div style="margin-top: 12px;">
+        <strong style="font-size: 12.5px; color: var(--muted);">Kết quả truy vấn bài tập:</strong>
+        <div id="taskOutputTable" class="table-scroll" style="max-height: 160px; padding: 10px; background: var(--surface-alt); font-size: 13px;">
+          (Nhấn Chạy thử hoặc Chấm bài để xem kết quả)
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHẦN 7: TRẮC NGHIỆM CỦNG CỐ KIẾN THỨC (10 CÂU) -->
+  <section id="quizzes">
+    <h2>7. Câu hỏi Trắc nghiệm Chuyên sâu về Transaction & ACID</h2>
+    <p class="section-desc">10 câu hỏi kiểm tra tư duy bản chất, mỗi câu 4 điểm. Kiểm tra tức thì kèm lời giải thích chi tiết.</p>
+
+    <div id="quizContainer">
+      <!-- Rendered dynamically -->
+    </div>
+  </section>
+
+  <!-- PHẦN 8: BẢNG ĐIỂM & XUẤT CHỨNG NHẬN PNG -->
+  <section id="certificate">
+    <div class="cert-section">
+      <h3>8. Bảng Điểm & Xuất Chứng Nhận Hoàn Thành</h3>
+      <p style="font-size: 14px; opacity: 0.9;">
+        Nhập thông tin sinh viên để hệ thống tự động gắn chứng nhận chính thức kèm mã định danh và tem điểm số.
+      </p>
+
+      <div class="student-bar">
+        <input type="text" id="studentName" class="student-input" placeholder="Họ và tên sinh viên (VD: Nguyễn Văn A)" style="min-width: 260px;">
+        <input type="text" id="studentId" class="student-input" placeholder="Mã số sinh viên (VD: B21DCCN001)" style="min-width: 180px;">
+        <button class="btn btn-success" id="exportCsvBtn">📥 Xuất Bảng điểm CSV</button>
+        <button class="btn btn-primary" id="generateCertBtn">🏆 Xuất Chứng nhận PNG (2x High-DPI)</button>
+        <button class="btn btn-danger" id="resetAllProgressBtn">↺ Xóa làm lại từ đầu</button>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 14px; margin-top: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-weight: 700;">Tiến độ Hoàn thành Lab:</span>
+          <strong id="progressText">0 / 100 Điểm (0%)</strong>
+        </div>
+        <div style="height: 12px; background: rgba(0,0,0,0.3); border-radius: 999px; overflow: hidden;">
+          <div id="progressBarFill" style="width: 0%; height: 100%; background: #22c55e; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <canvas id="certCanvas" width="1200" height="750" style="display: none;"></canvas>
+    </div>
+  </section>
+
+</main>
+
+<footer style="background: #0f172a; color: #94a3b8; padding: 30px 0; text-align: center; font-size: 13.5px; border-top: 1px solid #1e293b;">
+  <div class="wrap">
+    <p style="margin: 0 0 8px; color: #e2e8f0; font-weight: 600;">Hệ thống Bài giảng & Lab Thực hành Cơ sở Dữ liệu (DBMS Course)</p>
+    <p style="margin: 0;">Biên soạn & Thiết kế phục vụ giảng dạy môn Cơ sở Dữ liệu & Hệ Quản trị CSDL MySQL.</p>
+  </div>
+</footer>
+
+<!-- SCRIPT: ENGINE & APP LOGIC -->
+<script>
+(() => {
+  "use strict";
+
+  // -------------------------------------------------------------
+  // DỮ LIỆU CSDL MẪU (SEED DATA)
+  // -------------------------------------------------------------
+  const SEED_BANK_ACCOUNTS = [
+    { account_id: 1, owner_name: 'Alice Nguyen', balance: 1000.00, status: 'ACTIVE' },
+    { account_id: 2, owner_name: 'Bob Tran', balance: 500.00, status: 'ACTIVE' },
+    { account_id: 3, owner_name: 'Charlie Le', balance: 250.00, status: 'ACTIVE' },
+    { account_id: 4, owner_name: 'Diana Pham', balance: 750.00, status: 'FROZEN' }
+  ];
+
+  const SEED_INVENTORY = [
+    { product_id: 101, product_name: 'ThinkPad T14 Gen 4', stock: 15, price: 1250.00 },
+    { product_id: 102, product_name: 'Logitech MX Master 3S', stock: 50, price: 99.00 },
+    { product_id: 103, product_name: 'Keychron K2 Pro Wireless', stock: 30, price: 85.00 },
+    { product_id: 104, product_name: 'Dell UltraSharp 27 4K', stock: 20, price: 480.00 }
+  ];
+
+  // -------------------------------------------------------------
+  // 15 BÀI TẬP THỰC HÀNH TỰ CHẤM
+  // -------------------------------------------------------------
+  const PRACTICE_TASKS = [
+    {
+      id: 1,
+      title: "Bài 1: Bắt đầu Giao dịch & Cập nhật số dư với COMMIT",
+      points: 4,
+      desc: "Khởi động transaction rõ ràng, cộng 300 vào số dư tài khoản của Bob (account_id = 2) và xác nhận vĩnh viễn.",
+      requirement: "Dùng START TRANSACTION; UPDATE bank_accounts SET balance = balance + 300 WHERE account_id = 2; COMMIT;",
+      initialSql: "-- Bài 1: START TRANSACTION, UPDATE và COMMIT\nSTART TRANSACTION;\nUPDATE bank_accounts\nSET balance = balance + 300\nWHERE account_id = 2;\nCOMMIT;",
+      hint: "Đảm bảo có đủ 3 thành phần: START TRANSACTION, câu lệnh UPDATE và kết thúc bằng COMMIT.",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("START TRANSACTION") && !upper.includes("BEGIN")) return { pass: false, msg: "Thiếu lệnh START TRANSACTION để mở giao dịch rõ ràng." };
+        if (!upper.includes("COMMIT")) return { pass: false, msg: "Thiếu lệnh COMMIT để xác nhận giao dịch." };
+        const bob = dbState.bank_accounts.find(a => a.account_id === 2);
+        if (!bob || bob.balance !== 800) return { pass: false, msg: `Số dư Bob dự kiến là 800 (500 + 300), hiện tại là: ${bob ? bob.balance : 'N/A'}` };
+        return { pass: true, msg: "Chính xác! Bob đã nhận thêm 300 và thay đổi đã được commit thành công." };
+      }
+    },
+    {
+      id: 2,
+      title: "Bài 2: Hoàn tác Sai sót An toàn với ROLLBACK",
+      points: 4,
+      desc: "Mô phỏng trường hợp lỡ tay trừ nhầm 500 của Charlie (account_id = 3). Phát hiện sai sót và hoàn tác bằng ROLLBACK để số dư Charlie giữ nguyên 250.",
+      requirement: "Dùng START TRANSACTION; UPDATE trừ tiền Charlie; sau đó chạy ROLLBACK;",
+      initialSql: "START TRANSACTION;\nUPDATE bank_accounts\nSET balance = balance - 500\nWHERE account_id = 3;\n-- Phát hiện sai sót -> Hoàn tác\nROLLBACK;",
+      hint: "Sau khi ROLLBACK, số dư của Charlie phải quay trở lại đúng 250.00 như ban đầu.",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("START TRANSACTION") && !upper.includes("BEGIN")) return { pass: false, msg: "Thiếu lệnh START TRANSACTION." };
+        if (!upper.includes("ROLLBACK")) return { pass: false, msg: "Thiếu lệnh ROLLBACK để hoàn tác thay đổi." };
+        const charlie = dbState.bank_accounts.find(a => a.account_id === 3);
+        if (!charlie || charlie.balance !== 250) return { pass: false, msg: "Số dư Charlie bị sai, ROLLBACK chưa hoàn tác thành công về 250." };
+        return { pass: true, msg: "Rất tốt! Nhờ có ROLLBACK, số dư Charlie vẫn an toàn ở mức 250.00." };
+      }
+    },
+    {
+      id: 3,
+      title: "Bài 3: Nghiệp vụ Chuyển khoản Ngân hàng Nguyên tử (Atomicity)",
+      points: 4,
+      desc: "Chuyển 250 từ Alice (account_id = 1) sang Charlie (account_id = 3). Cả hai thao tác trừ tiền và cộng tiền phải nằm trong cùng một transaction và commit.",
+      requirement: "START TRANSACTION; Trừ 250 của account_id = 1; Cộng 250 cho account_id = 3; COMMIT;",
+      initialSql: "START TRANSACTION;\n\n-- Trừ tiền Alice\nUPDATE bank_accounts SET balance = balance - 250 WHERE account_id = 1;\n\n-- Cộng tiền Charlie\nUPDATE bank_accounts SET balance = balance + 250 WHERE account_id = 3;\n\nCOMMIT;",
+      hint: "Đảm bảo trừ Alice 250 (còn 750) và cộng Charlie 250 (lên 500), kết thúc bằng COMMIT.",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("COMMIT")) return { pass: false, msg: "Thiếu lệnh COMMIT." };
+        const alice = dbState.bank_accounts.find(a => a.account_id === 1);
+        const charlie = dbState.bank_accounts.find(a => a.account_id === 3);
+        if (alice.balance !== 750 || charlie.balance !== 500) {
+          return { pass: false, msg: `Số dư chưa khớp! Alice mong muốn 750 (thực tế ${alice.balance}), Charlie mong muốn 500 (thực tế ${charlie.balance}).` };
+        }
+        return { pass: true, msg: "Tuyệt vời! Nghiệp vụ chuyển khoản đảm bảo tính toàn vẹn Atomicity thành công." };
+      }
+    },
+    {
+      id: 4,
+      title: "Bài 4: Kiểm tra Trạng thái Autocommit của Hệ thống",
+      points: 4,
+      desc: "Viết câu lệnh truy vấn giá trị của biến hệ thống autocommit trong MySQL session hiện tại.",
+      requirement: "Truy vấn: SELECT @@autocommit;",
+      initialSql: "SELECT @@autocommit;",
+      hint: "Sử dụng cú pháp SELECT @@tên_biến; trong MySQL.",
+      validator: (sql) => {
+        const clean = sql.trim().toUpperCase().replace(/\s+/g, ' ');
+        if (clean.includes("SELECT @@AUTOCOMMIT")) return { pass: true, msg: "Chính xác! Lệnh SELECT @@autocommit trả về 1 (Bật) hoặc 0 (Tắt)." };
+        return { pass: false, msg: "Cú pháp chuẩn cần là: SELECT @@autocommit;" };
+      }
+    },
+    {
+      id: 5,
+      title: "Bài 5: Tắt chế độ Autocommit trong Session",
+      points: 4,
+      desc: "Chuyển biến phiên autocommit về trạng thái tắt (0) để mọi câu lệnh DML sau đó đều tự động bắt đầu một transaction ngầm.",
+      requirement: "Cú pháp: SET autocommit = 0;",
+      initialSql: "SET autocommit = 0;",
+      hint: "Dùng lệnh SET autocommit = 0; (hoặc SET @@autocommit = 0;).",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (upper.includes("AUTOCOMMIT") && (upper.includes("= 0") || upper.includes("=0") || upper.includes("OFF"))) {
+          return { pass: true, msg: "Chính xác! Đã tắt autocommit. Kể từ giờ các lệnh DML sẽ không tự commit nữa." };
+        }
+        return { pass: false, msg: "Cú pháp yêu cầu: SET autocommit = 0;" };
+      }
+    },
+    {
+      id: 6,
+      title: "Bài 6: Chuỗi DML khi Autocommit tắt & Xác nhận bằng COMMIT",
+      points: 4,
+      desc: "Khi autocommit đã tắt (0), trừ 100 của Bob (account_id = 2) và gọi COMMIT tường minh để lưu thay đổi (số dư Bob thành 400).",
+      requirement: "SET autocommit = 0; UPDATE bank_accounts SET balance = balance - 100 WHERE account_id = 2; COMMIT;",
+      initialSql: "SET autocommit = 0;\nUPDATE bank_accounts SET balance = balance - 100 WHERE account_id = 2;\nCOMMIT;",
+      hint: "Chạy SET autocommit = 0, lệnh UPDATE trừ 100 của Bob và kết thúc bằng COMMIT.",
+      validator: (sql, dbState) => {
+        const bob = dbState.bank_accounts.find(a => a.account_id === 2);
+        if (bob && bob.balance === 400) {
+          return { pass: true, msg: "Chính xác! Bob đã bị trừ 100 và thay đổi được chốt qua COMMIT." };
+        }
+        return { pass: false, msg: `Số dư Bob chưa thành 400 (hiện tại: ${bob ? bob.balance : 'N/A'}).` };
+      }
+    },
+    {
+      id: 7,
+      title: "Bài 7: Thiết lập Điểm lưu SAVEPOINT",
+      points: 4,
+      desc: "Bắt đầu transaction, cộng 100 cho Alice, đặt SAVEPOINT tên là sp_alice, sau đó cộng tiếp 100 cho Bob.",
+      requirement: "START TRANSACTION; UPDATE Alice; SAVEPOINT sp_alice; UPDATE Bob;",
+      initialSql: "START TRANSACTION;\nUPDATE bank_accounts SET balance = balance + 100 WHERE account_id = 1;\nSAVEPOINT sp_alice;\nUPDATE bank_accounts SET balance = balance + 100 WHERE account_id = 2;",
+      hint: "Cú pháp đặt điểm lưu là: SAVEPOINT tên_điểm_lưu;",
+      validator: (sql, dbState, txContext) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("SAVEPOINT SP_ALICE")) return { pass: false, msg: "Chưa tìm thấy lệnh: SAVEPOINT sp_alice;" };
+        return { pass: true, msg: "Chính xác! Điểm lưu sp_alice đã được đánh dấu trong cây giao dịch." };
+      }
+    },
+    {
+      id: 8,
+      title: "Bài 8: Hoàn tác Một phần với ROLLBACK TO SAVEPOINT",
+      points: 4,
+      desc: "Trong transaction: Cộng 100 cho Alice (thành 1100), đặt SAVEPOINT sp_step1, thử trừ 300 của Charlie, sau đó ROLLBACK TO SAVEPOINT sp_step1 và COMMIT. Kết quả: Alice = 1100, Charlie = 250.",
+      requirement: "START TRANSACTION; UPDATE Alice (+100); SAVEPOINT sp_step1; UPDATE Charlie (-300); ROLLBACK TO SAVEPOINT sp_step1; COMMIT;",
+      initialSql: "START TRANSACTION;\nUPDATE bank_accounts SET balance = balance + 100 WHERE account_id = 1;\nSAVEPOINT sp_step1;\n\n-- Lệnh thử nghiệm sai sót\nUPDATE bank_accounts SET balance = balance - 300 WHERE account_id = 3;\n\n-- Hoàn tác về sp_step1 và commit\nROLLBACK TO SAVEPOINT sp_step1;\nCOMMIT;",
+      hint: "Dùng ROLLBACK TO SAVEPOINT sp_step1; để chỉ hủy lệnh trừ Charlie, giữ lại lệnh cộng Alice, rồi COMMIT;",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("ROLLBACK TO") || !upper.includes("SP_STEP1")) return { pass: false, msg: "Thiếu lệnh ROLLBACK TO SAVEPOINT sp_step1;" };
+        if (!upper.includes("COMMIT")) return { pass: false, msg: "Thiếu lệnh COMMIT cuối cùng." };
+        const alice = dbState.bank_accounts.find(a => a.account_id === 1);
+        const charlie = dbState.bank_accounts.find(a => a.account_id === 3);
+        if (alice.balance === 1100 && charlie.balance === 250) {
+          return { pass: true, msg: "Xuất sắc! Lệnh trừ Charlie đã bị hoàn tác, trong khi Alice vẫn nhận 100 thành công." };
+        }
+        return { pass: false, msg: `Kết quả chưa đúng: Alice = ${alice.balance} (cần 1100), Charlie = ${charlie.balance} (cần 250).` };
+      }
+    },
+    {
+      id: 9,
+      title: "Bài 9: Giải phóng Điểm lưu với RELEASE SAVEPOINT",
+      points: 4,
+      desc: "Tạo transaction, đặt SAVEPOINT sp_temp, sau đó giải phóng điểm lưu này bằng RELEASE SAVEPOINT và COMMIT.",
+      requirement: "START TRANSACTION; SAVEPOINT sp_temp; RELEASE SAVEPOINT sp_temp; COMMIT;",
+      initialSql: "START TRANSACTION;\nSAVEPOINT sp_temp;\nRELEASE SAVEPOINT sp_temp;\nCOMMIT;",
+      hint: "Cú pháp giải phóng điểm lưu: RELEASE SAVEPOINT tên_điểm_lưu;",
+      validator: (sql) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("RELEASE SAVEPOINT SP_TEMP")) return { pass: false, msg: "Thiếu lệnh RELEASE SAVEPOINT sp_temp;" };
+        if (!upper.includes("COMMIT")) return { pass: false, msg: "Thiếu lệnh COMMIT;" };
+        return { pass: true, msg: "Chính xác! RELEASE SAVEPOINT giải phóng tài nguyên mà không làm hoàn tác các thay đổi." };
+      }
+    },
+    {
+      id: 10,
+      title: "Bài 10: Xóa dữ liệu có kiểm soát trong Transaction & ROLLBACK",
+      points: 4,
+      desc: "Bắt đầu transaction, xóa bản ghi của tài khoản số 4 (Diana - FROZEN), sau đó ROLLBACK để đảm bảo dữ liệu của Diana vẫn còn nguyên vẹn trong hệ thống.",
+      requirement: "START TRANSACTION; DELETE FROM bank_accounts WHERE account_id = 4; ROLLBACK;",
+      initialSql: "START TRANSACTION;\nDELETE FROM bank_accounts WHERE account_id = 4;\nROLLBACK;",
+      hint: "Chạy DELETE xong phải gọi ROLLBACK để bảo toàn dữ liệu.",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("DELETE") || !upper.includes("ROLLBACK")) return { pass: false, msg: "Cần có lệnh DELETE và ROLLBACK." };
+        const diana = dbState.bank_accounts.find(a => a.account_id === 4);
+        if (diana) {
+          return { pass: true, msg: "An toàn tuyệt đối! Diana vẫn tồn tại trong bảng nhờ có ROLLBACK kịp thời." };
+        }
+        return { pass: false, msg: "Diana đã bị xóa vĩnh viễn mất rồi, hãy kiểm tra lại lệnh ROLLBACK!" };
+      }
+    },
+    {
+      id: 11,
+      title: "Bài 11: Transaction Đa bảng: Mua hàng & Giảm Tồn kho",
+      points: 4,
+      desc: "Khách hàng mua 2 chiếc ThinkPad T14 (product_id = 101). Trừ 2 trong tồn kho inventory và trừ 2500 trong tài khoản Alice (account_id = 1, giá 1250 x 2 = 2500, cho phép số dư âm tạm thời) trong cùng 1 transaction và COMMIT.",
+      requirement: "START TRANSACTION; UPDATE inventory stock = stock - 2 WHERE 101; UPDATE bank_accounts balance = balance - 2500 WHERE 1; COMMIT;",
+      initialSql: "START TRANSACTION;\n\n-- Trừ 2 ThinkPad trong kho\nUPDATE inventory SET stock = stock - 2 WHERE product_id = 101;\n\n-- Trừ 2500 tiền của Alice\nUPDATE bank_accounts SET balance = balance - 2500 WHERE account_id = 1;\n\nCOMMIT;",
+      hint: "Sau khi chạy, tồn kho ThinkPad giảm từ 15 xuống 13, số dư Alice giảm từ 1000 xuống -1500.",
+      validator: (sql, dbState) => {
+        const tp = dbState.inventory.find(p => p.product_id === 101);
+        const alice = dbState.bank_accounts.find(a => a.account_id === 1);
+        if (tp.stock === 13 && alice.balance === -1500) {
+          return { pass: true, msg: "Chính xác! Giao dịch đa bảng được thực hiện nguyên tử và đồng bộ." };
+        }
+        return { pass: false, msg: `Chưa đúng! Tồn kho ThinkPad: ${tp.stock} (cần 13), Số dư Alice: ${alice.balance} (cần -1500).` };
+      }
+    },
+    {
+      id: 12,
+      title: "Bài 12: Thêm mới Bản ghi trong Transaction & Xác nhận",
+      points: 4,
+      desc: "Tạo một tài khoản mới cho 'Edward Vu' với số dư khởi tạo là 500.00, mã account_id = 5, trạng thái 'ACTIVE' và COMMIT.",
+      requirement: "START TRANSACTION; INSERT INTO bank_accounts (account_id, owner_name, balance, status) VALUES (5, 'Edward Vu', 500, 'ACTIVE'); COMMIT;",
+      initialSql: "START TRANSACTION;\nINSERT INTO bank_accounts (account_id, owner_name, balance, status)\nVALUES (5, 'Edward Vu', 500, 'ACTIVE');\nCOMMIT;",
+      hint: "Dùng lệnh INSERT INTO bank_accounts ... VALUES ... và kết thúc bằng COMMIT.",
+      validator: (sql, dbState) => {
+        const ed = dbState.bank_accounts.find(a => a.account_id === 5);
+        if (ed && ed.balance === 500) {
+          return { pass: true, msg: "Thành công! Khách hàng Edward Vu đã được tạo mới và lưu trữ an toàn." };
+        }
+        return { pass: false, msg: "Chưa thấy tài khoản Edward Vu (id = 5) được thêm vào cơ sở dữ liệu." };
+      }
+    },
+    {
+      id: 13,
+      title: "Bài 13: Thử nghiệm Hiện tượng Implicit Commit với DDL",
+      points: 4,
+      desc: "Thực hiện cập nhật số dư của Bob thành 999. Sau đó gọi một lệnh DDL 'CREATE TABLE demo_ddl (id INT);'. Sau đó chạy ROLLBACK; Hãy quan sát xem số dư Bob có bị rollback hay không.",
+      requirement: "START TRANSACTION; UPDATE Bob SET balance = 999; CREATE TABLE demo_ddl (id INT); ROLLBACK;",
+      initialSql: "START TRANSACTION;\nUPDATE bank_accounts SET balance = 999 WHERE account_id = 2;\n\n-- Lệnh DDL kích hoạt Implicit Commit\nCREATE TABLE demo_ddl (id INT);\n\nROLLBACK;",
+      hint: "Lệnh CREATE TABLE là DDL, nó tự động kích hoạt COMMIT cho lệnh UPDATE Bob = 999 trước đó!",
+      validator: (sql, dbState) => {
+        const upper = sql.toUpperCase();
+        if (!upper.includes("CREATE TABLE") || !upper.includes("ROLLBACK")) return { pass: false, msg: "Thiếu lệnh CREATE TABLE hoặc ROLLBACK." };
+        const bob = dbState.bank_accounts.find(a => a.account_id === 2);
+        if (bob && bob.balance === 999) {
+          return { pass: true, msg: "Chính xác! Do CREATE TABLE gây Implicit Commit, lệnh ROLLBACK bị vô hiệu và Bob vẫn mang số dư 999." };
+        }
+        return { pass: false, msg: "Số dư Bob chưa đạt 999, hãy kiểm tra lại kịch bản DDL." };
+      }
+    },
+    {
+      id: 14,
+      title: "Bài 14: Thiết lập Mức độ Cô lập (Isolation Level)",
+      points: 4,
+      desc: "Viết câu lệnh thiết lập mức cô lập cho session hiện tại thành READ COMMITTED.",
+      requirement: "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;",
+      initialSql: "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;",
+      hint: "Cú pháp chuẩn: SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;",
+      validator: (sql) => {
+        const clean = sql.toUpperCase().replace(/\s+/g, ' ');
+        if (clean.includes("TRANSACTION ISOLATION LEVEL READ COMMITTED")) {
+          return { pass: true, msg: "Chính xác! Mức cô lập session đã được đặt thành READ COMMITTED." };
+        }
+        return { pass: false, msg: "Cú pháp cần: SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;" };
+      }
+    },
+    {
+      id: 15,
+      title: "Bài 15: Kịch bản E-Commerce Hoàn chỉnh: Thanh toán, Kho & Log",
+      points: 4,
+      desc: "Kịch bản tổng hợp: Bob (id = 2, số dư 500) mua 1 chuột không dây MX Master 3S (id = 102, giá 99). Trong cùng 1 transaction: 1) Trừ 99 tiền của Bob; 2) Giảm 1 chuột trong tồn kho; 3) Ghi nhật ký vào audit_log ('ORDER_PAID', 'Bob bought MX Master 3S'); 4) COMMIT.",
+      requirement: "START TRANSACTION; UPDATE Bob (-99); UPDATE inventory stock (-1) WHERE 102; INSERT INTO audit_log ...; COMMIT;",
+      initialSql: "START TRANSACTION;\n\n-- 1. Trừ tiền Bob\nUPDATE bank_accounts SET balance = balance - 99 WHERE account_id = 2;\n\n-- 2. Trừ kho sản phẩm 102\nUPDATE inventory SET stock = stock - 1 WHERE product_id = 102;\n\n-- 3. Ghi audit log\nINSERT INTO audit_log (log_id, event_type, description, created_at)\nVALUES (1, 'ORDER_PAID', 'Bob bought MX Master 3S', datetime('now'));\n\n-- 4. Chốt giao dịch\nCOMMIT;",
+      hint: "Kiểm tra kết quả: Bob còn 401, chuột còn 49, audit_log có 1 bản ghi mới.",
+      validator: (sql, dbState) => {
+        const bob = dbState.bank_accounts.find(a => a.account_id === 2);
+        const mouse = dbState.inventory.find(p => p.product_id === 102);
+        const log = dbState.audit_log && dbState.audit_log.length > 0;
+        if (bob.balance === 401 && mouse.stock === 49 && log) {
+          return { pass: true, msg: "Xuất sắc! Bạn đã làm chủ hoàn toàn quy trình xử lý giao dịch nguyên tử trong hệ thống thương mại điện tử!" };
+        }
+        return { pass: false, msg: `Dữ liệu chưa khớp: Bob = ${bob.balance} (cần 401), Tồn kho = ${mouse.stock} (cần 49), Log = ${log ? 'Đã ghi' : 'Chưa ghi'}.` };
+      }
+    }
+  ];
+
+  // -------------------------------------------------------------
+  // 10 CÂU HỎI TRẮC NGHIỆM ACID & TRANSACTION
+  // -------------------------------------------------------------
+  const QUIZ_DATA = [
+    {
+      id: 1,
+      question: "Tính chất nào trong ACID đảm bảo nguyên tắc 'Tất cả hoặc không có gì' (All-or-Nothing)?",
+      options: [
+        "Consistency (Tính nhất quán)",
+        "Atomicity (Tính nguyên tử)",
+        "Isolation (Tính cô lập)",
+        "Durability (Tính bền vững)"
+      ],
+      correct: 1,
+      explanation: "Atomicity (Tính nguyên tử) đảm bảo toàn bộ thao tác trong transaction phải thành công, nếu có 1 thao tác lỗi thì toàn bộ phải hoàn tác qua Undo Log."
+    },
+    {
+      id: 2,
+      question: "Storage engine nào của MySQL KHÔNG hỗ trợ kiểm soát transaction (không thể ROLLBACK)?",
+      options: [
+        "InnoDB",
+        "NDB Cluster",
+        "MyISAM",
+        "Memory"
+      ],
+      correct: 2,
+      explanation: "MyISAM là storage engine cũ, chỉ hỗ trợ khóa bảng (table lock) và hoàn toàn không hỗ trợ transaction hay ROLLBACK."
+    },
+    {
+      id: 3,
+      question: "Giá trị mặc định của biến hệ thống @@autocommit trong MySQL là gì?",
+      options: [
+        "0 (Tắt, phải tự gọi COMMIT)",
+        "1 (Bật, mỗi câu lệnh đơn tự động commit ngay lập tức)",
+        "NULL",
+        "Tùy thuộc vào phiên bản hệ điều hành"
+      ],
+      correct: 1,
+      explanation: "Trong MySQL, mặc định autocommit = 1, nghĩa là mỗi câu lệnh DML đơn lẻ sau khi thực thi đều tự động được ghi nhận vĩnh viễn."
+    },
+    {
+      id: 4,
+      question: "Lệnh nào sau đây sẽ hoàn tác một phần transaction về một mốc xác định mà KHÔNG kết thúc transaction?",
+      options: [
+        "RELEASE SAVEPOINT",
+        "ROLLBACK TO SAVEPOINT",
+        "ROLLBACK",
+        "SAVEPOINT"
+      ],
+      correct: 1,
+      explanation: "ROLLBACK TO SAVEPOINT savepoint_name chỉ hủy bỏ các thay đổi diễn ra sau điểm lưu đó, trong khi transaction vẫn đang Active và tiếp tục làm việc."
+    },
+    {
+      id: 5,
+      question: "Hiện tượng nào sau đây XẢY RA khi bạn gọi lệnh CREATE TABLE bên trong một transaction đang mở trong MySQL?",
+      options: [
+        "Bảng được tạo tạm thời và sẽ bị xóa nếu ta gọi ROLLBACK sau đó.",
+        "MySQL báo lỗi TransactionNotSupportedError.",
+        "MySQL ngầm thực thi lệnh COMMIT tự động (Implicit Commit) cho tất cả các lệnh trước đó.",
+        "Transaction bị treo cho đến khi ta gõ lệnh COMMIT thủ công."
+      ],
+      correct: 2,
+      explanation: "Các câu lệnh DDL (như CREATE, ALTER, DROP, TRUNCATE) tự động kích hoạt Implicit Commit, khiến các thao tác trước đó không thể rollback được nữa."
+    },
+    {
+      id: 6,
+      question: "Mức độ cô lập (Isolation Level) mặc định trong MySQL InnoDB là gì?",
+      options: [
+        "READ UNCOMMITTED",
+        "READ COMMITTED",
+        "REPEATABLE READ",
+        "SERIALIZABLE"
+      ],
+      correct: 2,
+      explanation: "REPEATABLE READ là mức cô lập mặc định của InnoDB, sử dụng Snapshot Read và Next-Key Locks để ngăn cả Dirty Read, Non-Repeatable Read và Phantom Read."
+    },
+    {
+      id: 7,
+      question: "Hiện tượng 'Dirty Read' (Đọc dữ liệu rác) là gì?",
+      options: [
+        "Một transaction đọc phải dữ liệu đang bị sửa đổi bởi transaction khác CHƯA ĐƯỢC COMMIT.",
+        "Hai transaction cùng đọc một dòng và thấy dữ liệu khác nhau giữa 2 lần SELECT.",
+        "Một transaction đọc thấy các dòng mới do transaction khác vừa INSERT vào.",
+        "Dữ liệu trong đĩa cứng bị hỏng vật lý do mất điện."
+      ],
+      correct: 0,
+      explanation: "Dirty Read xảy ra khi Transaction A đọc dữ liệu chưa commit của Transaction B. Nếu Transaction B sau đó ROLLBACK, dữ liệu mà A vừa đọc hoàn toàn không tồn tại!"
+    },
+    {
+      id: 8,
+      question: "Cơ chế nào giúp MySQL InnoDB đảm bảo tính Durability (Bền vững) ngay cả khi mất điện đột ngột?",
+      options: [
+        "Undo Log",
+        "Redo Log & Write-Ahead Logging (WAL)",
+        "Binary Log chỉ đọc",
+        "Auto-increment counter"
+      ],
+      correct: 1,
+      explanation: "Redo Log ghi lại các thay đổi vật lý của trang dữ liệu trước khi flush xuống đĩa (WAL). Khi khởi động lại sau sự cố mất điện, InnoDB đọc Redo Log để Crash Recovery."
+    },
+    {
+      id: 9,
+      question: "Lệnh TRUNCATE TABLE khác gì DELETE FROM table_name khi chạy trong transaction?",
+      options: [
+        "TRUNCATE TABLE có thể rollback an toàn, còn DELETE thì không.",
+        "TRUNCATE TABLE là lệnh DDL, gây Implicit Commit và giải phóng trang đĩa, không thể rollback.",
+        "Cả hai hoàn toàn giống hệt nhau về mặt cơ chế transaction.",
+        "TRUNCATE kích hoạt tất cả các BEFORE/AFTER DELETE triggers."
+      ],
+      correct: 1,
+      explanation: "TRUNCATE là lệnh DDL, xóa và tạo lại bảng ở tầng filesystem, gây ra Implicit Commit và không thể ROLLBACK."
+    },
+    {
+      id: 10,
+      question: "Hiện tượng Deadlock (khóa chết) giữa 2 transaction được InnoDB giải quyết như thế nào?",
+      options: [
+        "Cả 2 transaction sẽ bị treo vĩnh viễn cho đến khi khởi động lại MySQL Server.",
+        "InnoDB tự động phát hiện deadlock (Deadlock Detection), tự động rollback transaction có chi phí nhỏ hơn và báo lỗi ER_LOCK_DEADLOCK.",
+        "InnoDB chuyển đổi cả 2 transaction sang chế độ READ UNCOMMITTED.",
+        "InnoDB lập tức khóa toàn bộ database."
+      ],
+      correct: 1,
+      explanation: "Bộ phát hiện khóa chết của InnoDB sẽ phân tích đồ thị chờ đợi (wait-for graph), chọn ra transaction có chi phí nhỏ hơn làm 'nạn nhân' để ROLLBACK, giải phóng khóa cho transaction còn lại."
+    }
+  ];
+
+  // -------------------------------------------------------------
+  // TRẠNG THÁI ỨNG DỤNG (STATE)
+  // -------------------------------------------------------------
+  const STORAGE_KEY = "dbms_mysql_transaction_lab_v1";
+  let appState = {
+    studentName: "",
+    studentId: "",
+    taskScores: {},
+    quizScores: {},
+    activeTaskId: 1
+  };
+
+  // Live in-memory Database Simulator
+  let liveDb = {
+    bank_accounts: JSON.parse(JSON.stringify(SEED_BANK_ACCOUNTS)),
+    inventory: JSON.parse(JSON.stringify(SEED_INVENTORY)),
+    audit_log: []
+  };
+
+  // Transaction Simulator Context
+  let txContext = {
+    active: false,
+    autocommit: 1,
+    snapshot: null,
+    savepoints: {},
+    uncommittedCount: 0
+  };
+
+  // Sql.js instance
+  let sqlJsDb = null;
+  let isSqlJsReady = false;
+
+  // -------------------------------------------------------------
+  // KHỞI TẠO SQL.JS WEB-ASSEMBLY
+  // -------------------------------------------------------------
+  async function initSqlEngine() {
+    const badge = document.getElementById("engineBadge");
+    try {
+      if (typeof initSqlJs === "function") {
+        const SQL = await initSqlJs({
+          locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`
+        });
+        sqlJsDb = new SQL.Database();
+        setupSqlJsTables(sqlJsDb);
+        isSqlJsReady = true;
+        if (badge) {
+          badge.className = "badge badge-green";
+          badge.textContent = "Engine: SQLite WebAssembly (Đang hoạt động)";
+        }
+        logTimeline("Hệ thống", "Engine SQLite WebAssembly khởi tạo thành công.");
+      } else {
+        throw new Error("sql.js CDN not available");
+      }
+    } catch (e) {
+      isSqlJsReady = false;
+      if (badge) {
+        badge.className = "badge badge-purple";
+        badge.textContent = "Engine: In-Memory JS Transaction Simulator (Fallback Offline)";
+      }
+      logTimeline("Hệ thống", "Chạy chế độ mô phỏng JS Transaction thuần (Hỗ trợ 100% offline).");
+    }
+  }
+
+  function setupSqlJsTables(db) {
+    db.run(`
+      DROP TABLE IF EXISTS bank_accounts;
+      CREATE TABLE bank_accounts (
+        account_id INT PRIMARY KEY,
+        owner_name TEXT,
+        balance REAL,
+        status TEXT
+      );
+      INSERT INTO bank_accounts VALUES (1, 'Alice Nguyen', 1000.00, 'ACTIVE');
+      INSERT INTO bank_accounts VALUES (2, 'Bob Tran', 500.00, 'ACTIVE');
+      INSERT INTO bank_accounts VALUES (3, 'Charlie Le', 250.00, 'ACTIVE');
+      INSERT INTO bank_accounts VALUES (4, 'Diana Pham', 750.00, 'FROZEN');
+
+      DROP TABLE IF EXISTS inventory;
+      CREATE TABLE inventory (
+        product_id INT PRIMARY KEY,
+        product_name TEXT,
+        stock INT,
+        price REAL
+      );
+      INSERT INTO inventory VALUES (101, 'ThinkPad T14 Gen 4', 15, 1250.00);
+      INSERT INTO inventory VALUES (102, 'Logitech MX Master 3S', 50, 99.00);
+      INSERT INTO inventory VALUES (103, 'Keychron K2 Pro Wireless', 30, 85.00);
+      INSERT INTO inventory VALUES (104, 'Dell UltraSharp 27 4K', 20, 480.00);
+
+      DROP TABLE IF EXISTS audit_log;
+      CREATE TABLE audit_log (
+        log_id INT PRIMARY KEY,
+        event_type TEXT,
+        description TEXT,
+        created_at TEXT
+      );
+    `);
+  }
+
+  // -------------------------------------------------------------
+  // IN-MEMORY TRANSACTION SIMULATION ENGINE
+  // -------------------------------------------------------------
+  function cloneDb(db) {
+    return JSON.parse(JSON.stringify(db));
+  }
+
+  function executeSqlStatements(sqlText, targetDb, context, logCallback) {
+    const rawStatements = sqlText.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    const results = [];
+
+    for (const stmt of rawStatements) {
+      const upper = stmt.toUpperCase().replace(/\s+/g, ' ');
+
+      // 1. START TRANSACTION / BEGIN
+      if (upper === 'START TRANSACTION' || upper === 'BEGIN' || upper === 'BEGIN TRANSACTION') {
+        if (!context.active) {
+          context.snapshot = cloneDb(targetDb);
+          context.active = true;
+          context.savepoints = {};
+          context.uncommittedCount = 0;
+          results.push({ stmt, msg: "Bắt đầu Transaction tường minh. Trạng thái: ACTIVE." });
+          if (logCallback) logCallback("TX-START", "Khởi động giao dịch mới (Active)");
+        } else {
+          context.snapshot = cloneDb(targetDb);
+          context.savepoints = {};
+          context.uncommittedCount = 0;
+          results.push({ stmt, msg: "⚠️ Cảnh báo: Gọi START TRANSACTION khi đã có tx mở gây ra Implicit Commit ngầm, mở tx mới." });
+          if (logCallback) logCallback("IMPLICIT-COMMIT", "Bắt đầu tx mới tự động commit tx cũ");
+        }
+      }
+      // 2. COMMIT
+      else if (upper === 'COMMIT') {
+        if (context.active) {
+          context.active = false;
+          context.snapshot = null;
+          context.savepoints = {};
+          context.uncommittedCount = 0;
+          results.push({ stmt, msg: "✓ COMMIT thành công. Mọi thay đổi đã được ghi vĩnh viễn." });
+          if (logCallback) logCallback("COMMIT", "Xác nhận và lưu vĩnh viễn thay đổi");
+        } else {
+          results.push({ stmt, msg: "Không có transaction nào đang mở để COMMIT." });
+        }
+      }
+      // 3. ROLLBACK (toàn bộ)
+      else if (upper === 'ROLLBACK') {
+        if (context.active && context.snapshot) {
+          targetDb.bank_accounts = cloneDb(context.snapshot.bank_accounts);
+          targetDb.inventory = cloneDb(context.snapshot.inventory);
+          targetDb.audit_log = cloneDb(context.snapshot.audit_log);
+          context.active = false;
+          context.snapshot = null;
+          context.savepoints = {};
+          context.uncommittedCount = 0;
+          results.push({ stmt, msg: "↺ ROLLBACK thành công. Toàn bộ thay đổi đã được hoàn tác về ban đầu." });
+          if (logCallback) logCallback("ROLLBACK", "Hoàn tác toàn bộ thay đổi");
+        } else {
+          results.push({ stmt, msg: "Không có transaction nào đang mở để ROLLBACK." });
+        }
+      }
+      // 4. SAVEPOINT <name>
+      else if (upper.startsWith('SAVEPOINT ')) {
+        const spName = stmt.substring(10).trim().replace(/;$/, '');
+        context.savepoints[spName] = cloneDb(targetDb);
+        results.push({ stmt, msg: `Đã thiết lập SAVEPOINT '${spName}'.` });
+        if (logCallback) logCallback("SAVEPOINT", `Đánh dấu điểm lưu: ${spName}`);
+      }
+      // 5. ROLLBACK TO [SAVEPOINT] <name>
+      else if (upper.startsWith('ROLLBACK TO ') || upper.startsWith('ROLLBACK TO SAVEPOINT ')) {
+        const parts = stmt.split(/\s+/);
+        const spName = parts[parts.length - 1].replace(/;$/, '');
+        if (context.savepoints && context.savepoints[spName]) {
+          const spSnap = context.savepoints[spName];
+          targetDb.bank_accounts = cloneDb(spSnap.bank_accounts);
+          targetDb.inventory = cloneDb(spSnap.inventory);
+          targetDb.audit_log = cloneDb(spSnap.audit_log);
+          results.push({ stmt, msg: `↺ ROLLBACK TO SAVEPOINT '${spName}' thành công. Transaction vẫn đang ACTIVE.` });
+          if (logCallback) logCallback("ROLLBACK-TO", `Hoàn tác về điểm lưu: ${spName}`);
+        } else {
+          results.push({ stmt, msg: `Lỗi: Điểm lưu SAVEPOINT '${spName}' không tồn tại hoặc đã bị giải phóng.` });
+        }
+      }
+      // 6. RELEASE SAVEPOINT <name>
+      else if (upper.startsWith('RELEASE SAVEPOINT ')) {
+        const spName = stmt.substring(18).trim().replace(/;$/, '');
+        if (context.savepoints && context.savepoints[spName]) {
+          delete context.savepoints[spName];
+          results.push({ stmt, msg: `Đã giải phóng SAVEPOINT '${spName}'.` });
+          if (logCallback) logCallback("RELEASE", `Giải phóng điểm lưu: ${spName}`);
+        } else {
+          results.push({ stmt, msg: `Lỗi: Không tìm thấy SAVEPOINT '${spName}'.` });
+        }
+      }
+      // 7. SET AUTOCOMMIT
+      else if (upper.startsWith('SET AUTOCOMMIT') || upper.startsWith('SET @@AUTOCOMMIT')) {
+        if (upper.includes('= 0') || upper.includes('=0') || upper.includes('OFF')) {
+          context.autocommit = 0;
+          if (!context.active) {
+            context.snapshot = cloneDb(targetDb);
+            context.active = true;
+          }
+          results.push({ stmt, msg: "Đã đặt autocommit = 0 (Tắt). Giao dịch ngầm đang mở." });
+          if (logCallback) logCallback("SET-AUTOCOMMIT", "Tắt autocommit (autocommit = 0)");
+        } else {
+          context.autocommit = 1;
+          results.push({ stmt, msg: "Đã đặt autocommit = 1 (Bật)." });
+          if (logCallback) logCallback("SET-AUTOCOMMIT", "Bật autocommit (autocommit = 1)");
+        }
+      }
+      // 8. DDL Statements (Trigger Implicit Commit)
+      else if (upper.startsWith('CREATE TABLE') || upper.startsWith('DROP TABLE') || upper.startsWith('ALTER TABLE') || upper.startsWith('TRUNCATE')) {
+        if (context.active) {
+          context.active = false;
+          context.snapshot = null;
+          context.savepoints = {};
+          context.uncommittedCount = 0;
+          results.push({ stmt, msg: "💥 CẢNH BÁO: Lệnh DDL đã kích hoạt IMPLICIT COMMIT tự động! Mọi thay đổi trước đó đã được lưu vĩnh viễn." });
+          if (logCallback) logCallback("IMPLICIT-COMMIT", "Lệnh DDL kích hoạt Implicit Commit ngầm!");
+        }
+        results.push({ stmt, msg: `Đã thực thi DDL: ${stmt}` });
+      }
+      // 9. DML UPDATE bank_accounts
+      else if (upper.startsWith('UPDATE BANK_ACCOUNTS')) {
+        let affected = 0;
+        const match = stmt.match(/SET\s+balance\s*=\s*balance\s*([+-])\s*([0-9.]+)\s+WHERE\s+account_id\s*=\s*(\d+)/i);
+        const matchSetVal = stmt.match(/SET\s+balance\s*=\s*([0-9.]+)\s+WHERE\s+account_id\s*=\s*(\d+)/i);
+
+        if (match) {
+          const op = match[1];
+          const val = parseFloat(match[2]);
+          const accId = parseInt(match[3], 10);
+          const acc = targetDb.bank_accounts.find(a => a.account_id === accId);
+          if (acc) {
+            if (op === '+') acc.balance += val;
+            else if (op === '-') acc.balance -= val;
+            acc._uncommitted = context.active;
+            affected = 1;
+            context.uncommittedCount++;
+          }
+        } else if (matchSetVal) {
+          const val = parseFloat(matchSetVal[1]);
+          const accId = parseInt(matchSetVal[2], 10);
+          const acc = targetDb.bank_accounts.find(a => a.account_id === accId);
+          if (acc) {
+            acc.balance = val;
+            acc._uncommitted = context.active;
+            affected = 1;
+            context.uncommittedCount++;
+          }
+        }
+        results.push({ stmt, msg: `Cập nhật bank_accounts: ${affected} hàng bị ảnh hưởng.` });
+        if (logCallback) logCallback("UPDATE", `Sửa số dư tài khoản (${affected} hàng)`);
+      }
+      // 10. DML UPDATE inventory
+      else if (upper.startsWith('UPDATE INVENTORY')) {
+        let affected = 0;
+        const match = stmt.match(/SET\s+stock\s*=\s*stock\s*([+-])\s*(\d+)\s+WHERE\s+product_id\s*=\s*(\d+)/i);
+        if (match) {
+          const op = match[1];
+          const val = parseInt(match[2], 10);
+          const pId = parseInt(match[3], 10);
+          const prod = targetDb.inventory.find(p => p.product_id === pId);
+          if (prod) {
+            if (op === '+') prod.stock += val;
+            else if (op === '-') prod.stock -= val;
+            affected = 1;
+            context.uncommittedCount++;
+          }
+        }
+        results.push({ stmt, msg: `Cập nhật inventory: ${affected} hàng bị ảnh hưởng.` });
+        if (logCallback) logCallback("UPDATE", `Sửa tồn kho sản phẩm (${affected} hàng)`);
+      }
+      // 11. DML INSERT INTO bank_accounts
+      else if (upper.startsWith('INSERT INTO BANK_ACCOUNTS')) {
+        const match = stmt.match(/VALUES\s*\((\d+)\s*,\s*'([^']+)'\s*,\s*([0-9.]+)\s*,\s*'([^']+)'\)/i);
+        if (match) {
+          const newAcc = {
+            account_id: parseInt(match[1], 10),
+            owner_name: match[2],
+            balance: parseFloat(match[3]),
+            status: match[4],
+            _uncommitted: context.active
+          };
+          targetDb.bank_accounts.push(newAcc);
+          context.uncommittedCount++;
+          results.push({ stmt, msg: `Đã chèn 1 hàng mới vào bank_accounts (ID: ${newAcc.account_id}).` });
+        } else {
+          results.push({ stmt, msg: "Đã thực thi INSERT vào bank_accounts." });
+        }
+        if (logCallback) logCallback("INSERT", "Chèn tài khoản mới");
+      }
+      // 12. DML INSERT INTO audit_log
+      else if (upper.startsWith('INSERT INTO AUDIT_LOG')) {
+        targetDb.audit_log.push({
+          log_id: targetDb.audit_log.length + 1,
+          event_type: 'LOG_ENTRY',
+          description: stmt,
+          created_at: new Date().toLocaleTimeString()
+        });
+        context.uncommittedCount++;
+        results.push({ stmt, msg: "Đã ghi 1 bản ghi vào audit_log." });
+        if (logCallback) logCallback("INSERT", "Ghi nhật ký audit_log");
+      }
+      // 13. DML DELETE FROM bank_accounts
+      else if (upper.startsWith('DELETE FROM BANK_ACCOUNTS')) {
+        const match = stmt.match(/WHERE\s+account_id\s*=\s*(\d+)/i);
+        let deleted = 0;
+        if (match) {
+          const id = parseInt(match[1], 10);
+          const initialLen = targetDb.bank_accounts.length;
+          targetDb.bank_accounts = targetDb.bank_accounts.filter(a => a.account_id !== id);
+          deleted = initialLen - targetDb.bank_accounts.length;
+          context.uncommittedCount += deleted;
+        }
+        results.push({ stmt, msg: `Đã xóa ${deleted} hàng trong bank_accounts.` });
+        if (logCallback) logCallback("DELETE", `Xóa tài khoản (${deleted} hàng)`);
+      }
+      // 14. SELECT @@autocommit or queries
+      else if (upper.startsWith('SELECT')) {
+        if (upper.includes('@@AUTOCOMMIT')) {
+          results.push({
+            stmt,
+            isQuery: true,
+            columns: ['@@autocommit'],
+            rows: [[context.autocommit]]
+          });
+        } else if (upper.includes('FROM BANK_ACCOUNTS')) {
+          results.push({
+            stmt,
+            isQuery: true,
+            columns: ['account_id', 'owner_name', 'balance', 'status'],
+            rows: targetDb.bank_accounts.map(a => [a.account_id, a.owner_name, a.balance.toFixed(2), a.status])
+          });
+        } else {
+          results.push({ stmt, msg: `Truy vấn SELECT thành công.` });
+        }
+        if (logCallback) logCallback("SELECT", "Đọc dữ liệu");
+      }
+      else {
+        results.push({ stmt, msg: `Đã thực thi: ${stmt}` });
+        if (logCallback) logCallback("EXEC", stmt.substring(0, 30));
+      }
+    }
+
+    return results;
+  }
+
+  // -------------------------------------------------------------
+  // RENDERING FUNCTIONS
+  // -------------------------------------------------------------
+  function renderLiveInspector() {
+    const badge = document.getElementById("txStatusBadge");
+    const counter = document.getElementById("uncommittedCounter");
+    if (txContext.active) {
+      badge.className = "state-pulse state-active";
+      badge.textContent = "🟡 TRẠNG THÁI: IN TRANSACTION (Chưa Commit!)";
+      counter.style.display = "inline-block";
+      counter.className = "badge badge-amber";
+      counter.textContent = `${txContext.uncommittedCount} thay đổi chưa commit`;
+    } else {
+      badge.className = "state-pulse state-idle";
+      badge.textContent = `🟢 TRẠNG THÁI: IDLE (Autocommit: ${txContext.autocommit === 1 ? 'ON' : 'OFF'})`;
+      counter.className = "badge badge-blue";
+      counter.textContent = "0 thay đổi chưa commit";
+    }
+
+    const spBox = document.getElementById("savepointsContainer");
+    const spKeys = Object.keys(txContext.savepoints || {});
+    if (spKeys.length === 0) {
+      spBox.innerHTML = '<span style="color: var(--muted); font-style: italic; font-size: 12px;">(Chưa có savepoint nào)</span>';
+    } else {
+      spBox.innerHTML = spKeys.map(k => `<span class="sp-chip">📌 ${k}</span>`).join(' ');
+    }
+
+    const bTbody = document.getElementById("bankAccountsTbody");
+    bTbody.innerHTML = liveDb.bank_accounts.map(acc => {
+      const isUncommitted = txContext.active && acc._uncommitted;
+      const rowClass = isUncommitted ? 'uncommitted-row' : '';
+      const note = isUncommitted ? '⚠️ <span style="font-size:11px;">Chưa Commit</span>' : 'Đã ghi nhận';
+      return `
+        <tr class="${rowClass}">
+          <td><strong>${acc.account_id}</strong></td>
+          <td>${acc.owner_name}</td>
+          <td>${Number(acc.balance).toLocaleString('vi-VN', { minimumFractionDigits: 2 })}</td>
+          <td><span class="badge ${acc.status === 'ACTIVE' ? 'badge-green' : 'badge-red'}">${acc.status}</span></td>
+          <td>${note}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const iTbody = document.getElementById("inventoryTbody");
+    iTbody.innerHTML = liveDb.inventory.map(prod => `
+      <tr>
+        <td><strong>${prod.product_id}</strong></td>
+        <td>${prod.product_name}</td>
+        <td><strong style="color: ${prod.stock < 20 ? '#b91c1c' : '#15803d'}">${prod.stock}</strong></td>
+        <td>$${Number(prod.price).toFixed(2)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function logTimeline(action, details) {
+    const list = document.getElementById("sessionTimeline");
+    if (!list) return;
+    const timeStr = new Date().toLocaleTimeString();
+    const entry = document.createElement("div");
+    entry.className = "timeline-entry";
+    entry.innerHTML = `<span class="timeline-time">[${timeStr}]</span> <strong>[${action}]</strong>: <span>${details}</span>`;
+    list.prepend(entry);
+  }
+
+  // -------------------------------------------------------------
+  // PRACTICE TASKS RENDERING & LOGIC
+  // -------------------------------------------------------------
+  function renderTaskSelector() {
+    const sel = document.getElementById("taskSelector");
+    sel.innerHTML = PRACTICE_TASKS.map(t => {
+      const score = appState.taskScores[t.id] || 0;
+      const statusIcon = score > 0 ? '✓ ' : '';
+      return `<option value="${t.id}">${statusIcon}Bài ${t.id}: ${t.title.split(':')[1] || t.title} (${score}/4đ)</option>`;
+    }).join('');
+    sel.value = appState.activeTaskId;
+    loadTask(appState.activeTaskId);
+  }
+
+  function loadTask(taskId) {
+    const task = PRACTICE_TASKS.find(t => t.id === taskId);
+    if (!task) return;
+    appState.activeTaskId = taskId;
+
+    document.getElementById("taskTitle").textContent = task.title;
+    document.getElementById("taskDesc").textContent = task.desc;
+    document.getElementById("taskRequirement").innerHTML = `<strong>Yêu cầu cú pháp:</strong> <code>${task.requirement}</code>`;
+    document.getElementById("taskSqlInput").value = task.initialSql;
+
+    const badge = document.getElementById("taskScoreBadge");
+    const curScore = appState.taskScores[taskId] || 0;
+    badge.textContent = `${curScore} / ${task.points} Điểm`;
+    badge.className = curScore === task.points ? "badge badge-green" : "badge badge-blue";
+
+    const fb = document.getElementById("taskFeedback");
+    fb.style.display = "none";
+    document.getElementById("taskHintBox").style.display = "none";
+    document.getElementById("taskOutputTable").innerHTML = "(Nhấn Chạy thử hoặc Chấm bài để xem kết quả)";
+  }
+
+  function checkCurrentTask() {
+    const task = PRACTICE_TASKS.find(t => t.id === appState.activeTaskId);
+    if (!task) return;
+
+    const sqlInput = document.getElementById("taskSqlInput").value;
+    const fb = document.getElementById("taskFeedback");
+    fb.style.display = "block";
+
+    const sandboxDb = {
+      bank_accounts: JSON.parse(JSON.stringify(SEED_BANK_ACCOUNTS)),
+      inventory: JSON.parse(JSON.stringify(SEED_INVENTORY)),
+      audit_log: []
+    };
+    const sandboxContext = {
+      active: false,
+      autocommit: 1,
+      snapshot: null,
+      savepoints: {},
+      uncommittedCount: 0
+    };
+
+    try {
+      const execResults = executeSqlStatements(sqlInput, sandboxDb, sandboxContext, null);
+      const validation = task.validator(sqlInput, sandboxDb, sandboxContext);
+
+      if (validation.pass) {
+        fb.className = "task-status success";
+        fb.innerHTML = `<strong>🎉 Hoàn thành bài ${task.id}! (+${task.points} điểm)</strong><br>${validation.msg}`;
+        appState.taskScores[task.id] = task.points;
+        saveState();
+        updateScoresUI();
+        renderTaskSelector();
+      } else {
+        fb.className = "task-status fail";
+        fb.innerHTML = `<strong>❌ Chưa đạt yêu cầu:</strong> ${validation.msg}`;
+      }
+
+      renderQueryResults(execResults, document.getElementById("taskOutputTable"));
+    } catch (err) {
+      fb.className = "task-status fail";
+      fb.innerHTML = `<strong>Lỗi thực thi:</strong> ${err.message}`;
+    }
+  }
+
+  function runCurrentTask() {
+    const sqlInput = document.getElementById("taskSqlInput").value;
+    const outputBox = document.getElementById("taskOutputTable");
+    try {
+      const execResults = executeSqlStatements(sqlInput, liveDb, txContext, (act, det) => logTimeline(act, det));
+      renderLiveInspector();
+      renderQueryResults(execResults, outputBox);
+    } catch (e) {
+      outputBox.innerHTML = `<span style="color: #b91c1c;">Lỗi: ${e.message}</span>`;
+    }
+  }
+
+  function renderQueryResults(results, container) {
+    if (!results || results.length === 0) {
+      container.innerHTML = "Thực thi thành công (Không có thông báo).";
+      return;
+    }
+
+    const html = results.map(r => {
+      if (r.isQuery && r.columns && r.rows) {
+        let ths = r.columns.map(c => `<th>${c}</th>`).join('');
+        let trs = r.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+        return `
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 11.5px; color: var(--muted);">${r.stmt}</div>
+            <table class="data-table" style="margin-top: 4px;">
+              <thead><tr>${ths}</tr></thead>
+              <tbody>${trs}</tbody>
+            </table>
+          </div>
+        `;
+      }
+      return `<div style="padding: 3px 0; border-bottom: 1px dashed #cbd5e1;"><code>${r.stmt}</code> → <span>${r.msg}</span></div>`;
+    }).join('');
+
+    container.innerHTML = html;
+  }
+
+  // -------------------------------------------------------------
+  // QUIZZES RENDERING & LOGIC
+  // -------------------------------------------------------------
+  function renderQuizzes() {
+    const container = document.getElementById("quizContainer");
+    container.innerHTML = QUIZ_DATA.map((q, idx) => {
+      const qScore = appState.quizScores[q.id] || 0;
+      const opts = q.options.map((opt, oIdx) => `
+        <label class="quiz-label" data-qid="${q.id}" data-oidx="${oIdx}">
+          <input type="radio" name="quiz_${q.id}" value="${oIdx}" style="margin-top: 3px;">
+          <span>${opt}</span>
+        </label>
+      `).join('');
+
+      return `
+        <div class="quiz-item" id="quizItem_${q.id}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="badge badge-purple">Câu hỏi ${idx + 1} / 10</span>
+            <span id="quizBadge_${q.id}" class="badge ${qScore > 0 ? 'badge-green' : 'badge-blue'}">${qScore} / 4 Điểm</span>
+          </div>
+          <div class="quiz-title">${q.question}</div>
+          <div class="quiz-options">${opts}</div>
+          <div id="quizFeedback_${q.id}" class="quiz-feedback"></div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll(".quiz-label").forEach(lbl => {
+      lbl.addEventListener("click", (e) => {
+        const qid = parseInt(lbl.getAttribute("data-qid"), 10);
+        const oidx = parseInt(lbl.getAttribute("data-oidx"), 10);
+        handleQuizAnswer(qid, oidx);
+      });
+    });
+  }
+
+  function handleQuizAnswer(qid, selectedIdx) {
+    const q = QUIZ_DATA.find(item => item.id === qid);
+    if (!q) return;
+
+    const quizBox = document.getElementById(`quizItem_${qid}`);
+    const labels = quizBox.querySelectorAll(".quiz-label");
+    const fb = document.getElementById(`quizFeedback_${qid}`);
+    const badge = document.getElementById(`quizBadge_${qid}`);
+
+    labels.forEach((lbl, idx) => {
+      lbl.classList.remove("correct", "wrong");
+      if (idx === q.correct) lbl.classList.add("correct");
+      else if (idx === selectedIdx) lbl.classList.add("wrong");
+    });
+
+    fb.style.display = "block";
+    if (selectedIdx === q.correct) {
+      fb.className = "quiz-feedback callout-success";
+      fb.innerHTML = `<strong>Chính xác! (+4 điểm)</strong> ${q.explanation}`;
+      appState.quizScores[qid] = 4;
+      badge.className = "badge badge-green";
+      badge.textContent = "4 / 4 Điểm";
+    } else {
+      fb.className = "quiz-feedback callout-danger";
+      fb.innerHTML = `<strong>Chưa đúng!</strong> ${q.explanation}`;
+      appState.quizScores[qid] = 0;
+      badge.className = "badge badge-red";
+      badge.textContent = "0 / 4 Điểm";
+    }
+
+    saveState();
+    updateScoresUI();
+  }
+
+  // -------------------------------------------------------------
+  // SCORES, STORAGE & PROGRESS
+  // -------------------------------------------------------------
+  function calculateTotalScore() {
+    let taskTotal = 0;
+    PRACTICE_TASKS.forEach(t => {
+      taskTotal += (appState.taskScores[t.id] || 0);
+    });
+    let quizTotal = 0;
+    QUIZ_DATA.forEach(q => {
+      quizTotal += (appState.quizScores[q.id] || 0);
+    });
+    return { taskTotal, quizTotal, grandTotal: taskTotal + quizTotal };
+  }
+
+  function updateScoresUI() {
+    const { grandTotal } = calculateTotalScore();
+    const percent = Math.min(100, Math.round((grandTotal / 100) * 100));
+
+    document.getElementById("navScoreDisplay").textContent = `${grandTotal} / 100`;
+    document.getElementById("progressText").textContent = `${grandTotal} / 100 Điểm (${percent}%)`;
+    document.getElementById("progressBarFill").style.width = `${percent}%`;
+  }
+
+  function saveState() {
+    appState.studentName = document.getElementById("studentName").value;
+    appState.studentId = document.getElementById("studentId").value;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        appState = { ...appState, ...parsed };
+        if (appState.studentName) document.getElementById("studentName").value = appState.studentName;
+        if (appState.studentId) document.getElementById("studentId").value = appState.studentId;
+      }
+    } catch (e) {}
+  }
+
+  // -------------------------------------------------------------
+  // PRESET SCENARIOS IN PLAYGROUND
+  // -------------------------------------------------------------
+  const PRESETS = {
+    transfer_ok: `-- Kịch bản 1: Chuyển 200 từ Alice sang Bob thành công
+START TRANSACTION;
+
+UPDATE bank_accounts SET balance = balance - 200 WHERE account_id = 1;
+UPDATE bank_accounts SET balance = balance + 200 WHERE account_id = 2;
+
+COMMIT;`,
+
+    transfer_fail: `-- Kịch bản 2: Gặp sự cố -> Hoàn tác an toàn với ROLLBACK
+START TRANSACTION;
+
+UPDATE bank_accounts SET balance = balance - 500 WHERE account_id = 3;
+
+-- Kiểm tra logic: Số dư không hợp lệ hoặc máy chủ ngắt kết nối
+ROLLBACK;`,
+
+    savepoint_demo: `-- Kịch bản 3: Hoàn tác từng phần với SAVEPOINT
+START TRANSACTION;
+
+-- Bước 1: Thêm tiền cho Alice
+UPDATE bank_accounts SET balance = balance + 150 WHERE account_id = 1;
+SAVEPOINT sp_alice_ok;
+
+-- Bước 2: Thử nghiệm lệnh lỗi
+UPDATE bank_accounts SET balance = balance - 9999 WHERE account_id = 2;
+
+-- Bước 3: Hoàn tác chỉ riêng bước 2
+ROLLBACK TO SAVEPOINT sp_alice_ok;
+
+-- Bước 4: Chốt giao dịch (Alice vẫn được +150)
+COMMIT;`,
+
+    implicit_commit_demo: `-- Kịch bản 4: Bẫy DDL Implicit Commit
+START TRANSACTION;
+
+UPDATE bank_accounts SET balance = 888 WHERE account_id = 2;
+
+-- Lệnh DDL gây Implicit Commit ngầm trong MySQL:
+CREATE TABLE temp_orders (id INT);
+
+-- Lệnh ROLLBACK phía dưới sẽ KHÔNG THỂ đảo ngược số dư 888 của Bob:
+ROLLBACK;`
+  };
+
+  // -------------------------------------------------------------
+  // CERTIFICATE HIGH-DPI CANVAS GENERATOR (2X)
+  // -------------------------------------------------------------
+  function generateCertificatePng() {
+    const name = (document.getElementById("studentName").value || "HỌC VIÊN DBMS").trim().toUpperCase();
+    const id = (document.getElementById("studentId").value || "B2X-STUDENT").trim().toUpperCase();
+    const { grandTotal } = calculateTotalScore();
+
+    const canvas = document.getElementById("certCanvas");
+    canvas.style.display = "block";
+    const ctx = canvas.getContext("2d");
+
+    const w = 1200;
+    const h = 750;
+
+    const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+    bgGrad.addColorStop(0, "#ffffff");
+    bgGrad.addColorStop(1, "#f8fafc");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = "#1e3a8a";
+    ctx.lineWidth = 14;
+    ctx.strokeRect(20, 20, w - 40, h - 40);
+
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(34, 34, w - 68, h - 68);
+
+    drawCornerOrnament(ctx, 45, 45);
+    drawCornerOrnament(ctx, w - 45, 45);
+    drawCornerOrnament(ctx, 45, h - 45);
+    drawCornerOrnament(ctx, w - 45, h - 45);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#1e3a8a";
+    ctx.font = "bold 24px system-ui, sans-serif";
+    ctx.fillText("KHOA CÔNG NGHỆ THÔNG TIN • BỘ MÔN HỆ THỐNG THÔNG TIN", w / 2, 95);
+
+    ctx.fillStyle = "#d97706";
+    ctx.font = "700 15px system-ui, sans-serif";
+    ctx.letterSpacing = "3px";
+    ctx.fillText("CHỨNG NHẬN HOÀN THÀNH THỰC HÀNH CHUYÊN ĐỀ", w / 2, 130);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "900 42px system-ui, sans-serif";
+    ctx.fillText("MYSQL TRANSACTION & CONCURRENCY LAB", w / 2, 195);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "18px system-ui, sans-serif";
+    ctx.fillText("Chứng nhận học viên đã hoàn thành xuất sắc các bài thực hành về ACID, SAVEPOINT & Khóa:", w / 2, 245);
+
+    ctx.fillStyle = "#1d4ed8";
+    ctx.font = "bold 38px system-ui, sans-serif";
+    ctx.fillText(name, w / 2, 315);
+
+    ctx.fillStyle = "#334155";
+    ctx.font = "bold 19px system-ui, sans-serif";
+    ctx.fillText(`MÃ SỐ SINH VIÊN: ${id}`, w / 2, 355);
+
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(w / 2 - 250, 385);
+    ctx.lineTo(w / 2 + 250, 385);
+    ctx.stroke();
+
+    ctx.fillStyle = grandTotal >= 80 ? "#15803d" : "#1d4ed8";
+    ctx.font = "bold 26px system-ui, sans-serif";
+    ctx.fillText(`ĐIỂM TỔNG KẾT: ${grandTotal} / 100 ĐIỂM (${Math.round((grandTotal / 100) * 100)}%)`, w / 2, 430);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "16px system-ui, sans-serif";
+    ctx.fillText("Bao gồm: 15 Bài tập SQL Tự chấm • 10 Câu hỏi Trắc nghiệm ACID • Implicit Commit & Concurrency Check", w / 2, 465);
+
+    const dateStr = new Date().toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' });
+    const hash = 'TX-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#475569";
+    ctx.font = "15px system-ui, sans-serif";
+    ctx.fillText(`Ngày cấp: ${dateStr}`, 100, 560);
+    ctx.fillText(`Mã xác thực: ${hash}`, 100, 588);
+    ctx.fillText(`Nền tảng: WebAssembly Dual-Engine DBMS Lab`, 100, 616);
+
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#1e3a8a";
+    ctx.font = "bold 16px system-ui, sans-serif";
+    ctx.fillText("GIẢNG VIÊN HƯỚNG DẪN", w - 100, 560);
+
+    ctx.fillStyle = "#d97706";
+    ctx.font = "italic bold 22px Georgia, serif";
+    ctx.fillText("Vu Duc Minh, Ph.D.", w - 100, 610);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "14px system-ui, sans-serif";
+    ctx.fillText("Hệ quản trị CSDL & Hệ thống thông tin", w - 100, 636);
+
+    setTimeout(() => {
+      const link = document.createElement("a");
+      link.download = `Chung_Nhan_Transaction_${id.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }, 100);
+  }
+
+  function drawCornerOrnament(ctx, x, y) {
+    ctx.fillStyle = "#d97706";
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function exportCsvReport() {
+    const name = document.getElementById("studentName").value || "N/A";
+    const id = document.getElementById("studentId").value || "N/A";
+    const { taskTotal, quizTotal, grandTotal } = calculateTotalScore();
+
+    let csv = "STT,Danh mục,Tên bài tập / Câu hỏi,Điểm đạt,Điểm tối đa\n";
+    PRACTICE_TASKS.forEach((t, i) => {
+      csv += `${i + 1},Thực hành SQL,"${t.title.replace(/"/g, '""')}",${appState.taskScores[t.id] || 0},4\n`;
+    });
+    QUIZ_DATA.forEach((q, i) => {
+      csv += `${i + 16},Trắc nghiệm ACID,"Câu ${i + 1}: ${q.question.replace(/"/g, '""')}",${appState.quizScores[q.id] || 0},4\n`;
+    });
+    csv += `\nTỔNG HỢP,,Sinh viên: ${name} (MSSV: ${id}),${grandTotal},100\n`;
+
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Ket_qua_Lab_Transaction_${id}.csv`;
+    link.click();
+  }
+
+  // -------------------------------------------------------------
+  // EVENT LISTENERS & SETUP
+  // -------------------------------------------------------------
+  function setupEventListeners() {
+    document.getElementById("runPlaygroundBtn").addEventListener("click", () => {
+      const sql = document.getElementById("playgroundSql").value;
+      const results = executeSqlStatements(sql, liveDb, txContext, (act, det) => logTimeline(act, det));
+      renderLiveInspector();
+      renderQueryResults(results, document.getElementById("playgroundOutput"));
+    });
+
+    document.getElementById("commitPlaygroundBtn").addEventListener("click", () => {
+      const results = executeSqlStatements("COMMIT;", liveDb, txContext, (act, det) => logTimeline(act, det));
+      renderLiveInspector();
+      renderQueryResults(results, document.getElementById("playgroundOutput"));
+    });
+
+    document.getElementById("rollbackPlaygroundBtn").addEventListener("click", () => {
+      const results = executeSqlStatements("ROLLBACK;", liveDb, txContext, (act, det) => logTimeline(act, det));
+      renderLiveInspector();
+      renderQueryResults(results, document.getElementById("playgroundOutput"));
+    });
+
+    document.getElementById("resetDbBtn").addEventListener("click", () => {
+      liveDb = {
+        bank_accounts: JSON.parse(JSON.stringify(SEED_BANK_ACCOUNTS)),
+        inventory: JSON.parse(JSON.stringify(SEED_INVENTORY)),
+        audit_log: []
+      };
+      txContext = {
+        active: false,
+        autocommit: 1,
+        snapshot: null,
+        savepoints: {},
+        uncommittedCount: 0
+      };
+      renderLiveInspector();
+      logTimeline("RESET", "Đã khôi phục CSDL mẫu ban đầu.");
+      document.getElementById("playgroundOutput").innerHTML = "Đã khôi phục CSDL mẫu thành công.";
+    });
+
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.getAttribute("data-preset");
+        if (PRESETS[key]) {
+          document.getElementById("playgroundSql").value = PRESETS[key];
+        }
+      });
+    });
+
+    document.getElementById("clearTimelineBtn").addEventListener("click", () => {
+      document.getElementById("sessionTimeline").innerHTML = '<div class="timeline-entry"><span class="timeline-time">[Vừa xong]</span> Nhật ký đã được dọn sạch.</div>';
+    });
+
+    document.getElementById("taskSelector").addEventListener("change", (e) => {
+      loadTask(parseInt(e.target.value, 10));
+    });
+
+    document.getElementById("prevTaskBtn").addEventListener("click", () => {
+      if (appState.activeTaskId > 1) {
+        document.getElementById("taskSelector").value = appState.activeTaskId - 1;
+        loadTask(appState.activeTaskId - 1);
+      }
+    });
+
+    document.getElementById("nextTaskBtn").addEventListener("click", () => {
+      if (appState.activeTaskId < PRACTICE_TASKS.length) {
+        document.getElementById("taskSelector").value = appState.activeTaskId + 1;
+        loadTask(appState.activeTaskId + 1);
+      }
+    });
+
+    document.getElementById("runTaskBtn").addEventListener("click", runCurrentTask);
+    document.getElementById("checkTaskBtn").addEventListener("click", checkCurrentTask);
+
+    document.getElementById("hintTaskBtn").addEventListener("click", () => {
+      const task = PRACTICE_TASKS.find(t => t.id === appState.activeTaskId);
+      const box = document.getElementById("taskHintBox");
+      if (box.style.display === "none") {
+        box.style.display = "block";
+        box.innerHTML = `<strong>💡 Gợi ý giải:</strong> ${task.hint}`;
+      } else {
+        box.style.display = "none";
+      }
+    });
+
+    document.getElementById("resetTaskBtn").addEventListener("click", () => {
+      const task = PRACTICE_TASKS.find(t => t.id === appState.activeTaskId);
+      if (task) {
+        document.getElementById("taskSqlInput").value = task.initialSql;
+      }
+    });
+
+    document.getElementById("studentName").addEventListener("input", saveState);
+    document.getElementById("studentId").addEventListener("input", saveState);
+
+    document.getElementById("generateCertBtn").addEventListener("click", generateCertificatePng);
+    document.getElementById("exportCsvBtn").addEventListener("click", exportCsvReport);
+
+    document.getElementById("resetAllProgressBtn").addEventListener("click", () => {
+      if (confirm("Bạn có chắc muốn xóa toàn bộ điểm số và bài làm để làm lại từ đầu không?")) {
+        appState.taskScores = {};
+        appState.quizScores = {};
+        saveState();
+        updateScoresUI();
+        renderTaskSelector();
+        renderQuizzes();
+        alert("Đã đặt lại toàn bộ tiến độ.");
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "Enter") {
+        if (document.activeElement === document.getElementById("taskSqlInput")) {
+          e.preventDefault();
+          checkCurrentTask();
+        } else if (document.activeElement === document.getElementById("playgroundSql")) {
+          e.preventDefault();
+          document.getElementById("runPlaygroundBtn").click();
+        }
+      }
+    });
+  }
+
+  // -------------------------------------------------------------
+  // BOOTSTRAP
+  // -------------------------------------------------------------
+  window.addEventListener("DOMContentLoaded", () => {
+    loadState();
+    renderLiveInspector();
+    renderTaskSelector();
+    renderQuizzes();
+    updateScoresUI();
+    setupEventListeners();
+    initSqlEngine();
+  });
+
+})();
+</script>
+
+</body>
+</html>

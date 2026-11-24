@@ -1,0 +1,529 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{dolphin}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[default]
+
+\usepackage{fontspec}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage{hyperref}
+
+% Mau sac thuong hieu DBMS
+\definecolor{dbblue}{RGB}{20,74,135}
+\definecolor{dblight}{RGB}{235,243,255}
+\definecolor{dbgreen}{RGB}{28,120,90}
+\definecolor{dborange}{RGB}{210,120,30}
+\definecolor{dbred}{RGB}{185,28,28}
+\definecolor{codebg}{RGB}{246,248,250}
+\definecolor{codekw}{RGB}{0,80,180}
+\definecolor{codestr}{RGB}{180,60,20}
+\definecolor{codecomm}{RGB}{100,110,120}
+
+\hypersetup{colorlinks=true,linkcolor=dbblue,urlcolor=dbblue}
+
+\setbeamercolor{structure}{fg=dbblue}
+\setbeamercolor{title}{fg=white,bg=dbblue}
+\setbeamercolor{frametitle}{fg=white,bg=dbblue}
+\setbeamercolor{block title}{fg=white,bg=dbblue}
+\setbeamercolor{block body}{bg=dblight,fg=black}
+\setbeamercolor{block title example}{fg=white,bg=dbgreen}
+\setbeamercolor{block body example}{bg=dblight!60!white,fg=black}
+\setbeamercolor{block title alerted}{fg=white,bg=dborange}
+\setbeamercolor{block body alerted}{bg=dblight!40!white,fg=black}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecomm}\itshape,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{dbblue!30},
+  breaklines=true,
+  showstringspaces=false,
+  keepspaces=true,
+  aboveskip=2pt,
+  belowskip=2pt,
+  language=SQL,
+  morekeywords={START,TRANSACTION,COMMIT,ROLLBACK,SAVEPOINT,RELEASE,AUTOCOMMIT,ISOLATION,LEVEL,READ,UNCOMMITTED,COMMITTED,REPEATABLE,SERIALIZABLE,LOCK,UNLOCK,TABLES,SHARED,EXCLUSIVE,ENGINE,INNODB,MYISAM},
+  tabsize=2
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title[Thao tác Dữ liệu \& Giao dịch MySQL]{Thao tác Dữ liệu và Giao dịch trong MySQL}
+\subtitle{Transaction, Mô hình ACID, Kiểm soát Autocommit, Savepoints \& Mức độ Cô lập}
+\author[Vũ Đức Minh]{Vũ Đức Minh}
+\institute[NEU]{Khoa Công nghệ Thông tin --- Trường Đại học Kinh tế Quốc dân (NEU)}
+\date{Năm học 2026--2027}
+
+\begin{document}
+
+% Slide 1: Trang tieu de
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Slide 2: Muc tieu bai hoc
+\begin{frame}{Mục tiêu Học tập (Learning Objectives)}
+  \begin{itemize}
+    \item \textbf{Hiểu bản chất Transaction:} Đơn vị công việc logic (Unit of Work) và ý nghĩa trong toàn vẹn dữ liệu.
+    \item \textbf{Làm chủ 4 tính chất ACID:} Atomicity, Consistency, Isolation, Durability và cách RDBMS hiện thực.
+    \item \textbf{Sử dụng thành thạo câu lệnh:} \code{START TRANSACTION}, \code{COMMIT}, \code{ROLLBACK}, \code{SAVEPOINT}.
+    \item \textbf{Kiểm soát Autocommit:} Cơ chế \code{@@autocommit} trong MySQL và quy tắc session an toàn.
+    \item \textbf{Nhận biết Bẫy Implicit Commit:} Các câu lệnh DDL tự động commit ngầm và cách phòng tránh.
+    \item \textbf{Nắm vững 4 mức độ Cô lập (Isolation Levels):} Ngăn chặn Dirty Read, Non-repeatable Read, Phantom Read.
+    \item \textbf{Khóa \& Deadlock trong InnoDB:} Cơ chế phát hiện và giải quyết khóa chết trong môi trường đồng thời.
+  \end{itemize}
+\end{frame}
+
+% Slide 3: Khai niem Transaction
+\begin{frame}{1. Khái niệm Giao dịch (Transaction) trong CSDL}
+  \begin{block}{Định nghĩa Giao dịch (Transaction)}
+    Một \textbf{Transaction} là một chuỗi gồm một hoặc nhiều câu lệnh SQL được thực thi như \textbf{một đơn vị công việc thống nhất (Single Logical Unit of Work)}.
+  \end{block}
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Nguyên tắc cốt lõi:}
+      \begin{itemize}
+        \item \textbf{Hoặc là:} Tất cả thao tác thành công và kết quả được lưu vĩnh viễn (\code{COMMIT}).
+        \item \textbf{Hoặc là:} Khi gặp sự cố, toàn bộ trạng thái quay về y hệt trước khi bắt đầu (\code{ROLLBACK}).
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Rủi ro khi thiếu Transaction}
+        Nếu hệ thống sập nguồn hoặc mất mạng giữa chuỗi thao tác:
+        \begin{itemize}
+          \item Dữ liệu bị phân mảnh, mâu thuẫn.
+          \item Vi phạm các quy tắc nghiệp vụ kinh tế.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 4: Bai toan chuyen khoan ngan hang
+\begin{frame}[fragile]{Bài toán Kinh điển: Chuyển khoản Ngân hàng}
+  \textbf{Nghiệp vụ:} Chuyển 200.000 VNĐ từ Tài khoản A sang Tài khoản B:
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.2cm, auto, >=Stealth]
+    \node [rectangle, draw=dbblue, fill=dblight, rounded corners, minimum width=2.5cm, minimum height=0.8cm] (step1) {1. Kiểm tra số dư A};
+    \node [rectangle, draw=dborange, fill=dborange!10, rounded corners, minimum width=2.8cm, minimum height=0.8cm, right=0.8cm of step1] (step2) {2. Trừ 200k ở TK A};
+    \node [rectangle, draw=dbgreen, fill=dbgreen!10, rounded corners, minimum width=2.8cm, minimum height=0.8cm, right=0.8cm of step2] (step3) {3. Cộng 200k ở TK B};
+    \node [rectangle, draw=dbblue, fill=dblight, rounded corners, minimum width=2.2cm, minimum height=0.8cm, right=0.8cm of step3] (step4) {4. Ghi Audit Log};
+
+    \draw [->, thick] (step1) -- (step2);
+    \draw [->, thick] (step2) -- (step3);
+    \draw [->, thick] (step3) -- (step4);
+  \end{tikzpicture}
+  \end{center}
+  \vspace{-0.5em}
+  \begin{exampleblock}{Khi có Transaction bảo vệ}
+    Nếu máy chủ gặp sự cố ở Bước 2 $\rightarrow$ Transaction tự động \textbf{ROLLBACK}, tiền của A không bị mất!
+  \end{exampleblock}
+\end{frame}
+
+% Slide 5: Bo 4 tinh chat ACID
+\begin{frame}{2. Bốn Tính chất Vàng: ACID}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\textbf{A} --- Atomicity (Tính Nguyên tử)}
+        \textbf{All or Nothing:} Hoặc toàn bộ câu lệnh đều thành công, hoặc không câu lệnh nào có hiệu lực.
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\textbf{C} --- Consistency (Tính Nhất quán)}
+        Dữ liệu luôn thỏa mãn mọi ràng buộc toàn vẹn (PK, FK, CHECK, NOT NULL) trước và sau giao dịch.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{\textbf{I} --- Isolation (Tính Cô lập)}
+        Các giao dịch thực thi đồng thời không can thiệp, không nhìn thấy dữ liệu chưa commit của nhau.
+      \end{block}
+      \vspace{0.3em}
+      \begin{block}{\textbf{D} --- Durability (Tính Bền vững)}
+        Sau khi đã COMMIT thành công, dữ liệu được ghi nhận vĩnh viễn vào đĩa, kể cả mất điện ngay sau đó.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 6: Co che dam bao ACID trong MySQL InnoDB
+\begin{frame}{Cách MySQL InnoDB Đảm bảo ACID}
+  \begin{table}
+    \centering
+    \small
+    \begin{tabularx}{\textwidth}{l p{4.2cm} X}
+      \toprule
+      \textbf{Tính chất} & \textbf{Cơ chế Kỹ thuật} & \textbf{Nguyên lý Hoạt động} \\
+      \midrule
+      \textbf{Atomicity} & \textbf{Undo Log} & Ghi lại trạng thái cũ của dòng dữ liệu để đảo ngược khi ROLLBACK hoặc sập máy. \\
+      \textbf{Consistency} & \textbf{Schema Constraints \& Doublewrite Buffer} & Bộ máy kiểm tra khóa chính, khóa ngoại, kiểu dữ liệu, bảo vệ trang ghi dở (torn page). \\
+      \textbf{Isolation} & \textbf{Locking \& MVCC} & Khóa dòng (Row locks) kết hợp Đọc đa phiên bản (Multi-Version Concurrency Control). \\
+      \textbf{Durability} & \textbf{Redo Log \& WAL} & Write-Ahead Logging: Ghi nhật ký phục hồi trước khi lưu vào đĩa dữ liệu thực. \\
+      \bottomrule
+    \end{tabularx}
+  \end{table}
+\end{frame}
+
+% Slide 7: So sanh Storage Engine InnoDB vs MyISAM
+\begin{frame}{3. Storage Engine: InnoDB vs MyISAM trong MySQL}
+  \begin{table}
+    \centering
+    \small
+    \begin{tabularx}{0.92\textwidth}{l c c}
+      \toprule
+      \textbf{Tiêu chí Đánh giá} & \textbf{InnoDB (Khuyên dùng)} & \textbf{MyISAM (Lạc hậu)} \\
+      \midrule
+      Hỗ trợ Transaction & \textcolor{dbgreen}{\textbf{CÓ (Chuẩn ACID)}} & \textcolor{dbred}{\textbf{KHÔNG HỖ TRỢ}} \\
+      Khả năng ROLLBACK & \textcolor{dbgreen}{\textbf{Hoàn hảo (Undo Log)}} & \textcolor{dbred}{\textbf{Không thể đảo ngược}} \\
+      Cấp độ Khóa (Locking) & \textbf{Khóa dòng (Row-level)} & \textbf{Khóa toàn bảng (Table-level)} \\
+      Khóa ngoại (Foreign Key) & \textcolor{dbgreen}{\textbf{Có hỗ trợ kiểm tra}} & \textcolor{dbred}{\textbf{Bỏ qua ràng buộc}} \\
+      Tự phục hồi sau mất điện & \textbf{Tự động (Crash Recovery)} & \textbf{Dễ hỏng cấu trúc (Corrupt)} \\
+      \bottomrule
+    \end{tabularx}
+  \end{table}
+  \begin{alertblock}{Quy tắc vàng}
+    Luôn khai báo \code{ENGINE=InnoDB} cho tất cả các bảng nghiệp vụ cần quản lý giao dịch.
+  \end{alertblock}
+\end{frame}
+
+% Slide 8: Vong doi trang thai cua Transaction
+\begin{frame}{4. Vòng đời Trạng thái của Transaction}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.6cm and 1.8cm, auto, >=Stealth]
+    \node [rectangle, draw=dbblue, fill=dblight, rounded corners, minimum width=2.4cm, minimum height=0.9cm] (active) {\textbf{Active}};
+    \node [rectangle, draw=dborange, fill=dborange!15, rounded corners, minimum width=3.2cm, minimum height=0.9cm, above right=0.5cm and 1.2cm of active] (pcommit) {\textbf{Partially Committed}};
+    \node [rectangle, draw=dbgreen, fill=dbgreen!20, rounded corners, minimum width=2.6cm, minimum height=0.9cm, right=1.6cm of pcommit] (committed) {\textbf{Committed}};
+    \node [rectangle, draw=dbred, fill=dbred!15, rounded corners, minimum width=2.4cm, minimum height=0.9cm, below right=0.5cm and 1.2cm of active] (failed) {\textbf{Failed}};
+    \node [rectangle, draw=gray, fill=gray!20, rounded corners, minimum width=2.4cm, minimum height=0.9cm, right=1.6cm of failed] (aborted) {\textbf{Aborted}};
+
+    \draw [->, thick] (active) to [bend left=15] node [above, sloped] {\scriptsize Câu lệnh DML cuối} (pcommit);
+    \draw [->, thick] (pcommit) -- node [above] {\scriptsize Ghi đĩa thành công} (committed);
+    \draw [->, thick] (active) to [bend right=15] node [below, sloped] {\scriptsize Lỗi hoặc Rollback} (failed);
+    \draw [->, thick] (pcommit) -- node [right] {\scriptsize Ghi đĩa thất bại} (failed);
+    \draw [->, thick] (failed) -- node [below] {\scriptsize Hoàn tác xong} (aborted);
+  \end{tikzpicture}
+  \end{center}
+  \vspace{-0.5em}
+  \begin{itemize}
+    \item \textbf{Active:} Giao dịch đang hoạt động, thực hiện các thao tác \code{INSERT}, \code{UPDATE}, \code{DELETE}.
+    \item \textbf{Partially Committed:} Thao tác cuối đã chạy trong bộ đệm, chuẩn bị ghi Redo Log xuống đĩa.
+  \end{itemize}
+\end{frame}
+
+% Slide 9: Co che Autocommit
+\begin{frame}[fragile]{5. Cơ chế Autocommit trong MySQL}
+  \begin{block}{Biến hệ thống \code{@@autocommit}}
+    Trong MySQL, mặc định \code{@@autocommit = 1}. Nghĩa là: \textbf{Mỗi câu lệnh đơn lẻ được tự động commit ngay lập tức} sau khi thực thi!
+  \end{block}
+  \vspace{0.4em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Kiểm tra trạng thái autocommit:}
+\begin{lstlisting}
+SELECT @@autocommit;
+-- Tra ve 1 (Bat) hoac 0 (Tat)
+\end{lstlisting}
+      \textbf{Tắt autocommit trong session:}
+\begin{lstlisting}
+SET autocommit = 0;
+-- Moi lenh DML tiep theo se mo transaction ngam!
+\end{lstlisting}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Khuyến nghị thực hành:}
+      \begin{itemize}
+        \item Giữ \code{autocommit = 1}.
+        \item Khi cần gom nhóm nghiệp vụ, mở tường minh bằng:
+      \end{itemize}
+\begin{lstlisting}
+START TRANSACTION;
+-- Thuc hien chuoi DML...
+COMMIT; -- hoac ROLLBACK;
+\end{lstlisting}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 10: Bo ba START TRANSACTION, COMMIT, ROLLBACK
+\begin{frame}[fragile]{6. Bộ Ba Lệnh Cốt lõi: START, COMMIT, ROLLBACK}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{exampleblock}{Mẫu Transaction Thành công (Commit)}
+\begin{lstlisting}
+START TRANSACTION;
+
+UPDATE bank_accounts
+SET balance = balance - 200
+WHERE account_id = 1;
+
+UPDATE bank_accounts
+SET balance = balance + 200
+WHERE account_id = 2;
+
+-- Xac nhan vinh vien
+COMMIT;
+\end{lstlisting}
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Mẫu Transaction Hoàn tác (Rollback)}
+\begin{lstlisting}
+START TRANSACTION;
+
+UPDATE bank_accounts
+SET balance = balance - 500
+WHERE account_id = 1;
+
+-- Kiem tra thay so du bi am!
+-- Hoan tac sach se moi thay doi:
+ROLLBACK;
+\end{lstlisting}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 11: SAVEPOINT va Hoan tac tung phan
+\begin{frame}[fragile]{7. Quản lý Điểm lưu với SAVEPOINT}
+  \begin{block}{Mục đích của SAVEPOINT}
+    Cho phép chia nhỏ transaction thành nhiều giai đoạn và \textbf{hoàn tác một phần (Partial Rollback)} mà không làm hủy toàn bộ transaction!
+  \end{block}
+  \vspace{0.2em}
+\begin{lstlisting}
+START TRANSACTION;
+UPDATE bank_accounts SET balance = balance + 100 WHERE account_id = 1; -- Alice +100
+SAVEPOINT sp_step1; -- Danh dau moc luu 1
+
+UPDATE bank_accounts SET balance = balance - 9999 WHERE account_id = 2; -- Lenh loi!
+
+-- Chi hoan tac lenh sai cua Bob, giu nguyen Alice:
+ROLLBACK TO SAVEPOINT sp_step1;
+
+-- Giai phong diem luu khoi bo nho (khong lam thay doi du lieu):
+RELEASE SAVEPOINT sp_step1;
+
+COMMIT; -- Alice van duoc cong 100 thanh cong!
+\end{lstlisting}
+\end{frame}
+
+% Slide 12: Bay DDL Implicit Commit
+\begin{frame}[fragile]{8. Cảnh báo Tử thần: Bẫy DDL Implicit Commit}
+  \begin{alertblock}{Hiện tượng Implicit Commit trong MySQL}
+    Hầu hết các câu lệnh DDL (\code{CREATE}, \code{ALTER}, \code{DROP}, \code{TRUNCATE}) \textbf{không thể rollback}. Khi gặp DDL, MySQL sẽ \textbf{tự động COMMIT ngầm} transaction đang mở trước khi chạy DDL!
+  \end{alertblock}
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Kịch bản sai lầm tai hại:}
+\begin{lstlisting}
+START TRANSACTION;
+UPDATE bank_accounts SET balance = 0; -- Nguy hiem!
+
+-- Vo tinh chay DDL:
+CREATE TABLE temp_log (id INT); -- IMPLICIT COMMIT!
+
+ROLLBACK; -- VO HIEU! Du lieu da bi luu vinh vien!
+\end{lstlisting}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Các lệnh gây Implicit Commit:}
+      \begin{itemize}
+        \item \code{CREATE TABLE}, \code{ALTER TABLE}, \code{DROP TABLE}
+        \item \code{TRUNCATE TABLE}
+        \item \code{LOCK TABLES}, \code{UNLOCK TABLES}
+        \item \code{START TRANSACTION} (khi đang mở tx)
+        \item \code{CREATE DATABASE}, \code{DROP DATABASE}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 13: Cac hien tuong Concurrency
+\begin{frame}{9. Các Hiện tượng Tranh chấp Đồng thời (Concurrency Anomalies)}
+  Khi nhiều giao dịch chạy song song mà không cô lập đúng mức:
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Dirty Read (Đọc rác)}
+        Tx A đọc dữ liệu vừa sửa bởi Tx B \textbf{chưa commit}. Sau đó Tx B ROLLBACK $\rightarrow$ Dữ liệu A vừa đọc là hoàn toàn hư ảo!
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Non-Repeatable Read}
+        Tx A đọc 1 dòng, Tx B sửa dòng đó và COMMIT. Tx A đọc lại lần 2 thấy \textbf{giá trị đã bị thay đổi}!
+      \end{block}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{block}{Phantom Read (Bóng ma)}
+        Tx A chạy SELECT WHERE, Tx B chèn thêm dòng mới thỏa điều kiện. Tx A SELECT lại thấy \textbf{xuất hiện thêm dòng bóng ma}!
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 14: Bon muc do co lap (Isolation Levels)
+\begin{frame}{10. Bốn Mức độ Cô lập (Isolation Levels)}
+  \begin{table}
+    \centering
+    \scriptsize
+    \begin{tabularx}{\textwidth}{l c c c X}
+      \toprule
+      \textbf{Mức độ Cô lập} & \textbf{Dirty Read} & \textbf{Non-Repeatable} & \textbf{Phantom} & \textbf{Đặc điểm \& Ứng dụng} \\
+      \midrule
+      \textbf{READ UNCOMMITTED} & \textcolor{dbred}{Bị lỗi} & \textcolor{dbred}{Bị lỗi} & \textcolor{dbred}{Bị lỗi} & Nhanh nhất, không an toàn. \\
+      \textbf{READ COMMITTED} & \textcolor{dbgreen}{Ngăn chặn} & \textcolor{dbred}{Bị lỗi} & \textcolor{dbred}{Bị lỗi} & Mặc định Oracle, PostgreSQL. \\
+      \textbf{REPEATABLE READ} & \textcolor{dbgreen}{Ngăn chặn} & \textcolor{dbgreen}{Ngăn chặn} & \textcolor{dbgreen}{Ngăn chặn*} & \textcolor{dbblue}{\textbf{MẶC ĐỊNH MYSQL INNODB}}. Dùng Next-Key Locks. \\
+      \textbf{SERIALIZABLE} & \textcolor{dbgreen}{Ngăn chặn} & \textcolor{dbgreen}{Ngăn chặn} & \textcolor{dbgreen}{Ngăn chặn} & Tuần tự hóa, hiệu năng thấp nhất. \\
+      \bottomrule
+    \end{tabularx}
+  \end{table}
+  \vspace{0.4em}
+  \textbf{Cú pháp thiết lập trong MySQL:}
+  \begin{center}
+    \code{SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;}
+  \end{center}
+\end{frame}
+
+% Slide 15: Co che Khoa (Locking)
+\begin{frame}{11. Cơ chế Khóa (Locking) trong InnoDB}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Khóa Chia sẻ --- Shared Lock (S)}
+        \begin{itemize}
+          \item Cho phép nhiều transaction cùng \textbf{ĐỌC (Read)}.
+          \item Ngăn không cho transaction khác ghi/sửa.
+          \item Cú pháp: \code{SELECT ... FOR SHARE;} (hoặc \code{LOCK IN SHARE MODE}).
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Khóa Độc quyền --- Exclusive Lock (X)}
+        \begin{itemize}
+          \item Cấp cho transaction muốn \textbf{GHI (Write)}.
+          \item Ngăn cả đọc lẫn ghi của tất cả transaction khác.
+          \item Tự động cấp khi chạy \code{UPDATE}, \code{DELETE}, hoặc chủ động: \code{SELECT ... FOR UPDATE;}.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 16: Hien tuong Deadlock
+\begin{frame}[fragile]{12. Hiện tượng Deadlock (Khóa Chết) \& Xử lý}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Kịch bản Deadlock điển hình:}
+      \begin{itemize}
+        \item \textbf{Tx 1:} Giữ khóa dòng A, đang chờ khóa dòng B.
+        \item \textbf{Tx 2:} Giữ khóa dòng B, đang chờ khóa dòng A.
+        \item $\rightarrow$ \textbf{Vòng tròn phụ thuộc vĩnh viễn!}
+      \end{itemize}
+      \vspace{0.3em}
+      \begin{exampleblock}{InnoDB Deadlock Detection}
+        InnoDB tự động phát hiện đồ thị chờ đợi, chọn transaction có khối lượng thao tác nhỏ hơn làm \textbf{nạn nhân để ROLLBACK}, báo lỗi:
+        \code{ERROR 1213: Deadlock found}.
+      \end{exampleblock}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Quy tắc phòng ngừa Deadlock:}
+      \begin{enumerate}
+        \item \textbf{Cố định thứ tự truy cập:} Luôn khóa các bảng/dòng theo cùng một trình tự logic (VD: sắp xếp tăng dần theo ID).
+        \item \textbf{Giữ transaction ngắn:} Chỉ thực hiện các thao tác DML cần thiết, commit càng sớm càng tốt.
+        \item \textbf{Tạo chỉ mục (Index) đầy đủ:} Giúp InnoDB khóa chính xác từng dòng thay vì khóa quét cả bảng!
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 17: Quy trinh an toan khi viet Transaction
+\begin{frame}{13. Quy trình An toàn khi Xử lý Transaction trong Ứng dụng}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.1cm, auto, >=Stealth]
+    \node [rectangle, draw=dbblue, fill=dblight, rounded corners, minimum width=9cm, minimum height=0.7cm] (b1) {1. Bắt đầu Transaction (\code{START TRANSACTION})};
+    \node [rectangle, draw=dbblue, fill=dblight, rounded corners, minimum width=9cm, minimum height=0.7cm, below=0.3cm of b1] (b2) {2. Thực thi chuỗi câu lệnh DML trong khối Try--Catch};
+    \node [rectangle, draw=dborange, fill=dborange!15, rounded corners, minimum width=9cm, minimum height=0.7cm, below=0.3cm of b2] (b3) {3. Kiểm tra tính hợp lệ \& Nghiệp vụ (Số dư, Tồn kho, Trạng thái)};
+    \node [rectangle, draw=dbgreen, fill=dbgreen!20, rounded corners, minimum width=4.3cm, minimum height=0.8cm, below left=0.4cm and -0.2cm of b3] (b4a) {HỢP LỆ: \textbf{COMMIT}};
+    \node [rectangle, draw=dbred, fill=dbred!20, rounded corners, minimum width=4.3cm, minimum height=0.8cm, below right=0.4cm and -0.2cm of b3] (b4b) {CÓ LỖI: \textbf{ROLLBACK}};
+
+    \draw [->, thick] (b1) -- (b2);
+    \draw [->, thick] (b2) -- (b3);
+    \draw [->, thick] (b3) -| (b4a);
+    \draw [->, thick] (b3) -| (b4b);
+  \end{tikzpicture}
+  \end{center}
+  \vspace{-0.5em}
+  \begin{alertblock}{Nguyên tắc tối hậu}
+    Tuyệt đối không để một transaction mở lơ lửng mà không có \code{COMMIT} hoặc \code{ROLLBACK} dứt điểm!
+  \end{alertblock}
+\end{frame}
+
+% Slide 18: Huong dan thuc hanh Lab tuong tac
+\begin{frame}{14. Thực hành Lab Tương tác trên Trình duyệt}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Tài liệu \& Lab Thực hành Tương tác:}
+      \begin{itemize}
+        \item File: \code{transaction.html}
+        \item Chạy trực tiếp 100\% trên trình duyệt (không cần cài đặt server).
+        \item Bộ mô phỏng Dual-Engine: SQLite WebAssembly + JS Fallback.
+      \end{itemize}
+      \vspace{0.3em}
+      \textbf{Tính năng nổi bật:}
+      \begin{itemize}
+        \item Theo dõi biến động số dư và cờ Uncommitted theo thời gian thực.
+        \item Trực quan hóa Savepoints stack.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{exampleblock}{Hệ thống Tự chấm điểm}
+        \begin{itemize}
+          \item \textbf{15 Bài tập SQL tự chấm} từ cơ bản đến phức tạp (Chuyển khoản, E-Commerce, Savepoint).
+          \item \textbf{10 Câu hỏi trắc nghiệm ACID} củng cố kiến thức lý thuyết.
+          \item \textbf{Xuất chứng chỉ PNG 2x High-DPI} kèm điểm số và mã xác thực học viên.
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% Slide 19: Tong ket bai hoc
+\begin{frame}{15. Tổng kết Bài học (Key Takeaways)}
+  \begin{enumerate}
+    \item \textbf{Transaction} là đơn vị công việc logic cốt lõi đảm bảo dữ liệu không bao giờ bị dở dang.
+    \item Bốn tính chất \textbf{ACID} là nền tảng của hệ quản trị cơ sở dữ liệu quan hệ (RDBMS).
+    \item Trong MySQL, luôn ưu tiên sử dụng storage engine \textbf{InnoDB} để được hỗ trợ transaction đầy đủ.
+    \item Hiểu rõ cơ chế \textbf{Autocommit}: Mặc định bật, cần dùng \code{START TRANSACTION} để gom nhóm DML.
+    \item Sử dụng \textbf{SAVEPOINT} khi cần chia nhỏ giai đoạn và hoàn tác một phần.
+    \item Hết sức cảnh giác với \textbf{Implicit Commit}: Các câu lệnh DDL sẽ ngầm lưu vĩnh viễn các thao tác trước đó.
+    \item Nắm vững 4 mức \textbf{Isolation}: MySQL InnoDB mặc định dùng \textbf{REPEATABLE READ}.
+  \end{enumerate}
+\end{frame}
+
+% Slide 20: Hoi dap & Ket thuc
+\begin{frame}
+  \begin{center}
+    \vspace{1.5em}
+    {\huge \textcolor{dbblue}{\textbf{Hỏi \& Đáp (Q\&A)}}}\\[1.2em]
+    {\large Cảm ơn các bạn đã chú ý lắng nghe!}\\[1.5em]
+    \textbf{Tài nguyên học tập:}\\[0.5em]
+    Trang Web Khóa học: \href{https://vudmvn.github.io/dbms-course}{\code{vudmvn.github.io/dbms-course}}\\[0.3em]
+    Lab Tương tác: \code{lectures/MySQL/data-modification-transactions/transaction.html}
+  \end{center}
+\end{frame}
+
+\end{document}

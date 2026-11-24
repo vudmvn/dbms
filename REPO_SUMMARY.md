@@ -151,7 +151,14 @@ Current homepage sections:
   - `MySQL/data-definition/`
   - `MySQL/querying-data/`
   - `MySQL/index-optimization/`
+    - `index/index-1.md`, `index/index-2.md`, `index/index-3.md`
+    - Interactive labs: `index/dbms_index_1_interactive_lab.html`, `index/dbms_index_2_interactive_lab.html`, `index/dbms_index_3_interactive_lab.html`
+    - Full dataset performance lab: `index/classicmodels-index-performance-lab.html` (Full classicmodels dataset with 3,864 rows, side-by-side execution time benchmarking, EXPLAIN QUERY PLAN, covering index, filesort elimination, and 10 auto-grading tuning challenges).
   - `MySQL/data-modification-transactions/`
+    - `transaction.md`
+      - Web: `transaction.html` (Dual-engine interactive lab with SQLite WebAssembly + JS fallback, live visual state inspector, uncommitted row tracking, savepoint stack, session timeline logging, 15 auto-grading SQL tasks, 10 ACID quizzes, CSV report & 2x High-DPI Canvas PNG certificate generator).
+      - Slides: `transaction_beamer.pdf` (20-slide presentation).
+      - Source: `transaction_beamer.tex`
   - `MySQL/programmability/`
 ## Canonical Lessons and Duplicate Reduction
 
@@ -245,6 +252,10 @@ Workflow trigger paths:
 - `.github/workflows/pages.yml`
 
 ## Update Notes
+
+- 2026-11-24: Created dedicated interactive Index Performance & Benchmark Lab (`lectures/MySQL/index-optimization/index/classicmodels-index-performance-lab.html`) powered by SQLite WebAssembly with the complete full dataset of Classicmodels (all 8 tables, 3,864 records). Features side-by-side before/after index performance measurement (microseconds/ms over 500 iterations), visual EXPLAIN QUERY PLAN diff, speedup multiplier, scan reduction calculation, covering index tests, filesort elimination inspection, live data/index catalog browser, and 10 auto-grading challenges. Updated index interactive labs and `index.md`.
+
+- 2026-11-24: Created comprehensive interactive HTML learning & practice lab for MySQL Transactions (`lectures/MySQL/data-modification-transactions/transaction.html`) featuring Dual-Engine simulation (SQLite WebAssembly + zero-dependency JS transaction engine fallback), live transaction state visualizer with uncommitted row tracking, savepoints stack, session timeline log, 15 auto-grading SQL practice tasks, 10 checkpoint quizzes, CSV export, and 2x High-DPI Canvas completion certificate. Built professional 20-slide Beamer presentation (`transaction_beamer.pdf` and source `transaction_beamer.tex`) covering ACID, autocommit, savepoints, implicit commits, isolation levels, and locking. Updated `index.md` bilingual links.
 
 - 2026-11-04: Upgraded all 5 MySQL Database Administration interactive SQL labs to Dual-Engine architecture with SQLite WebAssembly (`sql.js@1.10.3`), custom registered crypto/system functions, attached `information_schema` and `mysql` schemas, real-time live catalogs, resilient offline pure-JS fallback, and normalized comment stripping (`--`, `/* */`, `#`) to resolve statement truncation bugs.
 - 2026-11-03: Created 5 comprehensive interactive auto-grading SQL practice labs (80 exercises total) for MySQL Database Administration with pure in-browser simulation engines, real-time live catalogs, dual-panel playground/practice editors, hint reveals, auto-checking, CSV score export, and high-DPI Canvas 2x PNG report generators. Updated Master Hub and index.md.

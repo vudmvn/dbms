@@ -6,7 +6,7 @@ difficulty: "Intermediate"
 prerequisites:
     - "Đã biết SELECT, WHERE, DISTINCT, ORDER BY và LIMIT"
     - "Đã biết cách truy vấn các bảng customers, employees, offices, orders và payments trong classicmodels"
-    - "Đang dùng MySQL 8.0.31 trở lên nếu muốn chạy trực tiếp EXCEPT và INTERSECT"
+    - "Sử dụng MySQL 8.0.31 trở lên để hỗ trợ đầy đủ các phép toán EXCEPT và INTERSECT"
 summary: "Thực hành UNION, UNION ALL, EXCEPT và INTERSECT để kết hợp, so sánh và tìm phần chung giữa các result set trên classicmodels."
 ---
 
@@ -32,8 +32,7 @@ Sau khi hoàn thành tutorial này, người học có thể:
 6. Tuân thủ các quy tắc tương thích cột khi dùng set operators.
 7. Dùng `ORDER BY`, `LIMIT` và dấu ngoặc đơn đúng vị trí.
 8. Hiểu thứ tự ưu tiên giữa `INTERSECT`, `UNION` và `EXCEPT`.
-9. Viết truy vấn trên cơ sở dữ liệu `classicmodels` bằng các phép toán tập hợp.
-10. Viết truy vấn thay thế cho `EXCEPT` và `INTERSECT` trong MySQL cũ.
+9. Viết truy vấn trên cơ sở dữ liệu `classicmodels` bằng các phép toán tập hợp thuần túy.
 
 ---
 
@@ -135,7 +134,7 @@ Kiểm tra phiên bản MySQL:
 SELECT VERSION();
 ```
 
-> `UNION` đã được MySQL hỗ trợ từ lâu. `EXCEPT` và `INTERSECT` được hỗ trợ trực tiếp từ MySQL 8.0.31. Nếu server cũ hơn, dùng `NOT EXISTS`, `EXISTS`, `LEFT JOIN ... IS NULL` hoặc `INNER JOIN` làm cách thay thế.
+> `UNION` và `UNION ALL` đã được MySQL hỗ trợ từ các phiên bản đầu. Các phép toán `EXCEPT` và `INTERSECT` được bổ sung và hỗ trợ chính thức từ MySQL 8.0.31.
 
 ### Bài tập thực hành
 
@@ -578,48 +577,6 @@ Kết quả giữ lại một dòng `USA` và một dòng `France`.
 
 ---
 
-## 11. Thay thế `EXCEPT` trong MySQL cũ
-
-MySQL cũ hơn 8.0.31 không hỗ trợ trực tiếp `EXCEPT`.
-
-Ví dụ dùng `NOT EXISTS` để tìm quốc gia có khách hàng nhưng không có văn phòng:
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM offices AS o
-    WHERE o.country = c.country
-)
-ORDER BY c.country;
-```
-
-Ví dụ dùng `LEFT JOIN`:
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-LEFT JOIN offices AS o
-    ON o.country = c.country
-WHERE o.country IS NULL
-ORDER BY c.country;
-```
-
-### Bài tập thực hành
-
-**Bài 11.1.** Viết lại Bài 9.1 bằng `NOT EXISTS`.
-
-**Bài 11.2.** Viết lại Bài 9.2 bằng `LEFT JOIN ... IS NULL`.
-
-**Bài 11.3.** Dùng `NOT EXISTS` để tìm khách hàng chưa có khoản thanh toán.
-
-**Bài 11.4.** Dùng `NOT EXISTS` để tìm thành phố có khách hàng nhưng không có văn phòng.
-
-**Bài 11.5.** Nêu lý do cần biết cách thay thế `EXCEPT` bằng `NOT EXISTS` hoặc `LEFT JOIN`.
-
----
-
 # Phần C. `INTERSECT`
 
 ## 12. `INTERSECT`: Giao của hai result set
@@ -731,45 +688,6 @@ Kết quả có hai dòng `USA`.
 **Bài 13.4.** Dùng `INTERSECT DISTINCT` để tìm các `customerNumber` có trong cả `orders` và `payments`.
 
 **Bài 13.5.** Dùng `INTERSECT` để tìm quốc gia có trong `customers` và `offices` thuộc territory `EMEA`.
-
----
-
-## 14. Thay thế `INTERSECT` trong MySQL cũ
-
-Dùng `EXISTS`:
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-WHERE EXISTS (
-    SELECT 1
-    FROM offices AS o
-    WHERE o.country = c.country
-)
-ORDER BY c.country;
-```
-
-Dùng `INNER JOIN`:
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-JOIN offices AS o
-    ON o.country = c.country
-ORDER BY c.country;
-```
-
-### Bài tập thực hành
-
-**Bài 14.1.** Viết lại Bài 12.1 bằng `EXISTS`.
-
-**Bài 14.2.** Viết lại Bài 12.2 bằng `INNER JOIN`.
-
-**Bài 14.3.** Dùng `EXISTS` để tìm khách hàng có ít nhất một khoản thanh toán.
-
-**Bài 14.4.** Dùng `INNER JOIN` để tìm `customerNumber` có cả đơn hàng và thanh toán.
-
-**Bài 14.5.** Nêu tình huống cần dùng cách thay thế `INTERSECT` thay vì cú pháp trực tiếp.
 
 ---
 
@@ -969,9 +887,6 @@ FROM offices
 ORDER BY country;
 ```
 
-### Lỗi 6. Chạy `EXCEPT` hoặc `INTERSECT` trên MySQL cũ
-
-Dùng `NOT EXISTS`/`LEFT JOIN` thay `EXCEPT`; dùng `EXISTS`/`INNER JOIN` thay `INTERSECT`.
 
 ### Bài tập thực hành
 
@@ -1013,13 +928,13 @@ Viết ba truy vấn:
 2. Thành phố có khách hàng nhưng không có văn phòng.
 3. Thành phố vừa có khách hàng vừa có văn phòng.
 
-### Bài 18.4. Viết cho MySQL cũ
+### Bài 18.4. Phân tích tập hợp đối xứng và phần bù
 
-Không dùng `EXCEPT` hoặc `INTERSECT`, hãy viết:
+Dùng `EXCEPT` và `UNION`, hãy viết:
 
-1. Quốc gia có khách hàng nhưng không có văn phòng.
-2. Quốc gia vừa có khách hàng vừa có văn phòng.
-3. Khách hàng có đơn hàng nhưng chưa có thanh toán.
+1. Quốc gia có văn phòng nhưng không có khách hàng nào (`offices EXCEPT customers`).
+2. Khách hàng đã phát sinh thanh toán nhưng chưa có đơn hàng nào trong bảng `orders` (`payments EXCEPT orders`).
+3. Tìm các quốc gia chỉ xuất hiện ở đúng một trong hai bảng `customers` hoặc `offices`, không xuất hiện ở cả hai (hiệu đối xứng).
 
 ### Bài 18.5. Truy vấn nhiều toán tử
 
@@ -1122,19 +1037,6 @@ FROM payments
 ORDER BY customerNumber;
 ```
 
-### Bài 11.1
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM offices AS o
-    WHERE o.country = c.country
-)
-ORDER BY c.country;
-```
-
 ### Bài 12.1
 
 ```sql
@@ -1155,19 +1057,6 @@ INTERSECT
 SELECT customerNumber
 FROM payments
 ORDER BY customerNumber;
-```
-
-### Bài 14.1
-
-```sql
-SELECT DISTINCT c.country
-FROM customers AS c
-WHERE EXISTS (
-    SELECT 1
-    FROM offices AS o
-    WHERE o.country = c.country
-)
-ORDER BY c.country;
 ```
 
 ### Bài 15.4
@@ -1231,7 +1120,7 @@ ORDER BY customerNumber;
 - `ORDER BY` và `LIMIT` đặt ở cuối áp dụng cho toàn bộ result set.
 - Dùng dấu ngoặc đơn khi cần sắp xếp/giới hạn từng query block hoặc muốn điều khiển thứ tự tính.
 - `INTERSECT` có độ ưu tiên cao hơn `UNION` và `EXCEPT`.
-- MySQL hỗ trợ trực tiếp `EXCEPT` và `INTERSECT` từ phiên bản 8.0.31; với phiên bản cũ có thể dùng `NOT EXISTS`, `EXISTS`, `LEFT JOIN` hoặc `INNER JOIN`.
+- MySQL hỗ trợ đầy đủ các phép toán tập hợp chuẩn: `UNION`, `UNION ALL`, `EXCEPT` và `INTERSECT` (yêu cầu MySQL 8.0.31+ cho `EXCEPT` và `INTERSECT`).
 
 ---
 
@@ -1251,8 +1140,4 @@ ORDER BY customerNumber;
 - ORDER BY
 - LIMIT
 - Parenthesized query expression
-- EXISTS
-- NOT EXISTS
-- INNER JOIN
-- LEFT JOIN
 - classicmodels

@@ -221,6 +221,7 @@ Phần này trình bày cách MySQL sử dụng index, cách tạo/xóa index, �
 | Tạo và quản lý Index trong MySQL | [Markdown](lectures/MySQL/index-optimization/index/index-1.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_1_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_1_beamer.pdf) | CREATE INDEX, DROP INDEX, SHOW INDEX và composite index |
 | MySQL Index Types và chiến lược chọn Index | [Markdown](lectures/MySQL/index-optimization/index/index-2.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_2_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_2_beamer.pdf) | Unique, prefix, invisible, descending, clustered và functional indexes |
 | MySQL Index Hints: USE INDEX và FORCE INDEX | [Markdown](lectures/MySQL/index-optimization/index/index-3.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_3_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_3_beamer.pdf) | EXPLAIN, optimizer và index hints |
+| Benchmark Hiệu năng Index trên Full Dataset Classicmodels | [Markdown](lectures/MySQL/index-optimization/index/index-1.md) | [Lab Benchmark Hiệu năng (Classicmodels)](lectures/MySQL/index-optimization/index/classicmodels-index-performance-lab.html) | <span class="missing">—</span> | Đo lường thời gian (ms), so sánh trước/sau khi có index, EXPLAIN QUERY PLAN, covering index, triệt tiêu filesort trên 3.864 bản ghi |
 
 ### Thao tác dữ liệu và giao dịch
 
@@ -229,7 +230,7 @@ Phần DML và transaction trình bày thao tác thay đổi dữ liệu, kiểm
 | Bài học | Bài giảng Markdown | Bản Web (HTML) | Slides PDF | Ghi chú |
 |---|---|---|---|---|
 | INSERT, UPDATE, DELETE và thao tác dữ liệu nâng cao trong MySQL | [Markdown](lectures/MySQL/data-modification-transactions/modifying-data.md) | <span class="missing">—</span> | <span class="missing">—</span> | INSERT, UPDATE, DELETE, CASCADE, DELETE JOIN và REPLACE |
-| Transaction trong MySQL | [Markdown](lectures/MySQL/data-modification-transactions/transaction.md) | <span class="missing">—</span> | <span class="missing">—</span> | START TRANSACTION, COMMIT, ROLLBACK, SAVEPOINT và autocommit |
+| Transaction trong MySQL | [Markdown](lectures/MySQL/data-modification-transactions/transaction.md) | [Lý thuyết & Lab tương tác](lectures/MySQL/data-modification-transactions/transaction.html) | [PDF Slides](lectures/MySQL/data-modification-transactions/transaction_beamer.pdf) | START TRANSACTION, COMMIT, ROLLBACK, SAVEPOINT, autocommit, ACID và bẫy Implicit Commit |
 | MySQL Table Locking và InnoDB Locks | [Markdown](lectures/MySQL/data-modification-transactions/locking/locking.md) | <span class="missing">—</span> | <span class="missing">—</span> | LOCK TABLES, READ/WRITE locks, row locks, metadata locks và deadlocks |
 
 ### View, stored procedure, stored function, trigger và event
@@ -400,6 +401,7 @@ Phần này trình bày cách MySQL sử dụng index, cách tạo/xóa index, �
 | Creating and Managing Indexes in MySQL | [Markdown](lectures/MySQL/index-optimization/index/index-1.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_1_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_1_beamer.pdf) | CREATE INDEX, DROP INDEX, SHOW INDEX, and composite indexes |
 | MySQL Index Types and Index Selection Strategy | [Markdown](lectures/MySQL/index-optimization/index/index-2.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_2_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_2_beamer.pdf) | Unique, prefix, invisible, descending, clustered, and functional indexes |
 | MySQL Index Hints: USE INDEX and FORCE INDEX | [Markdown](lectures/MySQL/index-optimization/index/index-3.md) | [HTML](lectures/MySQL/index-optimization/index/dbms_index_3_interactive_lab.html) | [PDF](lectures/MySQL/index-optimization/index/dbms_index_3_beamer.pdf) | EXPLAIN, optimizer, and index hints |
+| Classicmodels Full Dataset Index Performance Benchmark | [Markdown](lectures/MySQL/index-optimization/index/index-1.md) | [Performance Benchmark Lab](lectures/MySQL/index-optimization/index/classicmodels-index-performance-lab.html) | <span class="missing">—</span> | Real-time execution speed comparison (ms), EXPLAIN QUERY PLAN, covering index, filesort elimination on 3,864 rows |
 
 ### Data Modification and Transactions
 
@@ -408,7 +410,7 @@ Phần DML và transaction trình bày thao tác thay đổi dữ liệu, kiểm
 | Lesson | Markdown Lecture | Web (HTML) | Slides PDF | Notes |
 |---|---|---|---|---|
 | INSERT, UPDATE, DELETE, and Advanced Data Modification in MySQL | [Markdown](lectures/MySQL/data-modification-transactions/modifying-data.md) | <span class="missing">—</span> | <span class="missing">—</span> | INSERT, UPDATE, DELETE, CASCADE, DELETE JOIN, and REPLACE |
-| Transactions in MySQL | [Markdown](lectures/MySQL/data-modification-transactions/transaction.md) | <span class="missing">—</span> | <span class="missing">—</span> | START TRANSACTION, COMMIT, ROLLBACK, SAVEPOINT, and autocommit |
+| Transactions in MySQL | [Markdown](lectures/MySQL/data-modification-transactions/transaction.md) | [Theory & Interactive Lab](lectures/MySQL/data-modification-transactions/transaction.html) | [PDF Slides](lectures/MySQL/data-modification-transactions/transaction_beamer.pdf) | START TRANSACTION, COMMIT, ROLLBACK, SAVEPOINT, autocommit, ACID, and implicit commit |
 | MySQL Table Locking and InnoDB Locks | [Markdown](lectures/MySQL/data-modification-transactions/locking/locking.md) | <span class="missing">—</span> | <span class="missing">—</span> | LOCK TABLES, READ/WRITE locks, row locks, metadata locks, and deadlocks |
 
 ### Views, Stored Procedures, Stored Functions, Triggers, and Events
