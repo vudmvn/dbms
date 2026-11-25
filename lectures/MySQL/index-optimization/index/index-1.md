@@ -6,8 +6,8 @@ difficulty: "Intermediate"
 prerequisites:
   - "Đã biết SELECT, WHERE, ORDER BY, JOIN và CREATE TABLE"
   - "Đã biết dùng SHOW CREATE TABLE và SHOW INDEX"
-  - "Có quyền CREATE, ALTER, INDEX và DROP trên schema lab"
-summary: "Giải thích index là gì; thực hành tạo, liệt kê, phân tích và xóa single-column hoặc composite index trong schema index_lab."
+  - "Đã cài đặt cơ sở dữ liệu mẫu classicmodels và có quyền CREATE, ALTER, INDEX, DROP"
+summary: "Giải thích index là gì; thực hành tạo, liệt kê, phân tích và xóa single-column hoặc composite index trực tiếp trên cơ sở dữ liệu mẫu classicmodels."
 ---
 
 # Tutorial 1: Tạo và quản lý Index trong MySQL
@@ -24,7 +24,7 @@ summary: "Giải thích index là gì; thực hành tạo, liệt kê, phân tí
 - [MySQL 8.4 Reference Manual — DROP INDEX](https://dev.mysql.com/doc/refman/8.4/en/drop-index.html)
 - [MySQL 8.4 Reference Manual — SHOW INDEX](https://dev.mysql.com/doc/refman/8.4/en/show-index.html)
 
-> **Phạm vi lab:** Index là database object ảnh hưởng đến storage, tốc độ ghi và execution plan. Chỉ tạo/xóa index trong schema `index_lab` hoặc môi trường test. Không thử trực tiếp trên bảng production hay bảng dùng chung nếu chưa đo workload, kiểm tra query plan và có kế hoạch rollback.
+> **Phạm vi lab:** Index là database object ảnh hưởng đến storage, tốc độ ghi và execution plan. Mọi bài thực hành trong chuyên đề này thực hiện trực tiếp trên cơ sở dữ liệu mẫu `classicmodels` (môi trường học tập/test) và nên dọn dẹp các index tạo thêm sau khi hoàn thành. Không thử trực tiếp trên bảng production hay bảng dùng chung nếu chưa đo workload, kiểm tra query plan và có kế hoạch rollback.
 
 ## 1. Mục tiêu học tập
 
@@ -32,9 +32,9 @@ Sau khi hoàn thành tutorial này, người học có thể:
 
 1. Giải thích index là gì và trade-off giữa tốc độ đọc với chi phí ghi/lưu trữ.
 2. Tạo single-column index bằng `CREATE INDEX` hoặc `ALTER TABLE`.
-3. Tạo composite index cho mẫu truy vấn nhiều điều kiện.
+3. Tạo composite index cho mẫu truy vấn nhiều điều kiện trên các bảng `classicmodels`.
 4. Đọc metadata index bằng `SHOW INDEX`, `SHOW CREATE TABLE` và `INFORMATION_SCHEMA.STATISTICS`.
-5. Xóa secondary index bằng `DROP INDEX` hoặc `ALTER TABLE ... DROP INDEX`.
+5. Xóa secondary index bằng `DROP INDEX` hoặc `ALTER TABLE ... DROP INDEX` mà vẫn giữ nguyên `PRIMARY KEY` và foreign key indexes gốc.
 6. Phân biệt primary key, secondary index và composite index ở mức thực hành.
 7. Dùng `EXPLAIN` để kiểm tra kế hoạch trước/sau khi tạo index.
 8. Chọn tên index rõ nghĩa và tránh tạo index trùng lặp.
@@ -47,11 +47,11 @@ Sau khi hoàn thành tutorial này, người học có thể:
 
 Index là một cấu trúc dữ liệu giúp MySQL tìm row nhanh hơn cho một số điều kiện và thứ tự truy vấn.
 
-Ví dụ:
+Ví dụ trên bảng `customers` của `classicmodels`:
 
 ```sql
-SELECT customer_id, first_name, last_name, credit_limit
-FROM customer_search
+SELECT customerNumber, contactFirstName, contactLastName, creditLimit
+FROM customers
 WHERE country = 'USA';
 ```
 
@@ -90,11 +90,11 @@ Không tạo index cho mọi cột. Cần dựa vào query workload, `EXPLAIN`, 
 
 ### 2.2. Primary key và secondary index
 
-| Loại | Ví dụ | Vai trò |
+| Loại | Ví dụ trong `classicmodels` | Vai trò |
 |---|---|---|
-| Primary key | `PRIMARY KEY(customer_id)` | Định danh row; InnoDB dùng làm clustered index |
-| Secondary index | `INDEX idx_country(country)` | Hỗ trợ lookup/sort/join ngoài primary key |
-| Composite index | `INDEX idx_country_credit(country, credit_limit)` | Hỗ trợ mẫu query dùng nhiều cột theo thứ tự key parts |
+| Primary key | `PRIMARY KEY(customerNumber)` | Định danh row; InnoDB dùng làm clustered index |
+| Secondary index | `INDEX idx_customers_country(country)` | Hỗ trợ lookup/sort/join ngoài primary key |
+| Composite index | `INDEX idx_customers_country_credit(country, creditLimit)` | Hỗ trợ mẫu query dùng nhiều cột theo thứ tự key parts |
 
 ### 2.3. Mô hình “mục lục sách”
 
@@ -120,136 +120,33 @@ Index có thể hình dung như mục lục của sách:
 
 ---
 
-## 3. Chuẩn bị schema `index_lab`
+## 3. Cơ sở dữ liệu `classicmodels` & Index mặc định
 
-### 3.1. Tạo database và bảng lab
+### 3.1. Các bảng trọng tâm trong `classicmodels`
 
-```sql
-CREATE DATABASE IF NOT EXISTS index_lab;
+Toàn bộ bài thực hành sử dụng trực tiếp các bảng có sẵn trong cơ sở dữ liệu mẫu **`classicmodels`** (không cần tạo database hay tạo bảng mới):
 
-USE index_lab;
-```
+- **`customers` (122 dòng):** `customerNumber (PK)`, `customerName`, `contactLastName`, `contactFirstName`, `phone`, `city`, `state`, `country`, `salesRepEmployeeNumber (FK)`, `creditLimit`.
+- **`orders` (326 dòng):** `orderNumber (PK)`, `orderDate`, `requiredDate`, `shippedDate`, `status`, `comments`, `customerNumber (FK)`.
+- **`products` (110 dòng):** `productCode (PK)`, `productName`, `productLine (FK)`, `productScale`, `productVendor`, `quantityInStock`, `buyPrice`, `MSRP`.
+- **`orderdetails` (2.996 dòng):** `(orderNumber, productCode) (PK)`, `quantityOrdered`, `priceEach`, `orderLineNumber`.
+- **`payments` (273 dòng):** `(customerNumber, checkNumber) (PK)`, `paymentDate`, `amount`.
 
-Tạo bảng khách hàng dùng để thực hành:
+### 3.2. Kiểm tra index mặc định trên `classicmodels`
 
-```sql
-DROP TABLE IF EXISTS customer_search;
-
-CREATE TABLE customer_search (
-    customer_id INT NOT NULL,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(120) NULL,
-    country VARCHAR(50) NOT NULL,
-    credit_limit DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    PRIMARY KEY (customer_id)
-) ENGINE = InnoDB;
-```
-
-Nạp dữ liệu từ `classicmodels`:
+Kiểm tra các index đã có sẵn (bao gồm `PRIMARY KEY` và các index do `FOREIGN KEY` tự động tạo trong InnoDB):
 
 ```sql
-INSERT INTO customer_search (
-    customer_id,
-    first_name,
-    last_name,
-    email,
-    country,
-    credit_limit
-)
-SELECT customerNumber,
-       COALESCE(contactFirstName, ''),
-       COALESCE(contactLastName, ''),
-       CONCAT('customer', customerNumber, '@example.test'),
-       country,
-       COALESCE(creditLimit, 0)
-FROM classicmodels.customers;
+SHOW INDEX FROM customers;
+SHOW INDEX FROM orders;
+SHOW INDEX FROM products;
 ```
 
-Tạo bảng order đơn giản:
-
-```sql
-DROP TABLE IF EXISTS order_search;
-
-CREATE TABLE order_search (
-    order_number INT NOT NULL,
-    customer_id INT NOT NULL,
-    order_date DATE NOT NULL,
-    required_date DATE NOT NULL,
-    shipped_date DATE NULL,
-    status VARCHAR(20) NOT NULL,
-    PRIMARY KEY (order_number)
-) ENGINE = InnoDB;
-```
-
-```sql
-INSERT INTO order_search (
-    order_number,
-    customer_id,
-    order_date,
-    required_date,
-    shipped_date,
-    status
-)
-SELECT orderNumber,
-       customerNumber,
-       orderDate,
-       requiredDate,
-       shippedDate,
-       status
-FROM classicmodels.orders;
-```
-
-Tạo bảng product:
-
-```sql
-DROP TABLE IF EXISTS product_search;
-
-CREATE TABLE product_search (
-    product_code VARCHAR(15) NOT NULL,
-    product_name VARCHAR(100) NOT NULL,
-    product_line VARCHAR(50) NOT NULL,
-    quantity_in_stock SMALLINT NOT NULL,
-    buy_price DECIMAL(10,2) NOT NULL,
-    msrp DECIMAL(10,2) NOT NULL,
-    PRIMARY KEY (product_code)
-) ENGINE = InnoDB;
-```
-
-```sql
-INSERT INTO product_search (
-    product_code,
-    product_name,
-    product_line,
-    quantity_in_stock,
-    buy_price,
-    msrp
-)
-SELECT productCode,
-       productName,
-       productLine,
-       quantityInStock,
-       buyPrice,
-       MSRP
-FROM classicmodels.products;
-```
-
-### 3.2. Kiểm tra dữ liệu
-
-```sql
-SELECT COUNT(*) AS totalCustomers
-FROM customer_search;
-
-SELECT COUNT(*) AS totalOrders
-FROM order_search;
-
-SELECT COUNT(*) AS totalProducts
-FROM product_search;
-```
+> **Lưu ý:** Trong `classicmodels`, các cột khóa ngoại như `orders.customerNumber`, `products.productLine`, `customers.salesRepEmployeeNumber`, `orderdetails.productCode` thường đã có index tự động do InnoDB tạo để hỗ trợ ràng buộc `FOREIGN KEY`. Khi tạo thêm index trong bài tập, cần giữ nguyên các index mặc định này và chỉ xóa các index thử nghiệm bạn tự thêm.
 
 ### 3.3. Lưu ý về quy mô dữ liệu lab
 
-`classicmodels` thường nhỏ. Vì vậy, optimizer có thể chọn table scan dù index tồn tại, vì đọc toàn table nhỏ đôi khi rẻ hơn đi qua index.
+`classicmodels` có kích thước nhỏ (tổng 3.864 bản ghi trên 8 bảng). Vì vậy, optimizer có thể chọn table scan dù index tồn tại, vì đọc toàn table nhỏ đôi khi rẻ hơn đi qua index.
 
 Trong lab, mục tiêu chính là:
 
@@ -262,15 +159,15 @@ Không lấy thời gian chạy trên dữ liệu nhỏ làm bằng chứng duy 
 
 ### Bài tập thực hành
 
-**Bài 3.1.** Tạo database `index_lab`.
+**Bài 3.1.** Dùng `SHOW INDEX` kiểm tra các index mặc định trên bảng `customers`.
 
-**Bài 3.2.** Tạo bảng `customer_search` và nạp dữ liệu từ `classicmodels.customers`.
+**Bài 3.2.** Dùng `SHOW INDEX` kiểm tra các index mặc định trên bảng `orders`.
 
-**Bài 3.3.** Tạo bảng `order_search` và nạp dữ liệu từ `classicmodels.orders`.
+**Bài 3.3.** Dùng `SHOW INDEX` kiểm tra các index mặc định trên bảng `products`.
 
-**Bài 3.4.** Kiểm tra số row của ba bảng lab.
+**Bài 3.4.** Giải thích vì sao small table trong `classicmodels` có thể không dùng index dù index tồn tại.
 
-**Bài 3.5.** Giải thích vì sao small table có thể không dùng index dù index tồn tại.
+**Bài 3.5.** Nêu lý do không nên chỉ dựa vào thời gian chạy trên dữ liệu nhỏ để kết luận thiết kế production.
 
 ---
 
@@ -285,25 +182,25 @@ CREATE INDEX index_name
 ON table_name (column_name);
 ```
 
-Ví dụ tạo index hỗ trợ lọc theo quốc gia:
+Ví dụ tạo index hỗ trợ lọc khách hàng theo quốc gia trên bảng `customers`:
 
 ```sql
-CREATE INDEX idx_customer_country
-ON customer_search (country);
+CREATE INDEX idx_customers_country
+ON customers (country);
 ```
 
 Kiểm tra:
 
 ```sql
-SHOW INDEX FROM customer_search;
+SHOW INDEX FROM customers;
 ```
 
 Dùng query:
 
 ```sql
 EXPLAIN
-SELECT customer_id, first_name, last_name, credit_limit
-FROM customer_search
+SELECT customerNumber, contactFirstName, contactLastName, creditLimit
+FROM customers
 WHERE country = 'USA';
 ```
 
@@ -318,15 +215,15 @@ idx_<table_or_feature>_<column_or_pattern>
 Ví dụ:
 
 ```text
-idx_customer_country
-idx_order_customer_date
-idx_product_line_msrp
+idx_customers_country
+idx_orders_customer_date
+idx_products_line_msrp
 ```
 
 Với unique index:
 
 ```text
-uq_customer_email
+uq_customers_name
 ```
 
 Không đặt tên mơ hồ:
@@ -340,8 +237,8 @@ new_index
 ### 4.3. Tạo index nhiều cột
 
 ```sql
-CREATE INDEX idx_customer_country_credit
-ON customer_search (country, credit_limit);
+CREATE INDEX idx_customers_country_credit
+ON customers (country, creditLimit);
 ```
 
 Đây là **một composite index**, không phải hai index độc lập.
@@ -349,55 +246,41 @@ ON customer_search (country, credit_limit);
 Nó phù hợp với các query như:
 
 ```sql
-SELECT customer_id, first_name, last_name, credit_limit
-FROM customer_search
+SELECT customerNumber, customerName, country, creditLimit
+FROM customers
 WHERE country = 'USA'
-  AND credit_limit >= 50000.00;
+  AND creditLimit >= 50000.00;
 ```
 
 Chi tiết về thứ tự cột của composite index sẽ học sâu ở Tutorial 2.
 
-### 4.4. Tạo index trong `CREATE TABLE`
-
-Index có thể được khai báo ngay khi tạo table:
+### 4.4. Tạo index bằng `ALTER TABLE`
 
 ```sql
-CREATE TABLE example_orders (
-    order_id INT NOT NULL,
-    customer_id INT NOT NULL,
-    order_date DATE NOT NULL,
-    PRIMARY KEY (order_id),
-    INDEX idx_customer_date (customer_id, order_date)
-) ENGINE = InnoDB;
-```
-
-### 4.5. Tạo index bằng `ALTER TABLE`
-
-```sql
-ALTER TABLE product_search
-ADD INDEX idx_product_line (product_line);
+ALTER TABLE products
+ADD INDEX idx_products_line (productLine);
 ```
 
 Hoặc:
 
 ```sql
-ALTER TABLE product_search
-ADD INDEX idx_product_line_msrp (product_line, msrp);
+ALTER TABLE products
+ADD INDEX idx_products_line_msrp (productLine, MSRP);
 ```
 
 `CREATE INDEX` và `ALTER TABLE ... ADD INDEX` đều là cách hợp lệ để thêm secondary index. Chọn một style thống nhất trong project.
 
 ### Bài tập thực hành
 
-**Bài 4.1.** Tạo index `idx_customer_country` trên `customer_search(country)`.
+**Bài 4.1.** Tạo index `idx_customers_country` trên `customers(country)`.
 
-**Bài 4.2.** Tạo index `idx_order_status` trên `order_search(status)`.
+**Bài 4.2.** Tạo index `idx_orders_status` trên `orders(status)`.
 
-**Bài 4.3.** Tạo composite index `idx_order_customer_date` trên `order_search(customer_id, order_date)`.
+**Bài 4.3.** Tạo composite index `idx_orders_customer_date` trên `orders(customerNumber, orderDate)`.
 
-**Bài 4.4.** Dùng `ALTER TABLE` tạo index `idx_product_line` trên `product_search(product_line)`.
+**Bài 4.4.** Dùng `ALTER TABLE` tạo index `idx_products_line` trên `products(productLine)`.
 
-**Bài 4.5.** Viết query phù hợp với index `(customer_id, order_date)`.
+**Bài 4.5.** Viết query trên `orders` phù hợp với index `(customerNumber, orderDate)`.
 
 ---
 
@@ -419,7 +302,7 @@ SHOW KEYS FROM table_name;
 Ví dụ:
 
 ```sql
-SHOW INDEX FROM order_search;
+SHOW INDEX FROM orders;
 ```
 
 ### 5.2. Các cột quan trọng
@@ -440,21 +323,21 @@ SHOW INDEX FROM order_search;
 Ví dụ nhìn composite index:
 
 ```sql
-SHOW INDEX FROM order_search
-WHERE Key_name = 'idx_order_customer_date';
+SHOW INDEX FROM orders
+WHERE Key_name = 'idx_orders_customer_date';
 ```
 
 Nếu output có hai dòng:
 
 ```text
-Seq_in_index = 1, Column_name = customer_id
-Seq_in_index = 2, Column_name = order_date
+Seq_in_index = 1, Column_name = customerNumber
+Seq_in_index = 2, Column_name = orderDate
 ```
 
 thì thứ tự key parts là:
 
 ```text
-(customer_id, order_date)
+(customerNumber, orderDate)
 ```
 
 ### 5.3. `SHOW CREATE TABLE`
@@ -462,7 +345,7 @@ thì thứ tự key parts là:
 `SHOW INDEX` tốt cho overview index metadata. `SHOW CREATE TABLE` cho DDL tổng thể:
 
 ```sql
-SHOW CREATE TABLE order_search;
+SHOW CREATE TABLE orders;
 ```
 
 Dùng lệnh này để xem:
@@ -470,7 +353,7 @@ Dùng lệnh này để xem:
 - Columns.
 - Primary key.
 - Secondary indexes.
-- Unique indexes.
+- Foreign keys.
 - Engine.
 - Table options.
 
@@ -489,22 +372,22 @@ SELECT INDEX_NAME,
        INDEX_TYPE,
        IS_VISIBLE
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE TABLE_SCHEMA = 'index_lab'
-  AND TABLE_NAME = 'order_search'
+WHERE TABLE_SCHEMA = 'classicmodels'
+  AND TABLE_NAME = 'orders'
 ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 ```
 
 ### Bài tập thực hành
 
-**Bài 5.1.** Dùng `SHOW INDEX FROM customer_search`.
+**Bài 5.1.** Dùng `SHOW INDEX FROM customers`.
 
-**Bài 5.2.** Dùng `SHOW INDEX FROM order_search WHERE Key_name = 'idx_order_customer_date';`.
+**Bài 5.2.** Dùng `SHOW INDEX FROM orders WHERE Key_name = 'idx_orders_customer_date';`.
 
-**Bài 5.3.** Xác định thứ tự cột của `idx_order_customer_date`.
+**Bài 5.3.** Xác định thứ tự cột của `idx_orders_customer_date`.
 
-**Bài 5.4.** Dùng `SHOW CREATE TABLE order_search`.
+**Bài 5.4.** Dùng `SHOW CREATE TABLE orders`.
 
-**Bài 5.5.** Viết query `INFORMATION_SCHEMA.STATISTICS` liệt kê metadata index của `product_search`.
+**Bài 5.5.** Viết query `INFORMATION_SCHEMA.STATISTICS` liệt kê metadata index của `products` trong `classicmodels`.
 
 ---
 
@@ -521,10 +404,10 @@ Ví dụ:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
 Các cột cần quan sát ban đầu:
@@ -542,17 +425,17 @@ Ví dụ tạo index rồi so sánh:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+ORDER BY orderDate;
 ```
 
 Sau đó:
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 ```
 
 Chạy `EXPLAIN` lại.
@@ -562,7 +445,7 @@ Chạy `EXPLAIN` lại.
 Optimizer có thể quyết định full table scan nếu:
 
 - Table rất nhỏ.
-- Điều kiện trả về phần lớn row.
+- Điều kiện trả về phần lớn row (ví dụ `WHERE status = 'Shipped'` chiếm 303/326 dòng bảng `orders`).
 - Index không đủ selective.
 - Cost estimate cho table scan thấp hơn.
 - Query expression không phù hợp với index.
@@ -574,7 +457,7 @@ Cần đánh giá bằng query, plan và workload thực, không chỉ nhìn m�
 Khi statistics cũ hoặc sau thay đổi dữ liệu lớn, có thể xem xét:
 
 ```sql
-ANALYZE TABLE order_search;
+ANALYZE TABLE orders;
 ```
 
 Sau đó chạy lại `EXPLAIN`.
@@ -583,13 +466,13 @@ Không chạy maintenance operations tùy tiện trên production. Cần hiểu 
 
 ### Bài tập thực hành
 
-**Bài 6.1.** Chạy `EXPLAIN` cho query lọc `order_search` theo `customer_id`.
+**Bài 6.1.** Chạy `EXPLAIN` cho query lọc `orders` theo `customerNumber`.
 
 **Bài 6.2.** Xác định `possible_keys` và `key` trong output.
 
 **Bài 6.3.** Chạy `EXPLAIN` cho query lọc theo `status`.
 
-**Bài 6.4.** Chạy `ANALYZE TABLE order_search;` trong schema lab.
+**Bài 6.4.** Chạy `ANALYZE TABLE orders;` trong `classicmodels`.
 
 **Bài 6.5.** Nêu hai lý do optimizer có thể không dùng index trên table nhỏ.
 
@@ -609,15 +492,15 @@ ON table_name;
 Ví dụ:
 
 ```sql
-DROP INDEX idx_customer_country
-ON customer_search;
+DROP INDEX idx_customers_country
+ON customers;
 ```
 
 ### 7.2. `ALTER TABLE ... DROP INDEX`
 
 ```sql
-ALTER TABLE customer_search
-DROP INDEX idx_customer_country;
+ALTER TABLE customers
+DROP INDEX idx_customers_country;
 ```
 
 Hai cách trên đều dùng để xóa secondary index.
@@ -640,13 +523,13 @@ Không làm việc này trong production chỉ để “thử index”. Primary 
 Trước khi drop:
 
 ```sql
-SHOW INDEX FROM customer_search;
+SHOW INDEX FROM customers;
 ```
 
 Sau drop:
 
 ```sql
-SHOW INDEX FROM customer_search;
+SHOW INDEX FROM customers;
 ```
 
 Cần kiểm tra:
@@ -664,11 +547,11 @@ Trên table lớn, hoạt động DDL cần được lên kế hoạch theo vers
 
 ### Bài tập thực hành
 
-**Bài 7.1.** Xóa `idx_customer_country` bằng `DROP INDEX`.
+**Bài 7.1.** Xóa `idx_customers_country` trên bảng `customers` bằng `DROP INDEX`.
 
 **Bài 7.2.** Tạo lại index đó bằng `CREATE INDEX`.
 
-**Bài 7.3.** Xóa `idx_product_line` bằng `ALTER TABLE ... DROP INDEX`.
+**Bài 7.3.** Xóa `idx_products_line` trên bảng `products` bằng `ALTER TABLE ... DROP INDEX`.
 
 **Bài 7.4.** Giải thích vì sao không dùng `DROP INDEX` để xóa primary key.
 
@@ -692,37 +575,37 @@ Hãy bắt đầu bằng:
 Các query quan trọng nào chạy thường xuyên, chậm hoặc phục vụ nghiệp vụ chính?
 ```
 
-Ví dụ workload:
+Ví dụ workload trên `orders`:
 
 ```sql
 SELECT *
-FROM order_search
-WHERE customer_id = ?
-ORDER BY order_date DESC
+FROM orders
+WHERE customerNumber = ?
+ORDER BY orderDate DESC
 LIMIT 20;
 ```
 
 Index ứng viên:
 
 ```sql
-CREATE INDEX idx_order_customer_date_desc
-ON order_search (customer_id, order_date DESC);
+CREATE INDEX idx_orders_customer_date_desc
+ON orders (customerNumber, orderDate DESC);
 ```
 
-Ví dụ:
+Ví dụ trên `customers`:
 
 ```sql
 SELECT *
-FROM customer_search
+FROM customers
 WHERE country = ?
-  AND credit_limit >= ?;
+  AND creditLimit >= ?;
 ```
 
 Index ứng viên:
 
 ```sql
-CREATE INDEX idx_customer_country_credit
-ON customer_search (country, credit_limit);
+CREATE INDEX idx_customers_country_credit
+ON customers (country, creditLimit);
 ```
 
 ### 8.2. Tránh index dư thừa
@@ -730,14 +613,14 @@ ON customer_search (country, credit_limit);
 Nếu đã có:
 
 ```text
-(customer_id, order_date)
+(customerNumber, orderDate)
 ```
 
-thì một index riêng chỉ trên `customer_id` có thể trở nên dư thừa cho một số workload, vì composite index có thể hỗ trợ leftmost key part `customer_id`.
+thì một index riêng chỉ trên `customerNumber` có thể trở nên dư thừa cho một số workload, vì composite index có thể hỗ trợ leftmost key part `customerNumber`.
 
 Tuy nhiên, không drop index chỉ bằng quy tắc này. Cần kiểm tra:
 
-- Unique/foreign-key requirements.
+- Unique/foreign-key requirements (lưu ý trong `classicmodels`, `orders.customerNumber` gắn với Foreign Key).
 - Query patterns.
 - Covering behavior.
 - Existing plans.
@@ -757,9 +640,9 @@ Nhưng selectivity, thứ tự cột, expression, số row trả về và write 
 
 ### Bài tập thực hành
 
-**Bài 8.1.** Đề xuất index cho query lọc `customer_id` rồi sắp xếp `order_date DESC`.
+**Bài 8.1.** Đề xuất index cho query lọc `customerNumber` rồi sắp xếp `orderDate DESC` trên `orders`.
 
-**Bài 8.2.** Đề xuất index cho query lọc `country` và `credit_limit`.
+**Bài 8.2.** Đề xuất index cho query lọc `country` và `creditLimit` trên `customers`.
 
 **Bài 8.3.** Nêu ba nơi trong query thường là nguồn để tìm index candidate.
 
@@ -771,17 +654,17 @@ Nhưng selectivity, thứ tự cột, expression, số row trả về và write 
 
 ## 9. Bài tập tổng hợp
 
-### Bài 9.1. Quản lý index customer
+### Bài 9.1. Quản lý index `customers`
 
-1. Tạo index trên `customer_search(country)`.
-2. Tạo composite index trên `(country, credit_limit)`.
+1. Tạo index trên `customers(country)`.
+2. Tạo composite index trên `(country, creditLimit)`.
 3. Liệt kê index bằng `SHOW INDEX`.
 4. Dùng `EXPLAIN` cho query lọc country + credit limit.
 5. Xóa index single-column nếu bạn xác nhận chỉ dùng để lab.
 
-### Bài 9.2. Quản lý index order
+### Bài 9.2. Quản lý index `orders`
 
-1. Tạo index `(customer_id, order_date)`.
+1. Tạo index `(customerNumber, orderDate)`.
 2. Dùng `SHOW CREATE TABLE`.
 3. Chạy `EXPLAIN` cho query theo customer và date range.
 4. Chạy `ANALYZE TABLE`.
@@ -799,17 +682,17 @@ Viết query từ `INFORMATION_SCHEMA.STATISTICS` trả về:
 6. Cardinality.
 7. Visibility.
 
-Chỉ áp dụng cho schema `index_lab`.
+Chỉ áp dụng cho schema `classicmodels`.
 
 ### Bài 9.4. Index decision
 
-Với query:
+Với query trên `products`:
 
 ```sql
-SELECT product_code, product_name, msrp
-FROM product_search
-WHERE product_line = 'Motorcycles'
-ORDER BY msrp DESC;
+SELECT productCode, productName, MSRP
+FROM products
+WHERE productLine = 'Motorcycles'
+ORDER BY MSRP DESC;
 ```
 
 1. Đề xuất composite index.
@@ -820,7 +703,7 @@ ORDER BY msrp DESC;
 
 ### Bài 9.5. Cleanup
 
-Xóa các secondary index lab đã tạo, nhưng giữ primary keys.
+Xóa các secondary index lab đã tạo thêm trong tutorial này trên `customers`, `orders`, `products`, nhưng giữ nguyên primary keys và foreign key indexes gốc của `classicmodels`.
 
 ---
 
@@ -829,8 +712,8 @@ Xóa các secondary index lab đã tạo, nhưng giữ primary keys.
 ### Bài 4.3
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 ```
 
 ### Bài 5.5
@@ -846,8 +729,8 @@ SELECT INDEX_NAME,
        INDEX_TYPE,
        IS_VISIBLE
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE TABLE_SCHEMA = 'index_lab'
-  AND TABLE_NAME = 'product_search'
+WHERE TABLE_SCHEMA = 'classicmodels'
+  AND TABLE_NAME = 'products'
 ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 ```
 
@@ -855,64 +738,64 @@ ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103;
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103;
 ```
 
 ### Bài 7.1
 
 ```sql
-DROP INDEX idx_customer_country
-ON customer_search;
+DROP INDEX idx_customers_country
+ON customers;
 ```
 
 ### Bài 8.1
 
 ```sql
-CREATE INDEX idx_order_customer_date_desc
-ON order_search (customer_id, order_date DESC);
+CREATE INDEX idx_orders_customer_date_desc
+ON orders (customerNumber, orderDate DESC);
 ```
 
 ### Bài 9.4
 
 ```sql
-CREATE INDEX idx_product_line_msrp_desc
-ON product_search (product_line, msrp DESC);
+CREATE INDEX idx_products_line_msrp_desc
+ON products (productLine, MSRP DESC);
 
 EXPLAIN
-SELECT product_code, product_name, msrp
-FROM product_search
-WHERE product_line = 'Motorcycles'
-ORDER BY msrp DESC;
+SELECT productCode, productName, MSRP
+FROM products
+WHERE productLine = 'Motorcycles'
+ORDER BY MSRP DESC;
 ```
 
 ### Cleanup
 
 ```sql
-DROP INDEX IF EXISTS idx_customer_country
-ON customer_search;
+DROP INDEX IF EXISTS idx_customers_country
+ON customers;
 
-DROP INDEX IF EXISTS idx_customer_country_credit
-ON customer_search;
+DROP INDEX IF EXISTS idx_customers_country_credit
+ON customers;
 
-DROP INDEX IF EXISTS idx_order_status
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_customer_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer_date
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_customer_date_desc
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer_date_desc
+ON orders;
 
-DROP INDEX IF EXISTS idx_product_line
-ON product_search;
+DROP INDEX IF EXISTS idx_products_line
+ON products;
 
-DROP INDEX IF EXISTS idx_product_line_msrp_desc
-ON product_search;
+DROP INDEX IF EXISTS idx_products_line_msrp_desc
+ON products;
 ```
 
-> `DROP INDEX IF EXISTS` is supported by current MySQL versions. If your server rejects it, check `SHOW INDEX` first and use `DROP INDEX index_name ON table_name` only when the index exists.
+> `DROP INDEX IF EXISTS` được hỗ trợ trên các phiên bản MySQL hiện tại (8.0+). Nếu server từ chối cú pháp này, hãy kiểm tra `SHOW INDEX` trước và dùng `DROP INDEX index_name ON table_name` cho các index đang tồn tại.
 
 ---
 
@@ -947,3 +830,4 @@ ON product_search;
 - Query plan
 - InnoDB
 - DDL
+- classicmodels

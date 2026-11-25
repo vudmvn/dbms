@@ -4,10 +4,10 @@ author: "Tên giảng viên"
 duration: "210m"
 difficulty: "Intermediate–Advanced"
 prerequisites:
-  - "Đã hoàn thành Tutorial 1 về tạo và quản lý index"
+  - "Đã hoàn thành Tutorial 1 về tạo và quản lý index trên classicmodels"
   - "Đã biết EXPLAIN và composite index cơ bản"
   - "MySQL 8.x được khuyến nghị cho invisible, descending và functional indexes"
-summary: "Thực hành unique, prefix, invisible, descending, composite, clustered, cardinality và functional indexes; đồng thời xây dựng tư duy chọn index theo query pattern."
+summary: "Thực hành unique, prefix, invisible, descending, composite, clustered, cardinality và functional indexes trực tiếp trên cơ sở dữ liệu classicmodels; đồng thời xây dựng tư duy chọn index theo query pattern."
 ---
 
 # Tutorial 2: MySQL Index Types và chiến lược chọn Index
@@ -35,7 +35,7 @@ summary: "Thực hành unique, prefix, invisible, descending, composite, cluster
 
 Sau khi hoàn thành tutorial này, người học có thể:
 
-1. Tạo và dùng unique index để duy trì distinctness.
+1. Tạo và dùng unique index để duy trì distinctness trên các cột nghiệp vụ của `classicmodels`.
 2. Giải thích prefix index và đánh đổi giữa kích thước index với selectivity.
 3. Dùng invisible index để kiểm thử tác động của việc bỏ index mà chưa drop ngay.
 4. Dùng descending index cho query có mixed sort order.
@@ -48,56 +48,31 @@ Sau khi hoàn thành tutorial này, người học có thể:
 
 ---
 
-## 2. Chuẩn bị
+## 2. Kiểm tra Index gốc trên `classicmodels`
 
-Chạy Tutorial 1 trước để có schema `index_lab` với:
+Sử dụng trực tiếp cơ sở dữ liệu **`classicmodels`** (với các bảng `customers`, `orders`, `products`, `orderdetails`, `payments`, `employees`).
 
-```text
-customer_search
-order_search
-product_search
-```
-
-Chọn schema:
+Kiểm tra các index mặc định (PK và FK index) hiện có:
 
 ```sql
-USE index_lab;
+SHOW INDEX FROM customers;
+SHOW INDEX FROM orders;
+SHOW INDEX FROM products;
 ```
 
-Kiểm tra server version:
-
-```sql
-SELECT VERSION() AS mysqlVersion;
-```
-
-Kiểm tra storage engine:
-
-```sql
-SHOW TABLE STATUS
-WHERE Name IN ('customer_search', 'order_search', 'product_search');
-```
-
-Kiểm tra index hiện có:
-
-```sql
-SHOW INDEX FROM customer_search;
-SHOW INDEX FROM order_search;
-SHOW INDEX FROM product_search;
-```
-
-> Trong toàn bộ tutorial, hãy tạo index có prefix `idx_` hoặc `uq_`, kiểm tra bằng `SHOW INDEX`, và drop index lab sau khi hoàn thành nếu không còn dùng.
+> Trong toàn bộ tutorial, hãy tạo index thử nghiệm có prefix `idx_` hoặc `uq_`, kiểm tra bằng `SHOW INDEX`, và drop các index tự tạo sau khi hoàn thành để giữ nguyên cấu trúc gốc của `classicmodels`.
 
 ### Bài tập thực hành
 
-**Bài 2.1.** Kiểm tra MySQL version.
+**Bài 2.1.** Liệt kê index hiện có của bảng `customers`.
 
-**Bài 2.2.** Kiểm tra engine của ba table lab.
+**Bài 2.2.** Liệt kê index hiện có của bảng `products`.
 
-**Bài 2.3.** Liệt kê index hiện có của `order_search`.
+**Bài 2.3.** Liệt kê index hiện có của bảng `orders`.
 
-**Bài 2.4.** Nêu lý do cần biết version trước khi thử functional index.
+**Bài 2.4.** Nêu lý do cần biết phiên bản MySQL trước khi thử functional index.
 
-**Bài 2.5.** Nêu lý do index lab cần naming convention.
+**Bài 2.5.** Nêu lý do index lab cần naming convention (`idx_`, `uq_`).
 
 ---
 
@@ -114,24 +89,27 @@ CREATE UNIQUE INDEX index_name
 ON table_name (column_name);
 ```
 
-Ví dụ:
+Trong `classicmodels`, toàn bộ 122 khách hàng trong bảng `customers` có `customerName` hoàn toàn phân biệt (122/122 distinct):
 
 ```sql
-CREATE UNIQUE INDEX uq_customer_email
-ON customer_search (email);
+CREATE UNIQUE INDEX uq_customers_name
+ON customers (customerName);
 ```
 
-Sau đó, insert email đã tồn tại sẽ bị từ chối:
+Sau đó, insert tên khách hàng đã tồn tại (`'Atelier graphique'`) sẽ bị từ chối với lỗi Duplicate entry:
 
 ```sql
-INSERT INTO customer_search (
-    customer_id, first_name, last_name, email, country, credit_limit
+INSERT INTO customers (
+    customerNumber, customerName, contactLastName, contactFirstName,
+    phone, addressLine1, city, country, creditLimit
 )
 VALUES (
-    999001, 'Test', 'Duplicate',
-    'customer103@example.test', 'USA', 1000.00
+    999001, 'Atelier graphique', 'Test', 'Duplicate',
+    '0123456789', '123 Test St', 'Nantes', 'France', 1000.00
 );
 ```
+
+> **Lưu ý thực tế trên `classicmodels`:** Nếu bạn thử tạo `UNIQUE INDEX` trên cột `employees(email)`, MySQL sẽ báo lỗi trùng khóa vì hai nhân viên `1076` (Jeff Firrelli) và `1188` (Julie Firrelli) đang dùng chung email `jfirrelli@classicmodelcars.com`. Đây là minh họa thực tế: chỉ đặt `UNIQUE` khi dữ liệu sạch và nghiệp vụ đảm bảo duy nhất.
 
 ### 3.2. UNIQUE index và PRIMARY KEY
 
@@ -139,36 +117,36 @@ VALUES (
 |---|---|---|
 | Số lượng trên table | Một | Có thể nhiều |
 | NULL | Không cho phép | MySQL thường cho phép nhiều `NULL` nếu column nullable |
-| Vai trò | Định danh chính của row | Bảo đảm distinctness cho business key |
+| Vai trò | Định danh chính của row (`customerNumber`) | Bảo đảm distinctness cho business key (`customerName`) |
 | InnoDB | Dùng làm clustered index | Là secondary index trừ khi được InnoDB chọn làm clustered index do không có PK |
 
-Nếu business rule yêu cầu email luôn có và luôn unique:
+Nếu business rule yêu cầu cột luôn có và luôn unique:
 
 ```sql
-ALTER TABLE customer_search
-MODIFY email VARCHAR(120) NOT NULL;
+ALTER TABLE customers
+MODIFY customerName VARCHAR(50) NOT NULL;
 
-CREATE UNIQUE INDEX uq_customer_email
-ON customer_search (email);
+CREATE UNIQUE INDEX uq_customers_name
+ON customers (customerName);
 ```
 
-Nếu email optional, cần xác định rõ `NULL` có ý nghĩa gì trong nghiệp vụ.
+Nếu một cột (ví dụ mã số thuế / email phụ) là optional, cần xác định rõ `NULL` có ý nghĩa gì trong nghiệp vụ.
 
 ### 3.3. Không dùng UNIQUE chỉ để tăng tốc
 
-Unique index có thể hỗ trợ lookup, nhưng mục đích chính là integrity. Không tạo unique index nếu data hợp lệ có thể có duplicate values.
+Unique index có thể hỗ trợ lookup, nhưng mục đích chính là integrity. Không tạo unique index nếu data hợp lệ có thể có duplicate values (như `customers.country` hay `orders.status`).
 
 ### Bài tập thực hành
 
-**Bài 3.1.** Tạo unique index `uq_customer_email`.
+**Bài 3.1.** Tạo unique index `uq_customers_name` trên `customers(customerName)`.
 
-**Bài 3.2.** Thử insert một email đã tồn tại và quan sát lỗi.
+**Bài 3.2.** Giải thích điều gì xảy ra nếu chèn thêm một khách hàng mới trùng `customerName = 'Atelier graphique'` sau khi tạo `uq_customers_name`.
 
-**Bài 3.3.** Dùng `SHOW INDEX` xác định `Non_unique` của `uq_customer_email`.
+**Bài 3.3.** Dùng `SHOW INDEX` xác định `Non_unique` của `uq_customers_name`.
 
 **Bài 3.4.** Giải thích khác nhau giữa primary key và unique index.
 
-**Bài 3.5.** Nêu một cột trong hệ thống bán hàng có thể là ứng viên unique index.
+**Bài 3.5.** Nêu một cột trong hệ thống `classicmodels` có thể là ứng viên unique index.
 
 ---
 
@@ -185,23 +163,23 @@ CREATE INDEX index_name
 ON table_name (string_column(prefix_length));
 ```
 
-Ví dụ:
+Ví dụ trên bảng `products` (`productName` là `VARCHAR(70)`):
 
 ```sql
-CREATE INDEX idx_customer_email_prefix
-ON customer_search (email(12));
+CREATE INDEX idx_products_name_prefix
+ON products (productName(12));
 ```
 
 Prefix index hữu ích khi:
 
-- Chuỗi dài.
+- Chuỗi dài (`productName`, `productDescription`, `addressLine1`).
 - Full-column index quá lớn.
 - Những ký tự đầu đủ phân biệt phần lớn giá trị truy vấn.
 - Query thường dùng `LIKE 'prefix%'`.
 
 ### 4.2. Prefix với TEXT/BLOB
 
-Với `TEXT` hoặc `BLOB`, MySQL yêu cầu prefix length khi tạo ordinary index.
+Với `TEXT` hoặc `BLOB` (như `products.productDescription`, `orders.comments`), MySQL yêu cầu prefix length khi tạo ordinary index.
 
 Độ dài prefix bị giới hạn theo engine, row format, character set và byte limits. Đặc biệt với charset nhiều byte như `utf8mb4`, số ký tự phải được chọn có xét đến số byte mỗi ký tự.
 
@@ -214,17 +192,22 @@ Không hard-code một prefix length phổ quát. Cần đo:
 
 ### 4.3. Chọn prefix length
 
-Có thể so sánh distinct prefixes:
+Có thể so sánh distinct prefixes trực tiếp trên `classicmodels.products`:
 
 ```sql
 SELECT
     COUNT(*) AS totalRows,
-    COUNT(DISTINCT LEFT(email, 4)) AS distinctPrefix4,
-    COUNT(DISTINCT LEFT(email, 8)) AS distinctPrefix8,
-    COUNT(DISTINCT LEFT(email, 12)) AS distinctPrefix12,
-    COUNT(DISTINCT email) AS distinctFullEmail
-FROM customer_search;
+    COUNT(DISTINCT LEFT(productName, 4)) AS distinctPrefix4,
+    COUNT(DISTINCT LEFT(productName, 8)) AS distinctPrefix8,
+    COUNT(DISTINCT LEFT(productName, 12)) AS distinctPrefix12,
+    COUNT(DISTINCT productName) AS distinctFullName
+FROM products;
 ```
+
+Trên dữ liệu thật của `classicmodels.products` (110 dòng):
+- Prefix 4 ký tự chỉ phân biệt được 64 giá trị (do nhiều mô hình bắt đầu bằng năm như `'1969'`, `'1957'`).
+- Prefix 8 ký tự phân biệt 102 giá trị.
+- Prefix 12 ký tự phân biệt 105/110 giá trị.
 
 Prefix càng dài thường càng selective, nhưng index càng lớn.
 
@@ -233,39 +216,41 @@ Prefix càng dài thường càng selective, nhưng index càng lớn.
 Ví dụ:
 
 ```sql
-CREATE UNIQUE INDEX uq_email_prefix
-ON customer_search (email(12));
+CREATE UNIQUE INDEX uq_products_name_prefix
+ON products (productName(12));
 ```
 
-Câu này chỉ đảm bảo prefix 12 ký tự unique, không đảm bảo full email unique theo cách mong muốn. Trong đa số trường hợp business key như email, cần full unique index, không dùng unique prefix index.
+Câu này chỉ đảm bảo prefix 12 ký tự unique, không đảm bảo full `productName` unique theo cách mong muốn (và thậm chí thất bại ngay trên `products` vì có các tên sản phẩm trùng nhau 12 ký tự đầu). Trong đa số trường hợp business key, cần full unique index, không dùng unique prefix index.
 
 ### 4.5. Prefix index không thay thế full-text search
 
 Prefix index phù hợp với pattern bắt đầu bằng chuỗi:
 
 ```sql
-WHERE email LIKE 'customer10%'
+SELECT productCode, productName
+FROM products
+WHERE productName LIKE '1969%';
 ```
 
 Nó không phải giải pháp tổng quát cho:
 
 ```sql
-WHERE email LIKE '%example%'
+WHERE productName LIKE '%Ford%'
 ```
 
 vì leading wildcard thường không dùng B-tree prefix index theo cách mong muốn. Với search văn bản phong phú, xem xét FULLTEXT hoặc công cụ search phù hợp.
 
 ### Bài tập thực hành
 
-**Bài 4.1.** Tạo `idx_customer_email_prefix` trên `email(12)`.
+**Bài 4.1.** Tạo `idx_products_name_prefix` trên `products(productName(12))`.
 
-**Bài 4.2.** Dùng `SHOW INDEX` kiểm tra cột `Sub_part`.
+**Bài 4.2.** Dùng `SHOW INDEX` kiểm tra cột `Sub_part` của `idx_products_name_prefix`.
 
-**Bài 4.3.** Viết query đếm distinct prefix length 4, 8, 12 của `email`.
+**Bài 4.3.** Viết query đếm distinct prefix length 4, 8, 12 của `productName` trong bảng `products`.
 
-**Bài 4.4.** Viết query `LIKE 'customer10%'` phù hợp với prefix search.
+**Bài 4.4.** Viết query `LIKE '1969%'` trên `products(productName)` phù hợp với prefix search.
 
-**Bài 4.5.** Giải thích vì sao không nên dùng unique prefix index để enforce full email uniqueness.
+**Bài 4.5.** Giải thích vì sao không nên dùng unique prefix index để enforce full string uniqueness.
 
 ---
 
@@ -278,22 +263,22 @@ Invisible index tồn tại và vẫn được duy trì khi data thay đổi, nh
 Tạo invisible index:
 
 ```sql
-CREATE INDEX idx_customer_country_invisible
-ON customer_search (country) INVISIBLE;
+CREATE INDEX idx_customers_country_invisible
+ON customers (country) INVISIBLE;
 ```
 
 Đổi một index hiện có thành invisible:
 
 ```sql
-ALTER TABLE customer_search
-ALTER INDEX idx_customer_country INVISIBLE;
+ALTER TABLE customers
+ALTER INDEX idx_customers_country INVISIBLE;
 ```
 
 Đưa lại visible:
 
 ```sql
-ALTER TABLE customer_search
-ALTER INDEX idx_customer_country VISIBLE;
+ALTER TABLE customers
+ALTER INDEX idx_customers_country VISIBLE;
 ```
 
 ### 5.2. Khi nào dùng?
@@ -327,7 +312,7 @@ ALTER INDEX ... INVISIBLE → test → VISIBLE hoặc DROP
 ### 5.4. Kiểm tra visibility
 
 ```sql
-SHOW INDEX FROM customer_search;
+SHOW INDEX FROM customers;
 ```
 
 Hoặc:
@@ -335,19 +320,19 @@ Hoặc:
 ```sql
 SELECT INDEX_NAME, IS_VISIBLE
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE TABLE_SCHEMA = 'index_lab'
-  AND TABLE_NAME = 'customer_search';
+WHERE TABLE_SCHEMA = 'classicmodels'
+  AND TABLE_NAME = 'customers';
 ```
 
 ### Bài tập thực hành
 
-**Bài 5.1.** Tạo index visible trên `customer_search(country)` nếu chưa có.
+**Bài 5.1.** Tạo index visible `idx_customers_country` trên `customers(country)` nếu chưa có.
 
 **Bài 5.2.** Đổi index đó thành invisible.
 
-**Bài 5.3.** Dùng `SHOW INDEX` hoặc `INFORMATION_SCHEMA.STATISTICS` kiểm tra visibility.
+**Bài 5.3.** Dùng `SHOW INDEX` hoặc `INFORMATION_SCHEMA.STATISTICS` kiểm tra visibility trên `classicmodels.customers`.
 
-**Bài 5.4.** Chạy `EXPLAIN` trước và sau khi index invisible cho query lọc `country`.
+**Bài 5.4.** Chạy `EXPLAIN` trước và sau khi index invisible cho query lọc `country = 'USA'`.
 
 **Bài 5.5.** Đổi index về visible, sau đó giải thích vì sao invisible không có nghĩa index ngừng được DML maintenance.
 
@@ -359,20 +344,20 @@ WHERE TABLE_SCHEMA = 'index_lab'
 
 Descending index lưu key part theo hướng giảm dần. Nó đặc biệt hữu ích cho **mixed sort order** trong composite index.
 
-Ví dụ:
+Ví dụ trên bảng `orders`:
 
 ```sql
-CREATE INDEX idx_order_status_date_desc
-ON order_search (status ASC, order_date DESC);
+CREATE INDEX idx_orders_status_date_desc
+ON orders (status ASC, orderDate DESC);
 ```
 
 Query phù hợp:
 
 ```sql
-SELECT order_number, order_date, status
-FROM order_search
+SELECT orderNumber, orderDate, status
+FROM orders
 WHERE status = 'Shipped'
-ORDER BY order_date DESC
+ORDER BY orderDate DESC
 LIMIT 10;
 ```
 
@@ -381,20 +366,20 @@ LIMIT 10;
 Ví dụ index:
 
 ```sql
-(status ASC, order_date DESC)
+(status ASC, orderDate DESC)
 ```
 
 có thể phù hợp với:
 
 ```sql
-ORDER BY status ASC, order_date DESC
+ORDER BY status ASC, orderDate DESC
 ```
 
 Trong MySQL InnoDB, descending key parts giúp optimizer dùng forward scan cho những thứ tự có kết hợp ASC/DESC. Đây là trường hợp đáng chú ý hơn so với chỉ một cột đơn lẻ.
 
 ### 6.3. Lưu ý
 
-- Descending indexes được hỗ trợ cho InnoDB.
+- Descending indexes được hỗ trợ cho InnoDB (từ MySQL 8.0+).
 - Không phải mọi query có `ORDER BY ... DESC` đều cần index DESC mới.
 - Query vẫn cần thỏa điều kiện về index order, filter, join và selectivity.
 - Dùng `EXPLAIN` để kiểm tra `Extra`, đặc biệt tình huống có/không có `Using filesort`.
@@ -402,36 +387,36 @@ Trong MySQL InnoDB, descending key parts giúp optimizer dùng forward scan cho 
 ### 6.4. So sánh
 
 ```sql
-CREATE INDEX idx_order_status_date_asc
-ON order_search (status, order_date);
+CREATE INDEX idx_orders_status_date_asc
+ON orders (status, orderDate);
 ```
 
 và:
 
 ```sql
-CREATE INDEX idx_order_status_date_desc
-ON order_search (status ASC, order_date DESC);
+CREATE INDEX idx_orders_status_date_desc
+ON orders (status ASC, orderDate DESC);
 ```
 
 Thử:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date
-FROM order_search
+SELECT orderNumber, orderDate
+FROM orders
 WHERE status = 'Shipped'
-ORDER BY order_date DESC;
+ORDER BY orderDate DESC;
 ```
 
-Data nhỏ có thể khiến difference không rõ. Mục tiêu là đọc plan và hiểu index order.
+Data nhỏ có thể khiến difference không rõ (đặc biệt khi `'Shipped'` chiếm 303/326 dòng của `orders`). Mục tiêu là đọc plan và hiểu index order.
 
 ### Bài tập thực hành
 
-**Bài 6.1.** Tạo `idx_order_status_date_desc`.
+**Bài 6.1.** Tạo `idx_orders_status_date_desc` trên `orders(status ASC, orderDate DESC)`.
 
-**Bài 6.2.** Chạy `EXPLAIN` cho query `WHERE status = 'Shipped' ORDER BY order_date DESC`.
+**Bài 6.2.** Chạy `EXPLAIN` cho query `WHERE status = 'Shipped' ORDER BY orderDate DESC`.
 
-**Bài 6.3.** Tạo index `(status, order_date)` và so sánh metadata với index DESC.
+**Bài 6.3.** Tạo index `(status, orderDate)` (`idx_orders_status_date_asc`) và so sánh metadata với index DESC.
 
 **Bài 6.4.** Nêu một query có mixed order mà descending composite index có thể hỗ trợ.
 
@@ -444,14 +429,14 @@ Data nhỏ có thể khiến difference không rõ. Mục tiêu là đọc plan 
 ### 7.1. Composite index
 
 ```sql
-CREATE INDEX idx_customer_country_credit
-ON customer_search (country, credit_limit);
+CREATE INDEX idx_customers_country_credit
+ON customers (country, creditLimit);
 ```
 
 Index có thứ tự:
 
 ```text
-country → credit_limit
+country → creditLimit
 ```
 
 Nó có thể phù hợp với:
@@ -464,13 +449,13 @@ và:
 
 ```sql
 WHERE country = 'USA'
-  AND credit_limit >= 50000.00
+  AND creditLimit >= 50000.00
 ```
 
 Nhưng thường không phải lựa chọn trực tiếp tốt cho:
 
 ```sql
-WHERE credit_limit >= 50000.00
+WHERE creditLimit >= 50000.00
 ```
 
 vì query bỏ qua leftmost key part `country`.
@@ -488,26 +473,26 @@ Các câu hỏi cần trả lời:
 5. Có index đã tồn tại hỗ trợ leftmost prefix không?
 6. Write workload có chấp nhận thêm index không?
 
-### 7.3. Ví dụ order
+### 7.3. Ví dụ trên `orders`
 
 Query:
 
 ```sql
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103
-  AND order_date BETWEEN '2004-01-01' AND '2004-12-31'
-ORDER BY order_date DESC;
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate BETWEEN '2004-01-01' AND '2004-12-31'
+ORDER BY orderDate DESC;
 ```
 
 Index ứng viên:
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 ```
 
-`customer_id` equality trước; `order_date` range/sort tiếp theo.
+`customerNumber` equality trước; `orderDate` range/sort tiếp theo.
 
 ### 7.4. Composite index không thay thế hoàn toàn mọi index đơn
 
@@ -517,15 +502,15 @@ Cần kiểm tra usage thực tế trước khi xóa index.
 
 ### Bài tập thực hành
 
-**Bài 7.1.** Tạo `idx_customer_country_credit`.
+**Bài 7.1.** Tạo `idx_customers_country_credit` trên `customers(country, creditLimit)`.
 
-**Bài 7.2.** Viết query sử dụng cả `country` và `credit_limit`.
+**Bài 7.2.** Viết query sử dụng cả `country` và `creditLimit`.
 
 **Bài 7.3.** Viết query chỉ dùng leftmost key part `country`.
 
-**Bài 7.4.** Viết query chỉ dùng `credit_limit`, rồi giải thích hạn chế của index `(country, credit_limit)`.
+**Bài 7.4.** Viết query chỉ dùng `creditLimit`, rồi giải thích hạn chế của index `(country, creditLimit)`.
 
-**Bài 7.5.** Đề xuất composite index cho query theo `customer_id` và `order_date`.
+**Bài 7.5.** Đề xuất composite index cho query theo `customerNumber` và `orderDate` trên `orders`.
 
 ---
 
@@ -535,15 +520,10 @@ Cần kiểm tra usage thực tế trước khi xóa index.
 
 Mỗi InnoDB table có clustered index chứa row data. Thông thường, primary key là clustered index.
 
-```sql
-CREATE TABLE example (
-    id BIGINT NOT NULL,
-    code VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id)
-) ENGINE = InnoDB;
-```
-
-Trong table này, `PRIMARY KEY(id)` là clustered index.
+Trong `classicmodels`:
+- `customers`: `PRIMARY KEY(customerNumber)` là clustered index.
+- `orders`: `PRIMARY KEY(orderNumber)` là clustered index.
+- `products`: `PRIMARY KEY(productCode)` là clustered index.
 
 ### 8.2. Nếu không có primary key
 
@@ -562,7 +542,7 @@ Trong InnoDB, record của secondary index chứa:
 - Secondary key columns.
 - Primary key columns của row.
 
-Vì vậy primary key dài làm secondary indexes lớn hơn. Primary key ngắn, ổn định thường có lợi cho storage của secondary indexes.
+Ví dụ trên `products`, vì khóa chính là `productCode VARCHAR(15)` (dài hơn `INT 4 byte` của `customerNumber`), mỗi secondary index record trên `products` phải lưu thêm chuỗi `productCode`. Primary key dài làm secondary indexes lớn hơn; primary key ngắn, ổn định thường có lợi cho storage của secondary indexes.
 
 ### 8.4. Không nhầm clustered index với “index sorted mọi cách”
 
@@ -570,7 +550,7 @@ InnoDB table chỉ có một clustered index. Row data được tổ chức theo
 
 ### Bài tập thực hành
 
-**Bài 8.1.** Xác định clustered index của `customer_search`.
+**Bài 8.1.** Xác định clustered index của `customers` trong `classicmodels`.
 
 **Bài 8.2.** Nêu thứ tự InnoDB chọn clustered index khi table không khai báo primary key.
 
@@ -588,16 +568,16 @@ InnoDB table chỉ có một clustered index. Row data được tổ chức theo
 
 Cardinality là ước lượng mức độ distinct của giá trị trong index key.
 
-Ví dụ:
+Ví dụ trên bảng `orders` (326 dòng):
 
-- `customer_id` gần như unique → cardinality cao.
-- `status` chỉ có vài trạng thái → cardinality thấp.
-- `country` có số distinct vừa phải.
+- `orderNumber` (PK) là duy nhất → cardinality = 326.
+- `customerNumber` (98 khách hàng khác nhau có đơn hàng) → cardinality trung bình.
+- `status` chỉ có 6 trạng thái (`Shipped`, `Cancelled`, `Resolved`, `On Hold`, `Disputed`, `In Process`) → cardinality rất thấp.
 
 Xem cardinality:
 
 ```sql
-SHOW INDEX FROM order_search;
+SHOW INDEX FROM orders;
 ```
 
 Hoặc:
@@ -608,8 +588,8 @@ SELECT INDEX_NAME,
        COLUMN_NAME,
        CARDINALITY
 FROM INFORMATION_SCHEMA.STATISTICS
-WHERE TABLE_SCHEMA = 'index_lab'
-  AND TABLE_NAME = 'order_search'
+WHERE TABLE_SCHEMA = 'classicmodels'
+  AND TABLE_NAME = 'orders'
 ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 ```
 
@@ -620,11 +600,11 @@ Cardinality từ metadata là statistic do server duy trì; không coi đó là 
 So sánh:
 
 ```sql
-SELECT COUNT(DISTINCT customer_id) AS distinctCustomers
-FROM order_search;
+SELECT COUNT(DISTINCT customerNumber) AS distinctCustomers
+FROM orders;
 ```
 
-với `Cardinality` của index key part `customer_id`.
+với `Cardinality` của index trên `customerNumber`.
 
 ### 9.3. Cardinality không phải quy tắc duy nhất
 
@@ -641,11 +621,11 @@ High cardinality thường có thể hữu ích cho selective lookup, nhưng ind
 
 ### Bài tập thực hành
 
-**Bài 9.1.** Dùng `SHOW INDEX` xem cardinality của `order_search`.
+**Bài 9.1.** Dùng `SHOW INDEX` xem cardinality của `orders`.
 
-**Bài 9.2.** Đếm `COUNT(DISTINCT customer_id)` trong `order_search`.
+**Bài 9.2.** Đếm `COUNT(DISTINCT customerNumber)` trong `orders`.
 
-**Bài 9.3.** So sánh cardinality của primary key và `status`.
+**Bài 9.3.** So sánh cardinality của primary key `orderNumber` và cột `status`.
 
 **Bài 9.4.** Nêu lý do cardinality metadata có thể khác `COUNT(DISTINCT ...)`.
 
@@ -657,53 +637,53 @@ High cardinality thường có thể hữu ích cho selective lookup, nhưng ind
 
 ### 10.1. Khi expression ngăn index thường được dùng
 
-Giả sử có index thường:
+Giả sử có index thường trên `orders`:
 
 ```sql
-CREATE INDEX idx_order_date
-ON order_search (order_date);
+CREATE INDEX idx_orders_date
+ON orders (orderDate);
 ```
 
 Query sau áp dụng function lên cột:
 
 ```sql
 SELECT COUNT(*)
-FROM order_search
-WHERE YEAR(order_date) = 2004;
+FROM orders
+WHERE YEAR(orderDate) = 2004;
 ```
 
-Index `idx_order_date` không nhất thiết được dùng theo cách tối ưu cho expression `YEAR(order_date)`.
+Index `idx_orders_date` không nhất thiết được dùng theo cách tối ưu cho expression `YEAR(orderDate)`.
 
 Trước hết, hãy cân nhắc rewrite query theo range:
 
 ```sql
 SELECT COUNT(*)
-FROM order_search
-WHERE order_date >= '2004-01-01'
-  AND order_date < '2005-01-01';
+FROM orders
+WHERE orderDate >= '2004-01-01'
+  AND orderDate < '2005-01-01';
 ```
 
-Range predicate thường đơn giản và tận dụng index thường trên `order_date`.
+Range predicate thường đơn giản và tận dụng index thường trên `orderDate`.
 
 ### 10.2. Tạo functional index
 
-Khi query expression thực sự cần thiết và version hỗ trợ, tạo index trên expression:
+Khi query expression thực sự cần thiết và version hỗ trợ (MySQL 8.0.13+), tạo index trên expression:
 
 ```sql
-CREATE INDEX idx_order_year
-ON order_search ((YEAR(order_date)));
+CREATE INDEX idx_orders_year
+ON orders ((YEAR(orderDate)));
 ```
 
 **Dấu ngoặc kép** quanh expression là bắt buộc:
 
 ```sql
-((YEAR(order_date)))
+((YEAR(orderDate)))
 ```
 
 Không viết:
 
 ```sql
-(YEAR(order_date))
+(YEAR(orderDate))
 ```
 
 như cách khai báo column index thông thường.
@@ -713,8 +693,8 @@ như cách khai báo column index thông thường.
 ```sql
 EXPLAIN
 SELECT COUNT(*)
-FROM order_search
-WHERE YEAR(order_date) = 2004;
+FROM orders
+WHERE YEAR(orderDate) = 2004;
 ```
 
 ### 10.4. Những giới hạn quan trọng
@@ -732,13 +712,13 @@ Functional index được hiện thực qua hidden virtual generated columns, v�
 
 ### Bài tập thực hành
 
-**Bài 10.1.** Tạo normal index `idx_order_date` trên `order_search(order_date)`.
+**Bài 10.1.** Tạo normal index `idx_orders_date` trên `orders(orderDate)`.
 
-**Bài 10.2.** Dùng `EXPLAIN` cho `WHERE YEAR(order_date) = 2004`.
+**Bài 10.2.** Dùng `EXPLAIN` cho `WHERE YEAR(orderDate) = 2004` trên `orders`.
 
-**Bài 10.3.** Viết query range thay cho `YEAR(order_date) = 2004`.
+**Bài 10.3.** Viết query range thay cho `YEAR(orderDate) = 2004`.
 
-**Bài 10.4.** Tạo functional index `idx_order_year` nếu server hỗ trợ.
+**Bài 10.4.** Tạo functional index `idx_orders_year` trên `orders ((YEAR(orderDate)))` nếu server hỗ trợ.
 
 **Bài 10.5.** Giải thích vì sao functional index không phải lựa chọn đầu tiên nếu query có thể rewrite thành range condition đơn giản.
 
@@ -760,13 +740,13 @@ Functional index được hiện thực qua hidden virtual generated columns, v�
 
 ### Bài tập thực hành
 
-**Bài 11.1.** Chọn index phù hợp để đảm bảo `email` unique.
+**Bài 11.1.** Chọn index phù hợp để đảm bảo `customerName` trên `customers` là duy nhất.
 
-**Bài 11.2.** Chọn index phù hợp cho `WHERE customer_id = ? ORDER BY order_date DESC`.
+**Bài 11.2.** Chọn index phù hợp cho `WHERE customerNumber = ? ORDER BY orderDate DESC` trên `orders`.
 
 **Bài 11.3.** Chọn phương án phù hợp khi cần thử drop index nhưng muốn rollback nhanh.
 
-**Bài 11.4.** Chọn phương án đầu tiên cho `WHERE YEAR(order_date) = 2004`: query rewrite hay functional index? Giải thích.
+**Bài 11.4.** Chọn phương án đầu tiên cho `WHERE YEAR(orderDate) = 2004`: query rewrite hay functional index? Giải thích.
 
 **Bài 11.5.** Nêu trường hợp prefix index phù hợp và không phù hợp.
 
@@ -776,42 +756,42 @@ Functional index được hiện thực qua hidden virtual generated columns, v�
 
 ### Bài 12.1. Unique + prefix
 
-1. Tạo `uq_customer_email`.
-2. Tạo `idx_customer_email_prefix`.
+1. Tạo `uq_customers_name` trên `customers(customerName)`.
+2. Tạo `idx_products_name_prefix` trên `products(productName(12))`.
 3. Dùng `SHOW INDEX` so sánh `Non_unique` và `Sub_part`.
-4. Thử duplicate full email.
-5. Giải thích vì sao hai index này có mục tiêu khác nhau.
+4. Thử duplicate `customerName`.
+5. Giải thích vì sao hai loại index này có mục tiêu khác nhau.
 
 ### Bài 12.2. Composite + descending
 
-1. Tạo index `(status, order_date DESC)`.
-2. Chạy query lọc `status` và sort `order_date DESC`.
+1. Tạo index `(status ASC, orderDate DESC)` trên `orders`.
+2. Chạy query lọc `status` và sort `orderDate DESC`.
 3. Dùng `EXPLAIN`.
-4. Tạo index `(status, order_date ASC)` để so sánh metadata.
+4. Tạo index `(status ASC, orderDate ASC)` để so sánh metadata.
 5. Xóa index không cần cho lab.
 
 ### Bài 12.3. Cardinality
 
-1. Xem `SHOW INDEX FROM order_search`.
-2. So sánh cardinality `customer_id`, `status`, `order_number`.
+1. Xem `SHOW INDEX FROM orders`.
+2. So sánh cardinality `customerNumber`, `status`, `orderNumber`.
 3. Chạy `COUNT(DISTINCT ...)` tương ứng.
-4. Chạy `ANALYZE TABLE order_search`.
+4. Chạy `ANALYZE TABLE orders`.
 5. Nêu nhận xét về estimate và selectivity.
 
 ### Bài 12.4. Functional index
 
-1. Tạo normal index `order_date`.
-2. So sánh `YEAR(order_date)=2004` với date range.
+1. Tạo normal index `orderDate` trên `orders`.
+2. So sánh `YEAR(orderDate)=2004` với date range.
 3. Dùng `EXPLAIN`.
-4. Tạo functional index nếu server hỗ trợ.
+4. Tạo functional index `((YEAR(orderDate)))` nếu server hỗ trợ.
 5. Nêu trường hợp nên tránh functional index.
 
 ### Bài 12.5. InnoDB design review
 
-1. Xác định primary key của ba table lab.
+1. Xác định primary key của ba table `customers`, `orders`, `products`.
 2. Nêu clustered index của từng table.
 3. Liệt kê secondary indexes.
-4. Nêu ảnh hưởng của primary key dài tới secondary index.
+4. Nêu ảnh hưởng của primary key dài (như `VARCHAR(15)` so với `INT`) tới secondary index.
 5. Viết một khuyến nghị primary-key design cho bảng transaction lớn.
 
 ---
@@ -821,77 +801,83 @@ Functional index được hiện thực qua hidden virtual generated columns, v�
 ### Bài 4.1
 
 ```sql
-CREATE INDEX idx_customer_email_prefix
-ON customer_search (email(12));
+CREATE INDEX idx_products_name_prefix
+ON products (productName(12));
 ```
 
 ### Bài 5.2
 
 ```sql
-ALTER TABLE customer_search
-ALTER INDEX idx_customer_country INVISIBLE;
+ALTER TABLE customers
+ALTER INDEX idx_customers_country INVISIBLE;
 ```
 
 ### Bài 6.1
 
 ```sql
-CREATE INDEX idx_order_status_date_desc
-ON order_search (status ASC, order_date DESC);
+CREATE INDEX idx_orders_status_date_desc
+ON orders (status ASC, orderDate DESC);
 ```
 
 ### Bài 7.5
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 ```
 
 ### Bài 9.2
 
 ```sql
-SELECT COUNT(DISTINCT customer_id) AS distinctCustomers
-FROM order_search;
+SELECT COUNT(DISTINCT customerNumber) AS distinctCustomers
+FROM orders;
 ```
 
 ### Bài 10.3
 
 ```sql
 SELECT COUNT(*)
-FROM order_search
-WHERE order_date >= '2004-01-01'
-  AND order_date < '2005-01-01';
+FROM orders
+WHERE orderDate >= '2004-01-01'
+  AND orderDate < '2005-01-01';
 ```
 
 ### Bài 10.4
 
 ```sql
-CREATE INDEX idx_order_year
-ON order_search ((YEAR(order_date)));
+CREATE INDEX idx_orders_year
+ON orders ((YEAR(orderDate)));
 ```
 
 ### Cleanup
 
 ```sql
-DROP INDEX IF EXISTS uq_customer_email
-ON customer_search;
+DROP INDEX IF EXISTS uq_customers_name
+ON customers;
 
-DROP INDEX IF EXISTS idx_customer_email_prefix
-ON customer_search;
+DROP INDEX IF EXISTS idx_customers_country
+ON customers;
 
-DROP INDEX IF EXISTS idx_customer_country_credit
-ON customer_search;
+DROP INDEX IF EXISTS idx_customers_country_credit
+ON customers;
 
-DROP INDEX IF EXISTS idx_order_status_date_desc
-ON order_search;
+DROP INDEX IF EXISTS idx_products_name_prefix
+ON products;
 
-DROP INDEX IF EXISTS idx_order_status_date_asc
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status_date_desc
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status_date_asc
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_year
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer_date
+ON orders;
+
+DROP INDEX IF EXISTS idx_orders_date
+ON orders;
+
+DROP INDEX IF EXISTS idx_orders_year
+ON orders;
 ```
 
 ---
@@ -929,3 +915,4 @@ ON order_search;
 - EXPLAIN
 - ANALYZE TABLE
 - Query rewrite
+- classicmodels

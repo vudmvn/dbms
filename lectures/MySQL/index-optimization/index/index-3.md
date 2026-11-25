@@ -4,10 +4,10 @@ author: "Tên giảng viên"
 duration: "150m"
 difficulty: "Advanced"
 prerequisites:
-  - "Đã học tạo/quản lý index, composite index và EXPLAIN"
-  - "Có schema index_lab từ Tutorial 1"
+  - "Đã học tạo/quản lý index, composite index và EXPLAIN trên classicmodels"
+  - "Đã cài đặt cơ sở dữ liệu mẫu classicmodels"
   - "Hiểu rằng index hints cần được kiểm chứng bằng execution plan và benchmark"
-summary: "Dùng EXPLAIN để phân tích lựa chọn index của optimizer; thực hành USE INDEX, FORCE INDEX và phạm vi FOR JOIN/ORDER BY/GROUP BY; học cách ưu tiên sửa statistics, query hoặc index design trước khi ép optimizer."
+summary: "Dùng EXPLAIN để phân tích lựa chọn index của optimizer trên classicmodels; thực hành USE INDEX, FORCE INDEX và phạm vi FOR JOIN/ORDER BY/GROUP BY; học cách ưu tiên sửa statistics, query hoặc index design trước khi ép optimizer."
 ---
 
 # Tutorial 3: MySQL Index Hints — `USE INDEX` và `FORCE INDEX`
@@ -27,7 +27,7 @@ summary: "Dùng EXPLAIN để phân tích lựa chọn index của optimizer; th
 
 Sau khi hoàn thành tutorial này, người học có thể:
 
-1. Dùng `EXPLAIN` để nhận biết optimizer có thể/chọn index nào.
+1. Dùng `EXPLAIN` để nhận biết optimizer có thể/chọn index nào trên các bảng `classicmodels`.
 2. Giải thích `possible_keys`, `key`, `rows`, `filtered`, `Extra` ở mức thực hành.
 3. Dùng `USE INDEX` để giới hạn danh sách index optimizer được cân nhắc.
 4. Dùng `FORCE INDEX` để làm table scan trở thành lựa chọn rất đắt trong cost model.
@@ -65,29 +65,29 @@ Quy trình tốt hơn:
 
 ### 2.1. Vì sao optimizer có thể không chọn index?
 
-| Nguyên nhân | Ví dụ |
+| Nguyên nhân | Ví dụ trên `classicmodels` |
 |---|---|
-| Table nhỏ | Table scan rẻ hơn index lookup |
-| Predicate không selective | `WHERE status = 'Shipped'` trả phần lớn table |
-| Index không khớp query | Index `(a,b)` nhưng query chỉ filter `b` |
-| Function trên indexed column | `YEAR(order_date)=2004` với normal index `order_date` |
-| Statistics chưa phù hợp | Data thay đổi nhiều |
-| Query cần nhiều row | Index lookup + row lookup đắt hơn scan |
+| Table nhỏ | Table scan trên `orders` (326 dòng) đôi khi rẻ hơn index lookup |
+| Predicate không selective | `WHERE status = 'Shipped'` trả về 303/326 dòng |
+| Index không khớp query | Index `(status, orderDate)` nhưng query chỉ filter `orderDate` |
+| Function trên indexed column | `YEAR(orderDate) = 2004` với normal index `orderDate` |
+| Statistics chưa phù hợp | Data thay đổi nhiều mà chưa cập nhật statistics |
+| Query cần nhiều row | Index lookup + row lookup đắt hơn full scan |
 | Có index tốt hơn | Optimizer chọn index khác đúng hơn dự kiến |
 
 ### 2.2. EXPLAIN trước, hint sau
 
-Ví dụ:
+Ví dụ trên bảng `orders`:
 
 ```sql
 EXPLAIN
-SELECT order_number, customer_id, order_date, status
-FROM order_search
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+SELECT orderNumber, customerNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
-Nếu `key` hiển thị `idx_order_customer_date`, đó thường là dấu hiệu tốt.
+Nếu `key` hiển thị `idx_orders_customer_date`, đó thường là dấu hiệu tốt.
 
 Nếu `key` là `NULL`, không vội kết luận lỗi. Hãy xem `rows`, table size và predicate.
 
@@ -105,69 +105,63 @@ Nếu `key` là `NULL`, không vội kết luận lỗi. Hãy xem `rows`, table 
 
 ---
 
-## 3. Chuẩn bị index cho lab hints
+## 3. Chuẩn bị index trên `classicmodels` cho lab hints
 
-Chọn database:
-
-```sql
-USE index_lab;
-```
-
-Tạo indexes thử nghiệm:
+Dọn dẹp nếu các index thử nghiệm đã tồn tại trước đó, sau đó tạo bộ indexes trên bảng `orders` của `classicmodels`:
 
 ```sql
-DROP INDEX IF EXISTS idx_order_customer
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_status
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_customer_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer_date
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_status_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status_date
+ON orders;
 ```
 
 ```sql
-CREATE INDEX idx_order_customer
-ON order_search (customer_id);
+CREATE INDEX idx_orders_customer
+ON orders (customerNumber);
 
-CREATE INDEX idx_order_status
-ON order_search (status);
+CREATE INDEX idx_orders_status
+ON orders (status);
 
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 
-CREATE INDEX idx_order_status_date
-ON order_search (status, order_date);
+CREATE INDEX idx_orders_status_date
+ON orders (status, orderDate);
 ```
 
 Kiểm tra:
 
 ```sql
-SHOW INDEX FROM order_search;
+SHOW INDEX FROM orders;
 ```
 
-Làm mới statistics trong schema lab:
+Làm mới statistics trong `classicmodels`:
 
 ```sql
-ANALYZE TABLE order_search;
+ANALYZE TABLE orders;
 ```
 
-> Trong bảng nhỏ, query plan có thể không thể hiện rõ tất cả khác biệt. Hãy xem các examples như bài thực hành về syntax và plan interpretation, không coi một kết quả trên sample table là kết luận performance production.
+> Trong bảng nhỏ như `classicmodels.orders` (326 dòng), query plan có thể không thể hiện rõ tất cả khác biệt. Hãy xem các examples như bài thực hành về syntax và plan interpretation, không coi một kết quả trên sample table là kết luận performance production.
 
 ### Bài tập thực hành
 
-**Bài 3.1.** Tạo `idx_order_customer`.
+**Bài 3.1.** Tạo `idx_orders_customer` trên `orders(customerNumber)`.
 
-**Bài 3.2.** Tạo `idx_order_status`.
+**Bài 3.2.** Tạo `idx_orders_status` trên `orders(status)`.
 
-**Bài 3.3.** Tạo `idx_order_customer_date`.
+**Bài 3.3.** Tạo `idx_orders_customer_date` trên `orders(customerNumber, orderDate)`.
 
-**Bài 3.4.** Tạo `idx_order_status_date`.
+**Bài 3.4.** Tạo `idx_orders_status_date` trên `orders(status, orderDate)`.
 
-**Bài 3.5.** Chạy `SHOW INDEX` và `ANALYZE TABLE`.
+**Bài 3.5.** Chạy `SHOW INDEX FROM orders` và `ANALYZE TABLE orders`.
 
 ---
 
@@ -177,11 +171,11 @@ ANALYZE TABLE order_search;
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 ### 4.2. Cột cần quan sát
@@ -199,26 +193,26 @@ ORDER BY order_date;
 Ví dụ lý tưởng trong query trên có thể là optimizer chọn:
 
 ```text
-idx_order_customer_date
+idx_orders_customer_date
 ```
 
 vì index khớp:
 
 ```text
-customer_id → order_date
+customerNumber → orderDate
 ```
 
 ### 4.3. `EXPLAIN ANALYZE`
 
-Trên MySQL version hỗ trợ, có thể dùng:
+Trên MySQL version hỗ trợ (8.0.18+), có thể dùng:
 
 ```sql
 EXPLAIN ANALYZE
-SELECT order_number, order_date, status
-FROM order_search
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 `EXPLAIN ANALYZE` thực thi query và báo actual timing/rows. Vì nó thực thi query, chỉ dùng với query an toàn và trên môi trường phù hợp. Không dùng tùy tiện với DML hoặc query tốn tài nguyên trên production.
@@ -232,12 +226,12 @@ Khi thử hint, so sánh:
 3. Data size/distribution.
 4. `EXPLAIN` output.
 5. Actual rows/timing nếu đo an toàn.
-6. Nhiều parameter values.
+6. Nhiều parameter values (ví dụ `customerNumber = 103` có 3 đơn vs `customerNumber = 141` có 26 đơn).
 7. Read/write impact nếu tạo index mới.
 
 ### Bài tập thực hành
 
-**Bài 4.1.** Chạy `EXPLAIN` cho query theo customer + date.
+**Bài 4.1.** Chạy `EXPLAIN` cho query theo `customerNumber` + `orderDate` trên `orders`.
 
 **Bài 4.2.** Xác định `possible_keys` và `key`.
 
@@ -263,11 +257,11 @@ Ví dụ:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search USE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders USE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 `USE INDEX` giới hạn optimizer ở danh sách named indexes để tìm rows trong table đó. Nó không đơn giản đồng nghĩa “bắt buộc dùng đúng một index đó theo mọi cách”; optimizer vẫn lập plan trong phạm vi các index được cho phép.
@@ -277,19 +271,19 @@ ORDER BY order_date;
 Đúng:
 
 ```sql
-USE INDEX (idx_order_customer_date)
+USE INDEX (idx_orders_customer_date)
 ```
 
 Sai:
 
 ```sql
-USE INDEX (customer_id, order_date)
+USE INDEX (customerNumber, orderDate)
 ```
 
 Muốn biết index names:
 
 ```sql
-SHOW INDEX FROM order_search;
+SHOW INDEX FROM orders;
 ```
 
 Primary key được gọi là:
@@ -302,21 +296,21 @@ Ví dụ:
 
 ```sql
 SELECT *
-FROM order_search USE INDEX (PRIMARY)
-WHERE order_number = 10100;
+FROM orders USE INDEX (PRIMARY)
+WHERE orderNumber = 10100;
 ```
 
 ### 5.3. Multiple indexes
 
 ```sql
 EXPLAIN
-SELECT order_number, customer_id, order_date, status
-FROM order_search USE INDEX (
-    idx_order_customer,
-    idx_order_customer_date
+SELECT orderNumber, customerNumber, orderDate, status
+FROM orders USE INDEX (
+    idx_orders_customer,
+    idx_orders_customer_date
 )
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
 Sau `USE INDEX`, `possible_keys` thường chỉ phản ánh tập index được khuyến nghị/cho phép này.
@@ -334,37 +328,37 @@ có nghĩa không dùng index cho row lookup. Đây là công cụ thử nghiệ
 ```sql
 EXPLAIN
 SELECT *
-FROM order_search USE INDEX ()
-WHERE customer_id = 103;
+FROM orders USE INDEX ()
+WHERE customerNumber = 103;
 ```
 
 ### 5.5. Scope của `USE INDEX`
 
 ```sql
-USE INDEX FOR JOIN (idx_order_customer_date)
+USE INDEX FOR JOIN (idx_orders_customer_date)
 ```
 
 ```sql
-USE INDEX FOR ORDER BY (idx_order_status_date)
+USE INDEX FOR ORDER BY (idx_orders_status_date)
 ```
 
 ```sql
-USE INDEX FOR GROUP BY (idx_order_status_date)
+USE INDEX FOR GROUP BY (idx_orders_status)
 ```
 
 Nếu không ghi `FOR`, hint áp dụng cho toàn bộ scope liên quan của statement.
 
 ### Bài tập thực hành
 
-**Bài 5.1.** Viết query dùng `USE INDEX (idx_order_customer_date)`.
+**Bài 5.1.** Viết query dùng `USE INDEX (idx_orders_customer_date)` trên `orders`.
 
-**Bài 5.2.** Sửa query sai dùng `USE INDEX(customer_id)` thành index name đúng.
+**Bài 5.2.** Sửa query sai dùng `USE INDEX(customerNumber)` thành index name đúng (`idx_orders_customer`).
 
-**Bài 5.3.** Dùng `SHOW INDEX` để xác định primary key name.
+**Bài 5.3.** Dùng `SHOW INDEX` trên `orders` để xác định primary key name.
 
-**Bài 5.4.** Viết `EXPLAIN` query dùng `USE INDEX ()`.
+**Bài 5.4.** Viết `EXPLAIN` query dùng `USE INDEX ()` trên `orders`.
 
-**Bài 5.5.** Viết một `USE INDEX FOR ORDER BY` example cho index `idx_order_status_date`.
+**Bài 5.5.** Viết một `USE INDEX FOR ORDER BY` example cho index `idx_orders_status_date`.
 
 ---
 
@@ -382,11 +376,11 @@ Ví dụ:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search FORCE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders FORCE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 ### 6.2. Khác với `USE INDEX`
@@ -420,22 +414,22 @@ Chỉ thử sau khi:
 Ví dụ table có query:
 
 ```sql
-WHERE customer_id = ?
-  AND order_date >= ?
+WHERE customerNumber = ?
+  AND orderDate >= ?
 ```
 
-Nếu chỉ có index `(status, order_date)`, `FORCE INDEX(idx_order_status_date)` không biến nó thành index tốt cho predicate trên customer.
+Nếu chỉ có index `(status, orderDate)`, `FORCE INDEX(idx_orders_status_date)` không biến nó thành index tốt cho predicate trên customer.
 
 Cách đúng hơn có thể là:
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 ```
 
 ### Bài tập thực hành
 
-**Bài 6.1.** Viết query dùng `FORCE INDEX (idx_order_customer_date)`.
+**Bài 6.1.** Viết query dùng `FORCE INDEX (idx_orders_customer_date)` trên `orders`.
 
 **Bài 6.2.** So sánh `EXPLAIN` của query không hint, `USE INDEX`, `FORCE INDEX`.
 
@@ -455,21 +449,21 @@ Tên này liên quan pha row lookup/join planning, không chỉ có nghĩa query
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date
-FROM order_search
-USE INDEX FOR JOIN (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+SELECT orderNumber, orderDate
+FROM orders
+USE INDEX FOR JOIN (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
 ### 7.2. `FOR ORDER BY`
 
 ```sql
 EXPLAIN
-SELECT order_number, status, order_date
-FROM order_search
-USE INDEX FOR ORDER BY (idx_order_status_date)
-ORDER BY status, order_date;
+SELECT orderNumber, status, orderDate
+FROM orders
+USE INDEX FOR ORDER BY (idx_orders_status_date)
+ORDER BY status, orderDate;
 ```
 
 Hãy kiểm tra output; hint không đảm bảo index đó giải quyết mọi `ORDER BY` nếu query có predicates/join/expressions làm index order không còn phù hợp.
@@ -479,8 +473,8 @@ Hãy kiểm tra output; hint không đảm bảo index đó giải quyết mọi
 ```sql
 EXPLAIN
 SELECT status, COUNT(*) AS totalOrders
-FROM order_search
-USE INDEX FOR GROUP BY (idx_order_status)
+FROM orders
+USE INDEX FOR GROUP BY (idx_orders_status)
 GROUP BY status;
 ```
 
@@ -492,17 +486,17 @@ Ví dụ sai:
 
 ```sql
 SELECT *
-FROM order_search
-USE INDEX FOR JOIN (idx_order_customer)
-FORCE INDEX FOR JOIN (idx_order_customer_date)
-WHERE customer_id = 103;
+FROM orders
+USE INDEX FOR JOIN (idx_orders_customer)
+FORCE INDEX FOR JOIN (idx_orders_customer_date)
+WHERE customerNumber = 103;
 ```
 
 ### Bài tập thực hành
 
-**Bài 7.1.** Viết `USE INDEX FOR JOIN` cho query customer/date.
+**Bài 7.1.** Viết `USE INDEX FOR JOIN` cho query customer/date trên `orders`.
 
-**Bài 7.2.** Viết `USE INDEX FOR ORDER BY` cho query theo status/order date.
+**Bài 7.2.** Viết `USE INDEX FOR ORDER BY` cho query theo `status, orderDate`.
 
 **Bài 7.3.** Viết `USE INDEX FOR GROUP BY` cho `GROUP BY status`.
 
@@ -518,10 +512,10 @@ Dù không phải trọng tâm section, `IGNORE INDEX` rất hữu ích khi mu�
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date
-FROM order_search IGNORE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+SELECT orderNumber, orderDate
+FROM orders IGNORE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
 Dùng `IGNORE INDEX` để:
@@ -534,9 +528,9 @@ Không dùng `IGNORE INDEX` như công cụ “sửa nhanh” cho query mà chư
 
 ### Bài tập thực hành
 
-**Bài 8.1.** Chạy `EXPLAIN` query customer/date không hint.
+**Bài 8.1.** Chạy `EXPLAIN` query customer/date không hint trên `orders`.
 
-**Bài 8.2.** Chạy lại query với `IGNORE INDEX (idx_order_customer_date)`.
+**Bài 8.2.** Chạy lại query với `IGNORE INDEX (idx_orders_customer_date)`.
 
 **Bài 8.3.** So sánh `possible_keys`, `key`, `rows`, `Extra`.
 
@@ -554,12 +548,12 @@ Ví dụ minh họa:
 
 ```sql
 EXPLAIN
-SELECT /*+ INDEX(o idx_order_customer_date) */
-       o.order_number,
-       o.order_date
-FROM order_search AS o
-WHERE o.customer_id = 103
-  AND o.order_date >= '2004-01-01';
+SELECT /*+ INDEX(o idx_orders_customer_date) */
+       o.orderNumber,
+       o.orderDate
+FROM orders AS o
+WHERE o.customerNumber = 103
+  AND o.orderDate >= '2004-01-01';
 ```
 
 Các dạng liên quan có thể gồm:
@@ -579,7 +573,7 @@ Trong bài này, mục tiêu chính vẫn là hiểu `USE INDEX` và `FORCE INDE
 
 ### Bài tập thực hành
 
-**Bài 9.1.** Viết `EXPLAIN` với comment optimizer hint `INDEX`.
+**Bài 9.1.** Viết `EXPLAIN` với comment optimizer hint `INDEX` trên `orders AS o`.
 
 **Bài 9.2.** Nêu lý do nên đọc docs đúng version trước khi dùng hint.
 
@@ -598,35 +592,35 @@ Trong bài này, mục tiêu chính vẫn là hiểu `USE INDEX` và `FORCE INDE
 Không tối ưu:
 
 ```sql
-WHERE YEAR(order_date) = 2004
+WHERE YEAR(orderDate) = 2004
 ```
 
 Cân nhắc:
 
 ```sql
-WHERE order_date >= '2004-01-01'
-  AND order_date < '2005-01-01'
+WHERE orderDate >= '2004-01-01'
+  AND orderDate < '2005-01-01'
 ```
 
 ### 10.2. Tạo composite index đúng pattern
 
-Không ép `(status, order_date)` cho query theo customer:
+Không ép `(status, orderDate)` cho query theo customer:
 
 ```sql
-WHERE customer_id = ?
-AND order_date >= ?
+WHERE customerNumber = ?
+AND orderDate >= ?
 ```
 
 Tạo index phù hợp:
 
 ```sql
-(customer_id, order_date)
+(customerNumber, orderDate)
 ```
 
 ### 10.3. Cập nhật statistics
 
 ```sql
-ANALYZE TABLE order_search;
+ANALYZE TABLE orders;
 ```
 
 Sau đó chạy lại `EXPLAIN`.
@@ -637,11 +631,11 @@ Query:
 
 ```sql
 SELECT *
-FROM order_search
+FROM orders
 WHERE status = 'Shipped';
 ```
 
-nếu trả phần lớn rows, index có thể không có nhiều lợi ích. Hãy:
+nếu trả phần lớn rows (303/326 dòng), index có thể không có nhiều lợi ích. Hãy:
 
 - Chọn các columns cần thiết.
 - Thêm selective predicates nếu đúng nghiệp vụ.
@@ -654,11 +648,11 @@ Nếu nghi một index không cần, có thể dùng invisible index thay vì dr
 
 ### Bài tập thực hành
 
-**Bài 10.1.** Rewrite `YEAR(order_date)=2004` thành range predicate.
+**Bài 10.1.** Rewrite `YEAR(orderDate)=2004` thành range predicate trên `orders`.
 
-**Bài 10.2.** Đề xuất index cho `customer_id` + `order_date`.
+**Bài 10.2.** Đề xuất index cho `customerNumber` + `orderDate` trên `orders`.
 
-**Bài 10.3.** Chạy `ANALYZE TABLE order_search`.
+**Bài 10.3.** Chạy `ANALYZE TABLE orders`.
 
 **Bài 10.4.** Nêu hai lý do `SELECT *` có thể làm đánh giá index khó hơn.
 
@@ -671,22 +665,22 @@ Nếu nghi một index không cần, có thể dùng invisible index thay vì dr
 ### Bài 11.1. USE INDEX experiment
 
 1. Chạy `EXPLAIN` query theo customer/date không hint.
-2. Chạy lại với `USE INDEX (idx_order_customer_date)`.
-3. Chạy lại với `USE INDEX (idx_order_customer)`.
+2. Chạy lại với `USE INDEX (idx_orders_customer_date)`.
+3. Chạy lại với `USE INDEX (idx_orders_customer)`.
 4. So sánh `possible_keys`, `key`, `rows`.
 5. Kết luận hint nào hợp lý hơn cho query đó và vì sao.
 
 ### Bài 11.2. FORCE INDEX experiment
 
-1. Viết query theo status/date.
+1. Viết query theo status/date trên `orders`.
 2. Chạy `EXPLAIN` không hint.
-3. Chạy `EXPLAIN` với `FORCE INDEX (idx_order_status_date)`.
+3. Chạy `EXPLAIN` với `FORCE INDEX (idx_orders_status_date)`.
 4. So sánh plan.
 5. Nêu lý do không áp dụng kết luận từ table nhỏ thẳng vào production.
 
 ### Bài 11.3. Scope hint
 
-1. Viết query group theo status.
+1. Viết query group theo status trên `orders`.
 2. Dùng `USE INDEX FOR GROUP BY`.
 3. Viết query sort theo status/date.
 4. Dùng `USE INDEX FOR ORDER BY`.
@@ -694,13 +688,13 @@ Nếu nghi một index không cần, có thể dùng invisible index thay vì dr
 
 ### Bài 11.4. Fix root cause
 
-Query:
+Query trên `orders`:
 
 ```sql
 SELECT *
-FROM order_search
-WHERE YEAR(order_date) = 2004
-  AND customer_id = 103;
+FROM orders
+WHERE YEAR(orderDate) = 2004
+  AND customerNumber = 103;
 ```
 
 1. Viết range rewrite.
@@ -732,32 +726,32 @@ Lập checklist gồm:
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search USE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders USE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 ### Bài 6.1
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date, status
-FROM order_search FORCE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-ORDER BY order_date;
+SELECT orderNumber, orderDate, status
+FROM orders FORCE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+ORDER BY orderDate;
 ```
 
 ### Bài 7.2
 
 ```sql
 EXPLAIN
-SELECT order_number, status, order_date
-FROM order_search
-USE INDEX FOR ORDER BY (idx_order_status_date)
-ORDER BY status, order_date;
+SELECT orderNumber, status, orderDate
+FROM orders
+USE INDEX FOR ORDER BY (idx_orders_status_date)
+ORDER BY status, orderDate;
 ```
 
 ### Bài 7.3
@@ -765,8 +759,8 @@ ORDER BY status, order_date;
 ```sql
 EXPLAIN
 SELECT status, COUNT(*) AS totalOrders
-FROM order_search
-USE INDEX FOR GROUP BY (idx_order_status)
+FROM orders
+USE INDEX FOR GROUP BY (idx_orders_status)
 GROUP BY status;
 ```
 
@@ -774,49 +768,49 @@ GROUP BY status;
 
 ```sql
 EXPLAIN
-SELECT order_number, order_date
-FROM order_search IGNORE INDEX (idx_order_customer_date)
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01';
+SELECT orderNumber, orderDate
+FROM orders IGNORE INDEX (idx_orders_customer_date)
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01';
 ```
 
 ### Bài 10.1
 
 ```sql
 SELECT *
-FROM order_search
-WHERE order_date >= '2004-01-01'
-  AND order_date < '2005-01-01';
+FROM orders
+WHERE orderDate >= '2004-01-01'
+  AND orderDate < '2005-01-01';
 ```
 
 ### Bài 11.4
 
 ```sql
-CREATE INDEX idx_order_customer_date
-ON order_search (customer_id, order_date);
+CREATE INDEX idx_orders_customer_date
+ON orders (customerNumber, orderDate);
 
 EXPLAIN
 SELECT *
-FROM order_search
-WHERE customer_id = 103
-  AND order_date >= '2004-01-01'
-  AND order_date < '2005-01-01';
+FROM orders
+WHERE customerNumber = 103
+  AND orderDate >= '2004-01-01'
+  AND orderDate < '2005-01-01';
 ```
 
 ### Cleanup
 
 ```sql
-DROP INDEX IF EXISTS idx_order_customer
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_status
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_customer_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_customer_date
+ON orders;
 
-DROP INDEX IF EXISTS idx_order_status_date
-ON order_search;
+DROP INDEX IF EXISTS idx_orders_status_date
+ON orders;
 ```
 
 ---
@@ -859,3 +853,4 @@ ON order_search;
 - Statistics
 - Query rewrite
 - Technical debt
+- classicmodels
