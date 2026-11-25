@@ -226,6 +226,205 @@ function renderCatalog(){el('lab-catalog').innerHTML=Object.entries(catalog).map
 function gridTable(headers,rows){return '<table><thead><tr>'+headers.map(x=>'<th>'+escapeHtml(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+escapeHtml(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
 function explainBox(title,bullets){return '<div class="notice" style="margin:8px 0 4px;line-height:1.55"><b>💡 '+escapeHtml(title)+'</b><ul style="margin:5px 0 0;padding-left:18px">'+bullets.map(b=>'<li>'+b+'</li>').join('')+'</ul></div>';}
 function canonicalCols(table,cols){return cols.map(c=>{let found=SCHEMAS[table].find(col=>col.split(' ')[0].toLowerCase()===c.name.toLowerCase());return{name:found?found.split(' ')[0]:c.name,dir:c.dir};});}
+const TABLE_STATS={
+ customers:{rows:122,cols:{customerNumber:122,customerName:122,contactLastName:108,contactFirstName:111,phone:121,addressLine1:122,addressLine2:21,city:96,state:18,postalCode:94,country:28,salesRepEmployeeNumber:15,creditLimit:93}},
+ orders:{rows:326,cols:{orderNumber:326,orderDate:265,requiredDate:264,shippedDate:247,status:6,comments:37,customerNumber:98}},
+ products:{rows:110,cols:{productCode:110,productName:110,productLine:7,productScale:8,productVendor:13,productDescription:95,quantityInStock:110,buyPrice:108,MSRP:108}},
+ orderdetails:{rows:2996,cols:{orderNumber:326,productCode:109,quantityOrdered:61,priceEach:1573,orderLineNumber:18}},
+ payments:{rows:273,cols:{customerNumber:98,checkNumber:273,paymentDate:232,amount:273}},
+ employees:{rows:23,cols:{employeeNumber:23,lastName:19,firstName:21,extension:20,email:22,officeCode:7,reportsTo:6,jobTitle:7}},
+ offices:{rows:7,cols:{officeCode:7,city:7,phone:7,addressLine1:7,addressLine2:5,state:4,country:5,postalCode:7,territory:4}},
+ productlines:{rows:7,cols:{productLine:7,textDescription:7,htmlDescription:0,image:0}}
+};
+function simulateAnalyze(u){
+ let m=u.match(/^ANALYZE\s+(?:(?:NO_WRITE_TO_BINLOG|LOCAL)\s+)?TABLE\s+(.+)$/i);
+ if(!m)return 'Cú pháp: ANALYZE TABLE ten_bang;';
+ let targets=m[1].split(',').map(x=>x.trim().replace(/^classicmodels\./i,'')).filter(Boolean);
+ let statusRows=[],statRows=[],okTables=[];
+ targets.forEach(rawT=>{
+  let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===rawT.toLowerCase());
+  if(!t){statusRows.push(['classicmodels.'+rawT,'analyze','Error',"Table 'classicmodels."+rawT+"' doesn't exist"]);return;}
+  okTables.push(t);
+  statusRows.push(['classicmodels.'+t,'analyze','status','OK']);
+  let st=TABLE_STATS[t];
+  catalog[t].forEach(ix=>{
+   ix.cols.forEach((c,idx)=>{
+    let colLabel=typeof c==='string'?c:(c.name+(c.dir==='DESC'?' DESC':''));
+    let baseCol=typeof c==='string'?c.replace(/\(.*\)/,'').replace(/\s+(ASC|DESC)$/i,'').trim():c.name;
+    let card='n/a (tổ hợp nhiều cột)',sel='Phụ thuộc phân bố cặp cột';
+    if(idx===0){
+     let v=/YEAR\s*\(\s*orderDate\s*\)/i.test(colLabel)?3:(st.cols[baseCol]??st.rows);
+     if(ix.unique&&ix.cols.length===1)v=st.rows;
+     card=String(v)+' / '+st.rows;
+     sel=(Math.round(v/st.rows*1000)/10)+'%';
+    }else if(ix.unique&&idx===ix.cols.length-1){
+     card=String(st.rows)+' / '+st.rows;sel='100% (duy nhất)';
+    }
+    statRows.push([t,ix.name,idx+1,colLabel,card,sel]);
+   });
+  });
+ });
+ return '<div>✓ (Giả lập) Kết quả <code>ANALYZE TABLE</code>:</div><div class="scrolltable" style="margin-top:6px">'+gridTable(['Table','Op','Msg_type','Msg_text'],statusRows)+'</div>'+(statRows.length?'<div class="tiny muted" style="margin:10px 0 4px"><b>Thống kê Cardinality tham chiếu từ dữ liệu classicmodels mẫu (sau ANALYZE):</b></div><div class="scrolltable">'+gridTable(['Table','Key_name','Seq_in_index','Column_name','Cardinality (distinct / tổng dòng)','Selectivity ước lượng'],statRows)+'</div>':'')+explainBox('Giải thích kết quả ANALYZE TABLE',[
+  '<b>Bảng 1 (<code>Table | Op | Msg_type | Msg_text</code>):</b> Là output chuẩn MySQL Server trả về khi chạy <code>ANALYZE TABLE</code>; <code>status = OK</code> nghĩa là thống kê index đã được làm mới thành công.',
+  '<b>Bảng 2 (<code>Cardinality</code>):</b> Cho biết ước lượng số giá trị phân biệt trong index (ví dụ bảng <code>orders</code> có 326 dòng: <code>orderNumber</code> = 326/326 (100%), <code>customerNumber</code> = 98/326 (~30,1%), còn <code>status</code> chỉ có 6 giá trị phân biệt (~1,8%)).',
+  '<b>Tác động tới Optimizer:</b> Cột có <i>Selectivity</i> càng cao thì Query Optimizer càng ưu tiên dùng index thay vì quét toàn bảng trong <code>EXPLAIN</code>.'
+ ]);
+}
+function simulateTableStatus(u){
+ let like=u.match(/\bLIKE\s+['"]([^'"]+)['"]/i)?.[1];
+ let re=like?new RegExp('^'+like.replace(/%/g,'.*').replace(/_/g,'.')+'$','i'):null;
+ let tbls=Object.keys(SCHEMAS).filter(t=>!re||re.test(t));
+ if(!tbls.length)return '<div>Không có bảng nào khớp mẫu <code>'+escapeHtml(like||'')+'</code>.</div>';
+ let avgLen={customers:192,orders:128,products:410,orderdetails:64,payments:96,employees:148,offices:132,productlines:240};
+ let rows=tbls.map(t=>{let r=TABLE_STATS[t].rows;let al=avgLen[t]||128;let dl=r*al;let il=(catalog[t].length-1)*Math.max(16384,Math.round(dl*0.35));return [t,'InnoDB','10','Dynamic',r,al,dl,il,'utf8mb4_0900_ai_ci'];});
+ return '<div>✓ (Giả lập) Kết quả <code>SHOW TABLE STATUS</code>:</div><div class="scrolltable" style="margin-top:6px">'+gridTable(['Name','Engine','Version','Row_format','Rows','Avg_row_length','Data_length','Index_length','Collation'],rows)+'</div>'+explainBox('Giải thích SHOW TABLE STATUS',[
+  'Toàn bộ 8 bảng <code>classicmodels</code> sử dụng storage engine <b>InnoDB</b>.',
+  '<code>Rows</code> thể hiện số bản ghi thực tế của từng bảng (từ 7 dòng ở <code>offices</code> đến 2.996 dòng ở <code>orderdetails</code>); <code>Index_length</code> tăng theo số secondary index hiện có trong catalog.'
+ ]);
+}
+function simulateInsert(u){
+ let m=u.match(/^INSERT\s+(?:IGNORE\s+)?INTO\s+(?:classicmodels\.)?([a-z_]\w*)/i);
+ if(!m)return 'ℹ Đã kiểm tra cú pháp INSERT.';
+ let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===m[1].toLowerCase());
+ if(!t)return 'Không tồn tại bảng '+escapeHtml(m[1])+' trong classicmodels.';
+ let uq=catalog[t].filter(x=>x.unique).map(x=>x.name+' ('+x.cols.map(c=>c.name).join(', ')+')');
+ let sec=catalog[t].filter(x=>!x.unique).length;
+ let dupHint=(t==='customers'&&/uq_customers_name/i.test(uq.join(','))&&/Atelier graphique/i.test(u))?'<div>✕ <b>(Giả lập) Duplicate entry \'Atelier graphique\' for key \'uq_customers_name\'</b> — bị từ chối bởi ràng buộc <code>UNIQUE</code>!</div>':'<div>✓ (Giả lập) Đã kiểm tra ràng buộc <code>INSERT</code> trên <code>'+escapeHtml(t)+'</code> (không sửa dữ liệu mẫu).</div>';
+ return dupHint+explainBox('Giải thích tác động Index khi INSERT',[
+  'Kiểm tra duy nhất trên: <code>'+escapeHtml(uq.join('; ')||'PRIMARY')+'</code>.',
+  'Ngoài dữ liệu chính, InnoDB phải cập nhật thêm <b>'+sec+' secondary index</b> hiện có trên <code>'+escapeHtml(t)+'</code> (chi phí ghi tăng theo số lượng index).'
+ ]);
+}
+function simulateExplain(rawSql){
+ const hasW=(s,w)=>new RegExp('\\b'+String(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(s||'');
+ let isAnalyze=/^EXPLAIN\s+ANALYZE\b/i.test(rawSql);
+ let isJson=/^EXPLAIN\s+FORMAT\s*=\s*JSON\b/i.test(rawSql);
+ let sql=rawSql.replace(/^EXPLAIN\s+(?:ANALYZE\s+|FORMAT\s*=\s*\w+\s+)?/i,'').trim();
+ if(!/^SELECT\b/i.test(sql))return '<div>ℹ Bộ mô phỏng EXPLAIN hỗ trợ câu lệnh <code>EXPLAIN SELECT ...</code> trên <code>classicmodels</code>.</div>';
+ if(/\bFROM\s+INFORMATION_SCHEMA\.STATISTICS\b/i.test(sql)){
+  let er=[['1','SIMPLE','STATISTICS','NULL','ALL','NULL','NULL','NULL','NULL','—','100.00','Open_full_table; Scanned all databases']];
+  return '<div>✓ (Giả lập) Kết quả <code>EXPLAIN</code>:</div><div class="scrolltable" style="margin-top:6px">'+gridTable(['id','select_type','table','partitions','type','possible_keys','key','key_len','ref','rows','filtered','Extra'],er)+'</div>';
+ }
+ let fm=sql.match(/\bFROM\s+(?:classicmodels\.)?([a-z_]\w*)(?:\s+(?:AS\s+)?(?!(?:WHERE|USE|FORCE|IGNORE|ORDER|GROUP|LIMIT|JOIN|ON|INNER|LEFT|RIGHT)\b)([a-z_]\w*))?/i);
+ if(!fm)return 'Chưa nhận diện được bảng sau FROM trong EXPLAIN SELECT.';
+ let table=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===fm[1].toLowerCase());
+ if(!table)return 'Bảng <code>'+escapeHtml(fm[1])+'</code> không có trong schema classicmodels.';
+ let alias=fm[2]||table;
+ let head=sql.split(/\bFROM\b/i)[0].replace(/^SELECT\s+(?:\/\*[\s\S]*?\*\/\s*)?/i,'').trim();
+ let wherePart=sql.match(/\bWHERE\b([\s\S]*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let orderPart=sql.match(/\bORDER\s+BY\s+([\s\S]*?)(?:\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let groupPart=sql.match(/\bGROUP\s+BY\s+([\s\S]*?)(?:\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let isStar=/^\*$|\.\*/.test(head);
+ let tblCols=SCHEMAS[table].map(z=>z.split(' ')[0]);
+ let reqCols=isStar?tblCols:tblCols.filter(c=>hasW(head,c));
+ let orderMatch=orderPart.match(/^([a-z_]\w*)(?:\s+(ASC|DESC))?/i);
+ let orderCol=orderMatch?orderMatch[1]:'';
+ let orderDir=(orderMatch?.[2]||'ASC').toUpperCase();
+ let groupCol=groupPart.match(/^([a-z_]\w*)/i)?.[1]||'';
+ let legacyHints=[...sql.matchAll(/\b(USE|FORCE|IGNORE)\s+INDEX\s*(?:FOR\s+(JOIN|ORDER\s+BY|GROUP\s+BY))?\s*\(([^)]*)\)/gi)];
+ let useNames=[],forceNames=[],ignoreNames=[],emptyUse=false;
+ legacyHints.forEach(m=>{
+  let kind=m[1].toUpperCase(),list=m[3].split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  if(kind==='USE'){if(!list.length)emptyUse=true;else useNames.push(...list);}
+  else if(kind==='FORCE')forceNames.push(...list);
+  else if(kind==='IGNORE')ignoreNames.push(...list);
+ });
+ let optIdx=[...sql.matchAll(/\/\*\+\s*INDEX\s*\([^)]*?([a-z_]\w*)\s*\)\s*\*\//gi)].map(m=>m[1].toLowerCase());
+ let optNoIdx=[...sql.matchAll(/\/\*\+\s*NO_INDEX\s*\([^)]*?([a-z_]\w*)\s*\)\s*\*\//gi)].map(m=>m[1].toLowerCase());
+ ignoreNames.push(...optNoIdx);
+ if(optIdx.length)forceNames.push(...optIdx);
+ let st=TABLE_STATS[table],totalRows=st.rows;
+ let possible=[];
+ catalog[table].forEach(ix=>{
+  if(ix.visible===false)return;
+  let nl=ix.name.toLowerCase();
+  if(emptyUse)return;
+  if(ignoreNames.includes(nl))return;
+  if(useNames.length&&!useNames.includes(nl)&&!forceNames.includes(nl))return;
+  if(forceNames.length&&!useNames.length&&!forceNames.includes(nl))return;
+  let colNames=ix.cols.map(c=>typeof c==='string'?(/YEAR\s*\(\s*orderDate\s*\)/i.test(c)?'orderDate':c.replace(/\(.*\)/,'').replace(/\s+(ASC|DESC)$/i,'').trim()):c.name);
+  let colLabels=ix.cols.map(c=>typeof c==='string'?c:(c.name+(c.dir==='DESC'?' DESC':'')));
+  let c0=colNames[0]||'';
+  let isFuncIdx=/YEAR\s*\(/i.test(colLabels[0]||'');
+  let funcInWhere=wherePart&&new RegExp('\\bYEAR\\s*\\(\\s*(?:\\w+\\.)?'+eRe(c0)+'\\s*\\)','i').test(wherePart);
+  let otherFunc=wherePart&&!isFuncIdx&&new RegExp('[a-z_]+\\s*\\(\\s*(?:\\w+\\.)?'+eRe(c0)+'\\s*\\)|\\b'+eRe(c0)+'\\s+LIKE\\s+[\'"]%','i').test(wherePart);
+  if(otherFunc)return;
+  if(isFuncIdx&&!funcInWhere)return;
+  let matched=0;
+  for(let cn of colNames){if(hasW(wherePart,cn))matched++;else break;}
+  let eqFirst=wherePart&&new RegExp('(?:\\b'+eRe(c0)+'\\s*=\\s*)','i').test(wherePart);
+  let rangeFirst=wherePart&&new RegExp('(?:\\b'+eRe(c0)+'\\s*(?:>=|>|<=|<|BETWEEN\\b|LIKE\\s+[\'"][^%]))','i').test(wherePart);
+  let ordMatch=orderCol&&colNames.some((cn,i)=>cn.toLowerCase()===orderCol.toLowerCase()&&(i===0||matched>=i));
+  let grpMatch=groupCol&&colNames[0]?.toLowerCase()===groupCol.toLowerCase();
+  if(matched>0||ordMatch||grpMatch){
+   let score=matched*10+(eqFirst?5:(rangeFirst?2:0))+(ix.name==='PRIMARY'&&eqFirst?8:(ix.unique&&eqFirst?4:0))+(ordMatch?3:0)+(forceNames.includes(nl)?20:0);
+   let covered=!isStar&&reqCols.length>0&&ix.name!=='PRIMARY'&&reqCols.every(rc=>colNames.some(cn=>cn.toLowerCase()===rc.toLowerCase())||PK[table].some(pk=>pk.toLowerCase()===rc.toLowerCase()));
+   if(covered)score+=2;
+   possible.push({ix,colNames,colLabels,matched,eqFirst,rangeFirst,ordMatch,grpMatch,covered,score,c0});
+  }
+ });
+ let chosen=possible.sort((a,b)=>b.score-a.score)[0]||null;
+ let isShipped=(table==='orders'&&/\bstatus\s*=\s*['"]shipped['"]/i.test(wherePart));
+ let isCancelled=(table==='orders'&&/\bstatus\s*=\s*['"]cancelled['"]/i.test(wherePart));
+ let isCust103=(table==='orders'&&/\bcustomerNumber\s*=\s*103\b/i.test(wherePart));
+ let isUsa=(table==='customers'&&/\bcountry\s*=\s*['"]usa['"]/i.test(wherePart));
+ let isMoto=(table==='products'&&/\bproductLine\s*=\s*['"]motorcycles['"]/i.test(wherePart));
+ let lowSelSkip=isShipped&&chosen&&chosen.c0.toLowerCase()==='status'&&!forceNames.includes(chosen.ix.name.toLowerCase())&&!hasW(orderPart,'orderDate');
+ if(lowSelSkip)chosen=null;
+ let accType='ALL',key='NULL',keyLen='NULL',ref='NULL',rowsEst=totalRows,filtered='100.00',extra=[];
+ if(wherePart)filtered=isShipped?'92.94':(isCancelled?'1.84':(isUsa?'29.51':'10.00'));
+ if(chosen){
+  key=chosen.ix.name;
+  let dist=st.cols[chosen.c0]||Math.max(1,Math.round(totalRows*0.5));
+  if(chosen.ix.name==='PRIMARY'&&chosen.eqFirst){accType='const';rowsEst=1;ref='const';filtered='100.00';keyLen='4';}
+  else if(chosen.eqFirst){
+   accType='ref';ref='const';keyLen=chosen.matched>1?'8':'4';filtered='100.00';
+   if(isCust103)rowsEst=/orderDate/i.test(wherePart)&&chosen.matched>=2?2:3;
+   else if(isShipped)rowsEst=303;
+   else if(isCancelled)rowsEst=6;
+   else if(isUsa)rowsEst=/creditLimit/i.test(wherePart)&&chosen.matched>=2?28:36;
+   else if(isMoto)rowsEst=13;
+   else rowsEst=Math.max(1,Math.round(totalRows/Math.max(1,dist)));
+   if(chosen.rangeFirst||(/orderDate|creditLimit|MSRP/i.test(wherePart)&&chosen.matched>=2)){accType='range';ref='NULL';extra.push('Using index condition');}
+  }else if(chosen.rangeFirst){
+   accType='range';keyLen='4';filtered='100.00';
+   rowsEst=(table==='orders'&&/2004/.test(wherePart))?151:(table==='customers'&&/50000/.test(wherePart)?85:Math.max(1,Math.round(totalRows*0.35)));
+   extra.push('Using where');
+  }else{accType='index';keyLen='4';rowsEst=totalRows;if(wherePart)extra.push('Using where');}
+  if(chosen.covered){extra=extra.filter(x=>x!=='Using where');extra.unshift('Using index');}
+  else if(wherePart&&!extra.includes('Using where')&&!extra.includes('Using index condition'))extra.push('Using where');
+  if(orderCol){
+   let ordOk=chosen.ordMatch&&(orderDir==='ASC'||chosen.colLabels.some(cl=>new RegExp('^'+eRe(orderCol)+'\\s+DESC$','i').test(cl))||chosen.eqFirst);
+   if(!ordOk)extra.push('Using filesort');
+  }
+ }else{
+  if(wherePart)extra.push('Using where');
+  if(orderCol)extra.push('Using filesort');
+ }
+ let pKeys=possible.length?possible.map(p=>p.ix.name).join(', '):'NULL';
+ let exRow=[1,'SIMPLE',alias,'NULL',accType,pKeys,key,keyLen,ref,rowsEst,filtered,extra.join('; ')||'NULL'];
+ let outHtml='<div>✓ (Giả lập) Kế hoạch <code>'+(isAnalyze?'EXPLAIN ANALYZE':(isJson?'EXPLAIN FORMAT=JSON':'EXPLAIN'))+'</code> trên <code>classicmodels.'+escapeHtml(table)+'</code>:</div>';
+ if(isJson){
+  let jObj={query_block:{select_id:1,table:{table_name:alias,access_type:accType,possible_keys:possible.map(p=>p.ix.name),key:key==='NULL'?null:key,rows_examined_per_scan:rowsEst,filtered:Number(filtered),using_filesort:extra.includes('Using filesort'),using_index:extra.includes('Using index')}}};
+  outHtml+='<pre class="code-pre" style="margin-top:6px">'+escapeHtml(JSON.stringify(jObj,null,2))+'</pre>';
+ }else{
+  outHtml+='<div class="scrolltable" style="margin-top:6px">'+gridTable(['id','select_type','table','partitions','type','possible_keys','key','key_len','ref','rows','filtered','Extra'],[exRow])+'</div>';
+  if(isAnalyze){
+   let tree=(key==='NULL'?'-> Table scan on '+alias+'  (cost='+(totalRows*0.35).toFixed(2)+' rows='+totalRows+') (actual time=0.05..0.38 rows='+totalRows+' loops=1)':(accType==='const'?'-> Rows fetched before execution  (cost=0.00..0.00 rows=1)':'-> Index '+(accType==='range'?'range scan':'lookup')+' on '+alias+' using '+key+'  (cost='+(rowsEst*0.35+0.35).toFixed(2)+' rows='+rowsEst+') (actual time=0.02..0.09 rows='+rowsEst+' loops=1)'));
+   if(wherePart)tree='-> Filter: ('+wherePart+')  (rows='+rowsEst+')\n    '+tree;
+   if(extra.includes('Using filesort'))tree='-> Sort: '+orderPart+'\n    '+tree;
+   outHtml+='<pre class="code-pre" style="margin-top:8px">'+escapeHtml(tree)+'</pre>';
+  }
+ }
+ let bullets=[
+  '<b><code>type = '+escapeHtml(accType)+'</code> &amp; <code>key = '+escapeHtml(key)+'</code>:</b> '+(key==='NULL'?(lowSelSkip?'Dù <code>possible_keys</code> có <code>idx_orders_status</code>, giá trị <code>\'Shipped\'</code> chiếm tới <b>303/326 (~93%)</b> số đơn hàng nên optimizer chọn <b>Full Table Scan (<code>ALL</code>)</b> rẻ hơn lookup. Thử lọc <code>\'Cancelled\'</code> (6 dòng) hoặc dùng <code>FORCE INDEX</code> để thấy sự khác biệt!':'Không có index khả dụng phù hợp điều kiện lọc (hoặc bị hàm/hint loại bỏ), MySQL phải quét toàn bảng ('+totalRows+' dòng).'):'Optimizer sử dụng index <code>'+escapeHtml(key)+'</code> với access type <code>'+escapeHtml(accType)+'</code>, ước lượng đọc <b>'+rowsEst+'</b> dòng thay vì quét cả '+totalRows+' dòng.'),
+  '<b><code>possible_keys</code>:</b> <code>'+escapeHtml(pKeys)+'</code> (các index ứng viên hợp lệ sau khi xét Leftmost-Prefix, trạng thái <code>VISIBLE</code> và hint).',
+  extra.includes('Using filesort')?'<b><code>Extra: Using filesort</code>:</b> Index được chọn chưa đúng thứ tự sắp xếp <code>ORDER BY '+escapeHtml(orderPart)+'</code> nên MySQL phải sắp xếp bổ sung.':null,
+  extra.includes('Using index')?'<b><code>Extra: Using index</code> (Covering Index):</b> Toàn bộ cột cần trả về đã nằm sẵn trong index + PRIMARY KEY nên không cần đọc lại bảng chính.':null,
+  '<b>Lưu ý mô phỏng:</b> Số liệu <code>rows</code> và <code>filtered</code> được nội suy từ tập <code>classicmodels</code> chuẩn ('+totalRows+' dòng). Để xem <code>EXPLAIN QUERY PLAN</code> &amp; thời gian chạy thực tế (ms) trong trình duyệt, hãy dùng <a href="classicmodels-index-performance-lab.html">Benchmark Full Classicmodels</a>.'
+ ].filter(Boolean);
+ return outHtml+explainBox('Giải thích kết quả EXPLAIN',bullets);
+}
 function simulateSelect(u){
  if(/\bFROM\s+INFORMATION_SCHEMA\.STATISTICS\b/i.test(u)){
   let tf=u.match(/\bTABLE_NAME\s*=\s*['"]([a-z_]\w*)['"]/i)?.[1];
@@ -313,17 +512,12 @@ m=u.match(/^SHOW\s+CREATE\s+TABLE\s+(?:classicmodels\.)?([a-z_]\w*)$/i);if(m){le
  'Hiển thị đầy đủ định nghĩa DDL của bảng <code>'+escapeHtml(t)+'</code>: danh sách cột, <code>PRIMARY KEY ('+escapeHtml(PK[t].join(', '))+')</code> và toàn bộ <code>KEY ...</code> hiện có.',
  'Giúp kiểm tra nhanh danh sách các secondary index đã gắn trên bảng và kiểu dữ liệu gốc của các cột.'
 ]));continue;}
-if(/^EXPLAIN\s+SELECT\b/i.test(u)){let rawT=u.match(/\bFROM\s+(?:classicmodels\.)?([a-z_]\w*)/i)?.[1];let t=rawT?Object.keys(SCHEMAS).find(k=>k.toLowerCase()===rawT.toLowerCase()):null;if(!t){out.push('Bảng không có trong schema classicmodels.');continue;}let afterWhere=u.match(/\bWHERE\b([\s\S]*?)(?:\bORDER\s+BY\b|$)/i)?.[1]||'';let order=u.match(/\bORDER\s+BY\s+([a-z_]\w*)/i)?.[1]?.toLowerCase();let candidates=catalog[t].filter(ix=>{const first=ix.cols[0]?.name?.toLowerCase();return hasWord(afterWhere,first)||(order===first);});out.push('<div><strong>Ứng viên theo key part đầu (mô phỏng):</strong> '+escapeHtml(candidates.map(i=>i.name).join(', ')||'Không phát hiện ứng viên theo quy tắc đơn giản')+'</div>'+explainBox('Giải thích phân tích EXPLAIN',[
- 'Các index có <b>cột đầu tiên (leftmost key part)</b> xuất hiện trong <code>WHERE</code> hoặc <code>ORDER BY</code> sẽ trở thành ứng viên (<code>possible_keys</code>).',
- 'Trên MySQL Server thực, cần đọc thêm các cột <code>key</code> (index được chọn thật), <code>key_len</code>, <code>rows</code>, <code>filtered</code> và <code>Extra</code> (<code>Using index</code>, <code>Using filesort</code>...).',
- 'Để xem kế hoạch thực thi thật <code>EXPLAIN QUERY PLAN</code> và đo thời gian (ms) trên 3.864 bản ghi <code>classicmodels</code>, hãy dùng tab <a href="classicmodels-index-performance-lab.html">Benchmark Full Classicmodels</a>.'
-]));continue;}
-if(/^ANALYZE\s+TABLE\s+/i.test(u)){out.push('<div>✓ (Giả lập) ANALYZE TABLE hoàn tất.</div>'+explainBox('Giải thích lệnh ANALYZE TABLE',[
- 'Trên MySQL Server thực, lệnh này tính toán lại thống kê phân bố dữ liệu (<code>Cardinality</code>) của các index trên bảng.',
- 'Giúp Query Optimizer ước lượng chi phí chính xác hơn khi lập execution plan trong <code>EXPLAIN</code>.'
-]));continue;}
+if(/^SHOW\s+TABLE\s+STATUS/i.test(u)){out.push(simulateTableStatus(u));continue;}
+if(/^EXPLAIN\b/i.test(u)){out.push(simulateExplain(u));continue;}
+if(/^ANALYZE\s+TABLE\s+/i.test(u)||/^ANALYZE\s+(?:NO_WRITE_TO_BINLOG|LOCAL)\s+TABLE\s+/i.test(u)){out.push(simulateAnalyze(u));continue;}
 if(/^SELECT\b/i.test(u)){out.push(simulateSelect(u));continue;}
-out.push('Lệnh chưa được mô phỏng. Hỗ trợ: CREATE INDEX, ALTER TABLE ADD/DROP INDEX, DROP INDEX, SHOW INDEX, SHOW CREATE TABLE, SELECT, EXPLAIN SELECT, ANALYZE TABLE.');}
+if(/^INSERT\b/i.test(u)){out.push(simulateInsert(u));continue;}
+out.push('Lệnh chưa được mô phỏng. Hỗ trợ: CREATE INDEX, ALTER TABLE ADD/DROP INDEX, DROP INDEX, SHOW INDEX, SHOW CREATE TABLE, SHOW TABLE STATUS, DESCRIBE, SELECT, EXPLAIN [ANALYZE] SELECT, ANALYZE TABLE, INSERT.');}
 renderCatalog();return out.join('<hr style="border:0;border-top:1px solid #dbe3f0;margin:12px 0">');}
 
 
