@@ -199,7 +199,7 @@ function runSandbox(raw){let ss=sqlStatements(raw);if(!ss.length)return '<div cl
  ]));continue;}
  let drop=sql.match(/^DROP\s+INDEX\s+(?:IF\s+EXISTS\s+)?([a-z_]\w*)\s+ON\s+(?:classicmodels\.)?([a-z_]\w*)$/i);
  if(drop){let table=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===drop[2].toLowerCase());let arr=table?catalog[table]:null,n=arr?.findIndex(x=>x.name.toLowerCase()===drop[1].toLowerCase());if(n===undefined||n<0){out.push('✕ Index không có trong catalog: '+drop[1]);continue;}if(arr[n].name==='PRIMARY'){out.push('✕ Không DROP PRIMARY trong bài lab.');continue;}arr.splice(n,1);out.push('<div class="hint" style="margin:7px 0">✓ Catalog minh họa: đã xóa <code>'+escapeHtml(drop[1])+'</code> khỏi <code>'+escapeHtml(table)+'</code>.</div>');continue;}
- let show=sql.match(/^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+FROM\s+(?:classicmodels\.)?([a-z_]\w*)/i);if(show){let table=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===show[1].toLowerCase());let arr=table?catalog[table]:null;if(!arr){out.push('✕ Không tìm thấy bảng '+show[1]);continue;}let where=sql.match(/\bKey_name\s*=\s*['\"]([a-z_]\w*)['\"]/i);let filtered=arr.filter(k=>!where||k.name.toLowerCase()===where[1].toLowerCase());let rows=filtered.map((k,i)=>[table,k.name,k.cols.join(', '),k.unique?'0':'1',k.visible?'YES':'NO']);out.push('<div class="scrolltable">'+gridTable(['Table','Key_name','Key parts','Non_unique','Visible'],rows)+'</div>'+explainBox('Giải thích kết quả SHOW INDEX ('+table+')',[
+ let show=sql.match(/^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+FROM\s+(?:classicmodels\.)?([a-z_]\w*)/i);if(show){let table=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===show[1].toLowerCase());let arr=table?catalog[table]:null;if(!arr){out.push('✕ Không tìm thấy bảng '+show[1]);continue;}let where=sql.match(/\bKey_name\s*=\s*['"]([^'"]*)['"]/i);let filtered=arr.filter(k=>!where||k.name.toLowerCase()===where[1].toLowerCase());if(!filtered.length){let hasPad=where&&where[1]!==where[1].trim();out.push('<div class="hint" style="margin:7px 0">Không tìm thấy index nào khớp điều kiện trên bảng <code>'+escapeHtml(table)+'</code>.</div>'+explainBox('Giải thích kết quả rỗng',[hasPad?'<b>Phát hiện khoảng trắng thừa:</b> Chuỗi <code>\''+escapeHtml(where[1])+'\'</code> có dấu cách ở đầu/cuối.':null,'<b>Catalog hiện tại của <code>'+escapeHtml(table)+'</code>:</b> <code>'+escapeHtml(arr.map(k=>k.name).join(', '))+'</code>. Hãy chạy lệnh <code>CREATE INDEX</code> bằng ▶ Run trước nếu cần.'].filter(Boolean)));continue;}let rows=filtered.map((k,i)=>[table,k.name,k.cols.join(', '),k.unique?'0':'1',k.visible?'YES':'NO']);out.push('<div class="scrolltable">'+gridTable(['Table','Key_name','Key parts','Non_unique','Visible'],rows)+'</div>'+explainBox('Giải thích kết quả SHOW INDEX ('+table+')',[
   '<code>Non_unique = 0</code> là index duy nhất (<code>PRIMARY</code> hoặc <code>UNIQUE</code>); <code>1</code> là index thường (gồm FK index mặc định và secondary index).',
   '<code>Visible = YES/NO</code> cho biết Query Optimizer có được phép nhìn thấy và cân nhắc index này không.',
   '<code>Key parts</code> hiển thị đúng thứ tự cột, chiều <code>ASC/DESC</code>, độ dài prefix <code>(N)</code> hoặc biểu thức functional.'
@@ -207,7 +207,59 @@ function runSandbox(raw){let ss=sqlStatements(raw);if(!ss.length)return '<div cl
  if(/^SHOW\s+TABLE\s+STATUS/i.test(sql)){out.push('ℹ MySQL mới trả ENGINE thực. Toàn bộ 8 bảng classicmodels mặc định sử dụng InnoDB.');continue;}
  if(/^ANALYZE\s+TABLE/i.test(sql)){out.push('<div class="hint" style="margin:7px 0">ℹ ANALYZE TABLE: trên MySQL Server thực sẽ cập nhật thống kê Cardinality cho Query Optimizer.</div>');continue;}
  if(/^EXPLAIN\b/i.test(sql)){let matches=[...sql.matchAll(/\b(?:USE|FORCE|IGNORE)\s+INDEX\s*(?:FOR\s+(?:JOIN|ORDER\s+BY|GROUP\s+BY))?\s*\(([^)]*)\)/gi)];let hints=matches.map(m=>m[0]);out.push('<div class="hint" style="margin:7px 0">ℹ EXPLAIN/EXPLAIN ANALYZE cần chạy trên MySQL Server (hoặc tab Benchmark Full Classicmodels) để xem <code>key</code>, <code>rows</code>, <code>filtered</code> và <code>Extra</code>. '+(hints.length?'Đã nhận diện hint: <b>'+escapeHtml(hints.join(' | '))+'</b>':'')+'</div>');continue;}
- if(/^SELECT\b/i.test(sql)){out.push('ℹ SELECT được kiểm tra cú pháp trên classicmodels. Để chạy trên 3.864 bản ghi thực tế, dùng tab Benchmark Full Classicmodels.');continue;}
+ function simulateSelect(sql){
+ const hasW=(s,w)=>new RegExp('\\b'+String(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(s||'');
+ if(/\bFROM\s+INFORMATION_SCHEMA\.STATISTICS\b/i.test(sql)){
+  let tf=sql.match(/\bTABLE_NAME\s*=\s*['"]([a-z_]\w*)['"]/i)?.[1];
+  let tables=tf?Object.keys(catalog).filter(k=>k.toLowerCase()===tf.toLowerCase()):Object.keys(catalog);
+  if(tf&&!tables.length)return '<div class="hint" style="margin:7px 0">✕ Không tìm thấy bảng <code>'+escapeHtml(tf)+'</code> trong <code>classicmodels</code>.</div>';
+  let allCols=['TABLE_NAME','INDEX_NAME','NON_UNIQUE','SEQ_IN_INDEX','COLUMN_NAME','IS_VISIBLE'];
+  let head=sql.split(/\bFROM\b/i)[0];
+  let selCols=/\*/.test(head)?allCols:allCols.filter(c=>hasW(head,c));
+  if(!selCols.length)selCols=allCols;
+  let rows=[];
+  tables.forEach(t=>catalog[t].forEach(ix=>ix.cols.forEach((c,idx)=>{
+   let rec={TABLE_NAME:t,INDEX_NAME:ix.name,NON_UNIQUE:ix.unique?0:1,SEQ_IN_INDEX:idx+1,COLUMN_NAME:c,IS_VISIBLE:ix.visible===false?'NO':'YES'};
+   rows.push(selCols.map(k=>rec[k]));
+  })));
+  return '<div class="hint" style="margin:7px 0">✓ (Giả lập) Đọc metadata từ <code>INFORMATION_SCHEMA.STATISTICS</code> ('+rows.length+' dòng).</div><div class="scrolltable">'+gridTable(selCols,rows)+'</div>'+explainBox('Giải thích kết quả INFORMATION_SCHEMA.STATISTICS',[
+   'Hiển thị metadata thực tế từ catalog mô phỏng hiện tại, bao gồm cả cột <code>IS_VISIBLE</code> (YES/NO) của MySQL 8.0+.'
+  ]);
+ }
+ let fm=sql.match(/\bFROM\s+(?:classicmodels\.)?([a-z_]\w*)(?:\s+(?:AS\s+)?([a-z_]\w*))?/i);
+ if(!fm)return '<div class="hint" style="margin:7px 0">ℹ Đã nhận diện câu lệnh <code>SELECT</code>. Hãy chỉ định <code>FROM &lt;bảng_classicmodels&gt;</code> để phân tích index.</div>';
+ let table=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===fm[1].toLowerCase());
+ if(!table)return '<div class="hint" style="margin:7px 0">✕ Không tìm thấy bảng <code>'+escapeHtml(fm[1])+'</code> trong schema <code>classicmodels</code>.</div>';
+ let head=sql.split(/\bFROM\b/i)[0].replace(/^SELECT\s+(?:\/\*[\s\S]*?\*\/\s*)?/i,'').trim();
+ let wherePart=sql.match(/\bWHERE\b([\s\S]*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let orderPart=sql.match(/\bORDER\s+BY\s+([\s\S]*?)(?:\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let groupPart=sql.match(/\bGROUP\s+BY\s+([\s\S]*?)(?:\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let isStar=/^\*$|\.\*/.test(head);
+ let hints=[...sql.matchAll(/\b(?:USE|FORCE|IGNORE)\s+INDEX\s*(?:FOR\s+(?:JOIN|ORDER\s+BY|GROUP\s+BY))?\s*\(([^)]*)\)/gi)].map(m=>m[0]);
+ let optHints=[...sql.matchAll(/\/\*\+\s*((?:NO_)?(?:JOIN_|ORDER_|GROUP_)?INDEX\s*\([^)]*\))\s*\*\//gi)].map(m=>m[1]);
+ let baseCol=s=>/YEAR\s*\(\s*orderDate\s*\)/i.test(s)?'orderDate':String(s).replace(/\(.*\)/,'').replace(/\s+(ASC|DESC)$/i,'').trim();
+ let tblCols=SCHEMAS[table].map(z=>z.split(' ')[0]);
+ let rows=catalog[table].map(ix=>{
+  let colBases=ix.cols.map(baseCol);
+  let matched=0;
+  for(let cb of colBases){if(hasW(wherePart,cb))matched++;else break;}
+  let first=colBases[0]||'';
+  let hasFuncExpr=/YEAR\s*\(/i.test(ix.cols[0]||'');
+  let nonSargWhere=!hasFuncExpr&&wherePart&&new RegExp('[a-z_]+\\s*\\(\\s*'+first+'\\s*\\)|\\b'+first+'\\s+LIKE\\s+[\'"]%','i').test(wherePart);
+  let vis=ix.visible!==false;
+  let status=!vis?'INVISIBLE (bị bỏ qua)':(nonSargWhere?'Hàm / %LIKE ngăn tra B-Tree':(matched>0?'Khớp '+matched+'/'+colBases.length+' cột đầu':((hasW(orderPart,first)||hasW(groupPart,first))?'Hỗ trợ ORDER/GROUP BY':'Không khớp leftmost-prefix')));
+  let note=!vis?'Optimizer bỏ qua mặc định nhưng vẫn tốn phí ghi.':(matched>0?'Dùng cho WHERE ('+colBases.slice(0,matched).join(', ')+').':'Chưa khớp cột đầu '+first+'.');
+  return [ix.name,ix.cols.join(', '),vis?'YES':'NO',status,note];
+ });
+ let candidates=rows.filter(r=>r[3].startsWith('Khớp')||r[3].startsWith('Hỗ trợ')).map(r=>r[0]);
+ return '<div class="hint" style="margin:7px 0">✓ (Giả lập) Phân tích truy vấn <code>SELECT</code> trên bảng <code>'+escapeHtml(table)+'</code>.</div><div class="scrolltable">'+gridTable(['Index','Key parts','Visible','Mức độ khớp','Nhận xét'],rows)+'</div>'+explainBox('Giải thích cách MySQL xử lý SELECT với Index',[
+  '<b>Thành phần truy vấn:</b> Cột chiếu <code>'+escapeHtml(isStar?'*':head)+'</code>'+(wherePart?' · <code>WHERE '+escapeHtml(wherePart)+'</code>':'')+(groupPart?' · <code>GROUP BY '+escapeHtml(groupPart)+'</code>':'')+(orderPart?' · <code>ORDER BY '+escapeHtml(orderPart)+'</code>':'')+'.',
+  candidates.length?'<b>Ứng viên khả dụng:</b> <code>'+escapeHtml(candidates.join(', '))+'</code>.':'<b>Chưa có index ứng viên khả dụng:</b> MySQL sẽ quét toàn bảng hoặc chỉ xét lại nếu bật <code>VISIBLE</code> / tạo thêm index phù hợp.',
+  (hints.length||optHints.length)?'<b>Index Hint phát hiện được:</b> <code>'+escapeHtml([...hints,...optHints].join(' | '))+'</code>.':null,
+  'Để chạy truy vấn này lấy dữ liệu thật từ 3.864 bản ghi <code>classicmodels</code> và xem <code>EXPLAIN QUERY PLAN</code>, hãy mở <a href="classicmodels-index-performance-lab.html">Benchmark Full Classicmodels</a>.'
+ ].filter(Boolean));
+}
+if(/^SELECT\b/i.test(sql)){out.push(simulateSelect(sql));continue;}
  if(/^INSERT\b/i.test(sql)){out.push('ℹ INSERT không thực thi ở đây. Với UNIQUE index thật uq_customers_name, duplicate customerName sẽ bị chặn ở MySQL Server.');continue;}
  if(/^USE\s+classicmodels$/i.test(sql)){out.push('✓ Đang sử dụng cơ sở dữ liệu mẫu classicmodels (8 bảng).');continue;}
  out.push('ℹ Bộ mô phỏng chưa xử lý lệnh này; dùng ✓ Check để đánh giá cấu trúc theo bài, và thử thực tế trên MySQL.');

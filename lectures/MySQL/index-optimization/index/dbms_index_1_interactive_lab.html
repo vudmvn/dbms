@@ -173,7 +173,7 @@ return{ok:true,msg:'Đúng lệnh tạo index, tên, bảng, thứ tự key part
 case 'drop':{let p=parseDrop(s);if(!p)return{ok:false,msg:'Dùng DROP INDEX ... ON ... hoặc ALTER TABLE ... DROP INDEX ...'};if(spec.mode&&p.op!==spec.mode)return{ok:false,msg:'Bài yêu cầu dùng '+(spec.mode==='alter'?'ALTER TABLE DROP INDEX':'DROP INDEX')+'.'};return p.name.toLowerCase()===spec.name.toLowerCase()&&p.table.toLowerCase()===spec.table.toLowerCase()?{ok:true,msg:'Đúng secondary index cần xóa và tên bảng.'}:{ok:false,msg:'Sai tên index hoặc bảng cần xóa.'};}
 case 'show-index':{
 m=s.match(/^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+(?:FROM|IN)\s+(?:classicmodels\.)?([a-z_]\w*)([\s\S]*)$/i);if(!m||m[1].toLowerCase()!==spec.table.toLowerCase())return{ok:false,msg:'Cần SHOW INDEX(ES)/KEYS FROM '+spec.table+'.'};
-if(spec.key&&!new RegExp('\\bWHERE\\s+KEY_NAME\\s*=\\s*[\\x27\\x22]'+eRe(spec.key)+'[\\x27\\x22]','i').test(m[2]))return{ok:false,msg:'Thiếu WHERE Key_name = \''+spec.key+'\'.'};
+if(spec.key){let km=m[2].match(/\bWHERE\s+KEY_NAME\s*=\s*['"]([^'"]*)['"]/i);if(!km)return{ok:false,msg:'Thiếu WHERE Key_name = \''+spec.key+'\'.'};if(km[1].toLowerCase()!==spec.key.toLowerCase()){if(km[1].trim().toLowerCase()===spec.key.toLowerCase())return{ok:false,msg:'Tên index trong dấu nháy đang bị dư khoảng trắng ở đầu/cuối (\''+km[1]+'\'); hãy xóa khoảng trắng thừa thành \''+spec.key+'\'.'};return{ok:false,msg:'Sai tên Key_name: cần \''+spec.key+'\'.'};}}
 return{ok:true,msg:'Đúng lệnh xem index metadata.'};}
 case 'show-create':return new RegExp('^SHOW\\s+CREATE\\s+TABLE\\s+(?:classicmodels\\.)?'+eRe(spec.table)+'$','i').test(s)?{ok:true,msg:'Đúng SHOW CREATE TABLE.'}:{ok:false,msg:'Dùng SHOW CREATE TABLE '+spec.table+'.'};
 case 'metadata':{
@@ -226,6 +226,64 @@ function renderCatalog(){el('lab-catalog').innerHTML=Object.entries(catalog).map
 function gridTable(headers,rows){return '<table><thead><tr>'+headers.map(x=>'<th>'+escapeHtml(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+escapeHtml(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
 function explainBox(title,bullets){return '<div class="notice" style="margin:8px 0 4px;line-height:1.55"><b>💡 '+escapeHtml(title)+'</b><ul style="margin:5px 0 0;padding-left:18px">'+bullets.map(b=>'<li>'+b+'</li>').join('')+'</ul></div>';}
 function canonicalCols(table,cols){return cols.map(c=>{let found=SCHEMAS[table].find(col=>col.split(' ')[0].toLowerCase()===c.name.toLowerCase());return{name:found?found.split(' ')[0]:c.name,dir:c.dir};});}
+function simulateSelect(u){
+ if(/\bFROM\s+INFORMATION_SCHEMA\.STATISTICS\b/i.test(u)){
+  let tf=u.match(/\bTABLE_NAME\s*=\s*['"]([a-z_]\w*)['"]/i)?.[1];
+  let tables=tf?Object.keys(catalog).filter(k=>k.toLowerCase()===tf.toLowerCase()):Object.keys(catalog);
+  if(tf&&!tables.length)return '<div>Không tìm thấy bảng <code>'+escapeHtml(tf)+'</code> trong schema <code>classicmodels</code>.</div>';
+  let allCols=['TABLE_NAME','INDEX_NAME','NON_UNIQUE','SEQ_IN_INDEX','COLUMN_NAME','COLLATION','CARDINALITY','SUB_PART','INDEX_TYPE','IS_VISIBLE'];
+  let head=u.split(/\bFROM\b/i)[0];
+  let selCols=/\*/.test(head)?allCols:allCols.filter(c=>hasWord(head,c));
+  if(!selCols.length)selCols=allCols;
+  let rows=[];
+  tables.forEach(t=>catalog[t].forEach(ix=>ix.cols.forEach((c,idx)=>{
+   let rec={TABLE_NAME:t,INDEX_NAME:ix.name,NON_UNIQUE:ix.unique?0:1,SEQ_IN_INDEX:idx+1,COLUMN_NAME:c.name,COLLATION:c.dir==='DESC'?'D':'A',CARDINALITY:'n/a (giả lập)',SUB_PART:'NULL',INDEX_TYPE:'BTREE',IS_VISIBLE:'YES'};
+   rows.push(selCols.map(k=>rec[k]));
+  })));
+  return '<div>✓ (Giả lập) Truy vấn metadata từ <code>INFORMATION_SCHEMA.STATISTICS</code> ('+rows.length+' dòng).</div><div class="scrolltable" style="margin-top:6px">'+gridTable(selCols,rows)+'</div>'+explainBox('Giải thích kết quả INFORMATION_SCHEMA.STATISTICS',[
+   'Bảng hệ thống <code>INFORMATION_SCHEMA.STATISTICS</code> lưu cấu trúc mọi index trong schema <code>classicmodels</code> (tương tự <code>SHOW INDEX</code> nhưng có thể dùng <code>SELECT/WHERE/ORDER BY</code>).',
+   '<code>NON_UNIQUE = 0</code> là <code>PRIMARY KEY</code> hoặc <code>UNIQUE</code>; <code>SEQ_IN_INDEX</code> thể hiện thứ tự cột (1, 2...) trong composite index.'
+  ]);
+ }
+ let fm=u.match(/\bFROM\s+(?:classicmodels\.)?([a-z_]\w*)(?:\s+(?:AS\s+)?([a-z_]\w*))?/i);
+ if(!fm)return '<div class="hint">ℹ Đã nhận diện lệnh <code>SELECT</code>. Hãy chỉ định <code>FROM &lt;tên_bảng&gt;</code> thuộc <code>classicmodels</code> để mô phỏng phân tích index.</div>';
+ let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===fm[1].toLowerCase());
+ if(!t)return 'Không tìm thấy bảng <code>'+escapeHtml(fm[1])+'</code> trong schema <code>classicmodels</code> (8 bảng: '+Object.keys(SCHEMAS).join(', ')+').';
+ let head=u.split(/\bFROM\b/i)[0].replace(/^SELECT\s+/i,'').trim();
+ let wherePart=u.match(/\bWHERE\b([\s\S]*?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let orderPart=u.match(/\bORDER\s+BY\s+([\s\S]*?)(?:\bLIMIT\b|$)/i)?.[1]?.trim()||'';
+ let isStar=/^\*$|\.\*/.test(head);
+ let tblCols=SCHEMAS[t].map(z=>z.split(' ')[0]);
+ let reqCols=isStar?tblCols:tblCols.filter(c=>hasWord(head,c));
+ let orderCol=orderPart.match(/^([a-z_]\w*)/i)?.[1]||'';
+ let rows=catalog[t].map(ix=>{
+  let colNames=ix.cols.map(c=>c.name);
+  let matchedPrefix=0;
+  for(let cn of colNames){if(hasWord(wherePart,cn))matchedPrefix++;else break;}
+  let firstLower=colNames[0]?.toLowerCase()||'';
+  let hasNonSarg=(wherePart&&new RegExp('[a-z_]+\\s*\\(\\s*'+eRe(firstLower)+'\\s*\\)|'+eRe(firstLower)+'\\s+LIKE\\s+[\'"]%','i').test(wherePart));
+  let orderMatch=orderCol&&colNames.some((cn,idx)=>cn.toLowerCase()===orderCol.toLowerCase()&&(idx===0||matchedPrefix>=idx));
+  let status='Không khớp leftmost-prefix';
+  let detail='Cột đầu '+colNames[0]+' không có trong WHERE/ORDER BY.';
+  if(hasNonSarg){status='Bị vô hiệu do hàm / %LIKE';detail='Biểu thức hàm hoặc wildcard đầu ngăn tra B-Tree thông thường.';}
+  else if(matchedPrefix>0){
+   status=matchedPrefix===colNames.length?'Khớp toàn bộ key ('+matchedPrefix+'/'+colNames.length+')':'Khớp tiền tố trái ('+matchedPrefix+'/'+colNames.length+')';
+   detail='Dùng cho WHERE trên '+colNames.slice(0,matchedPrefix).join(', ')+(orderMatch?' và hỗ trợ ORDER BY '+orderCol:'')+'.';
+  }else if(orderMatch){status='Hỗ trợ ORDER BY';detail='Cột đầu khớp ORDER BY '+orderCol+'.';}
+  let covering=!isStar&&reqCols.length>0&&ix.name!=='PRIMARY'&&reqCols.every(rc=>colNames.some(cn=>cn.toLowerCase()===rc.toLowerCase())||PK[t].some(pk=>pk.toLowerCase()===rc.toLowerCase()));
+  if(covering)detail+=' Có thể thành Covering Index (Using index).';
+  return [ix.name,ix.cols.map(c=>c.name+(c.dir==='DESC'?' DESC':'')).join(', '),status,detail];
+ });
+ let candidates=rows.filter(r=>r[2].startsWith('Khớp')||r[2].startsWith('Hỗ trợ')).map(r=>r[0]);
+ let whereHasOtherCols=tblCols.filter(c=>hasWord(wherePart,c));
+ let bullets=[
+  '<b>Truy vấn phân tích:</b> Bảng <code>'+escapeHtml(t)+'</code> · Cột chiếu: <code>'+escapeHtml(isStar?'* (tất cả cột)':head)+'</code>'+(wherePart?' · Lọc theo <code>'+escapeHtml(whereHasOtherCols.join(', ')||wherePart)+'</code>':' · Không có WHERE')+(orderPart?' · Sắp xếp: <code>'+escapeHtml(orderPart)+'</code>':'')+'.',
+  candidates.length?'<b>Index ứng viên trong catalog hiện tại:</b> <code>'+escapeHtml(candidates.join(', '))+'</code>.':'<b>Chưa có index ứng viên phù hợp:</b> Truy vấn sẽ phải quét toàn bảng (Full Table Scan) với catalog hiện tại.',
+  isStar?'<b>Lưu ý về <code>SELECT *</code>:</b> Lấy tất cả cột nên secondary index vẫn phải đọc thêm về dữ liệu chính (Clustered Index lookup). Nếu chỉ lấy các cột đã nằm trong index + PRIMARY KEY, truy vấn có thể đạt <i>Covering Index</i>.':'<b>Kiểm tra Covering Index:</b> Các cột bạn chọn ('+escapeHtml(reqCols.join(', ')||head)+') sẽ tận dụng được <i>Covering Index</i> nếu toàn bộ nằm trong một secondary index + PRIMARY KEY.',
+  '<b>Xem dữ liệu dòng thật &amp; tốc độ (ms):</b> Lab này chỉ mô phỏng catalog cấu trúc index. Để chạy câu SQL thật trên 3.864 bản ghi <code>classicmodels</code>, hãy mở <a href="classicmodels-index-performance-lab.html">Benchmark Full Classicmodels</a>.'
+ ];
+ return '<div>✓ (Giả lập) Đã phân tích truy vấn <code>SELECT</code> trên bảng <code>'+escapeHtml(t)+'</code>.</div><div class="scrolltable" style="margin-top:6px">'+gridTable(['Index trong catalog','Cột của index','Mức độ khớp','Đánh giá'],rows)+'</div>'+explainBox('Giải thích phân tích Index cho câu SELECT',bullets);
+}
 function runSandbox(s){let statements=sqlStatements(s);if(!statements.length)return 'Chưa có lệnh.';let out=[];for(let sql of statements){const u=unspace(sql);if(/^USE\s+classicmodels$/i.test(u)){out.push('✓ (Giả lập) Đang sử dụng cơ sở dữ liệu classicmodels (8 bảng).');continue;}
 if(/^SHOW\s+(?:FULL\s+)?TABLES/i.test(u)){out.push(gridTable(['Tables_in_classicmodels'],Object.keys(SCHEMAS).map(t=>[t])));continue;}
 let desc=u.match(/^(?:DESCRIBE|DESC)\s+(?:classicmodels\.)?([a-z_]\w*)$/i);if(desc){let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===desc[1].toLowerCase());if(!t){out.push('Không tồn tại bảng '+desc[1]+' trong classicmodels.');continue;}out.push(gridTable(['Field','Type & Null','Key'],SCHEMAS[t].map(col=>{let parts=col.split(' ');let name=parts.shift();return [name,parts.join(' '),PK[t].includes(name)?'PRI':((FK_INDEXES[t]||[]).some(f=>f[0]===name)?'MUL':'')];})));continue;}
@@ -239,7 +297,11 @@ const d=parseDrop(u);if(d){const t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()=
  'Giải phóng dung lượng lưu trữ và giảm chi phí bảo trì index khi thực hiện INSERT/UPDATE/DELETE.',
  '<code>PRIMARY KEY</code> và các index khóa ngoại mặc định vẫn được giữ nguyên.'
 ]));continue;}
-let m=u.match(/^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+(?:FROM|IN)\s+(?:classicmodels\.)?([a-z_]\w*)(?:\s+WHERE\s+KEY_NAME\s*=\s*['"]([^'"]+)['"])?$/i);if(m){let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===m[1].toLowerCase());if(!t){out.push('Không có bảng '+m[1]);continue;}let idx=catalog[t].filter(i=>!m[2]||i.name.toLowerCase()===m[2].toLowerCase());if(!idx.length){out.push('<div>Không tìm thấy index nào khớp điều kiện trên bảng <code>'+escapeHtml(t)+'</code>.</div>'+explainBox('Giải thích kết quả rỗng',['Index bạn lọc trong <code>WHERE Key_name = ...</code> chưa tồn tại trong catalog hiện tại. Hãy chạy lệnh <code>CREATE INDEX</code> tương ứng trước khi kiểm tra lại.']));continue;}let rows=idx.flatMap(i=>i.cols.map((c,ii)=>[t,i.unique?0:1,i.name,ii+1,c.name,c.dir==='DESC'?'D':'A','n/a (giả lập)']));const compIdx=idx.filter(i=>i.cols.length>1);const hasFk=idx.some(i=>i.name!=='PRIMARY'&&(FK_INDEXES[t]||[]).some(f=>f[0]===i.name));const bullets=[
+let m=u.match(/^SHOW\s+(?:INDEX|INDEXES|KEYS)\s+(?:FROM|IN)\s+(?:classicmodels\.)?([a-z_]\w*)(?:\s+WHERE\s+KEY_NAME\s*=\s*['"]([^'"]+)['"])?$/i);if(m){let t=Object.keys(SCHEMAS).find(k=>k.toLowerCase()===m[1].toLowerCase());if(!t){out.push('Không có bảng '+m[1]);continue;}let idx=catalog[t].filter(i=>!m[2]||i.name.toLowerCase()===m[2].toLowerCase());if(!idx.length){let hasPad=m[2]&&m[2]!==m[2].trim();let existing=catalog[t].map(i=>i.name).join(', ');out.push('<div>Không tìm thấy index nào khớp điều kiện trên bảng <code>'+escapeHtml(t)+'</code>.</div>'+explainBox('Giải thích kết quả rỗng',[
+ hasPad?'<b>Phát hiện khoảng trắng thừa:</b> Chuỗi <code>\''+escapeHtml(m[2])+'\'</code> đang có dấu cách ở đầu hoặc cuối nên không khớp tên index chính xác.':null,
+ '<b>Catalog hiện tại của <code>'+escapeHtml(t)+'</code> mới có:</b> <code>'+escapeHtml(existing)+'</code>.',
+ '<b>Nguyên nhân thường gặp:</b> Catalog mô phỏng trên trình duyệt chỉ lưu trong phiên hiện tại (mặc định reset về <code>PRIMARY</code> + FK index khi tải lại trang). Nếu bạn chưa chạy <code>CREATE INDEX</code> tương ứng bằng nút <b>▶ Run</b> trong phiên này, index đó chưa tồn tại trong catalog.'
+].filter(Boolean)));continue;}let rows=idx.flatMap(i=>i.cols.map((c,ii)=>[t,i.unique?0:1,i.name,ii+1,c.name,c.dir==='DESC'?'D':'A','n/a (giả lập)']));const compIdx=idx.filter(i=>i.cols.length>1);const hasFk=idx.some(i=>i.name!=='PRIMARY'&&(FK_INDEXES[t]||[]).some(f=>f[0]===i.name));const bullets=[
  '<code>Non_unique = 0</code>: Index duy nhất (<code>PRIMARY KEY</code> hoặc <code>UNIQUE</code>), không cho phép trùng lặp giá trị.',
  '<code>Non_unique = 1</code>: Index thường (cho phép trùng giá trị), gồm các secondary index và FK index.',
  '<code>Seq_in_index</code>: Thứ tự cột (1, 2...) trong index. '+(compIdx.length?'Index ghép <code>'+escapeHtml(compIdx.map(i=>i.name+'('+i.cols.map(c=>c.name).join(', ')+')').join('; '))+'</code> thể hiện nhiều dòng liên tiếp có <code>Seq_in_index</code> tăng dần.':'Các index đơn cột đều có <code>Seq_in_index = 1</code>.'),
@@ -260,7 +322,8 @@ if(/^ANALYZE\s+TABLE\s+/i.test(u)){out.push('<div>✓ (Giả lập) ANALYZE TABL
  'Trên MySQL Server thực, lệnh này tính toán lại thống kê phân bố dữ liệu (<code>Cardinality</code>) của các index trên bảng.',
  'Giúp Query Optimizer ước lượng chi phí chính xác hơn khi lập execution plan trong <code>EXPLAIN</code>.'
 ]));continue;}
-out.push('Lệnh chưa được mô phỏng. Hỗ trợ: CREATE INDEX, ALTER TABLE ADD/DROP INDEX, DROP INDEX, SHOW INDEX, SHOW CREATE TABLE, EXPLAIN SELECT, ANALYZE TABLE.');}
+if(/^SELECT\b/i.test(u)){out.push(simulateSelect(u));continue;}
+out.push('Lệnh chưa được mô phỏng. Hỗ trợ: CREATE INDEX, ALTER TABLE ADD/DROP INDEX, DROP INDEX, SHOW INDEX, SHOW CREATE TABLE, SELECT, EXPLAIN SELECT, ANALYZE TABLE.');}
 renderCatalog();return out.join('<hr style="border:0;border-top:1px solid #dbe3f0;margin:12px 0">');}
 
 
